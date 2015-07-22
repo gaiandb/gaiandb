@@ -1,0 +1,148 @@
+
+Jars required for building
+Please download these jars online and place them in lib/:
+
+Pre-included:
+————————————-
+
+For access to CSV files:
+db2jcutdown.jar
+
+For reading sensors (e.g. temperature, accelerometer) in Lenovo laptops:
+SensorReader.dll
+
+
+Required:
+—————————
+
+Derby database driver files:
+derby.jar
+derbyclient.jar
+derbyLocale_cs.jar
+derbyLocale_de_DE.jar
+derbyLocale_es.jar
+derbyLocale_fr.jar
+derbyLocale_hu.jar
+derbyLocale_it.jar
+derbyLocale_ja_JP.jar
+derbyLocale_ko_KR.jar
+derbyLocale_pl.jar
+derbyLocale_pt_BR.jar
+derbyLocale_ru.jar
+derbyLocale_zh_CN.jar
+derbyLocale_zh_TW.jar
+derbynet.jar
+derbyrun.jar
+derbytools.jar
+
+UI topology graphing tool: to be downloaded/built from http://prefuse.org/
+prefuse.jar
+(prefusetrimmed.jar (included) is sufficient at run-time)
+
+
+Optional:
+—————————
+
+For receiving messages via MQTT (Using Gaian’s thread running in: MQTTMessageStorer.java):
+wmqtt.jar
+
+For integration with Watson Policy Management Library:
+wpml.jar
+
+OSGI integration:
+org.osgi.core-1.0.0.jar
+
+For code-coverage at build time:
+cobertura/cobertura.jar
+cobertura/lib/asm-3.0.jar
+cobertura/lib/asm-tree-3.0.jar
+cobertura/lib/jakarta-oro-2.0.8.jar
+cobertura/lib/log4j-1.2.9.jar
+
+To run Gaian as a servlet using GaianServlet.java:
+servlet-api.jar
+com.ibm.ws.javaee.servlet.3.0_1.0.2.jar
+
+Security - Key/certificate handling
+gskikm.jar
+ibmjgssprovider.jar
+
+For Unit-Testing GaianDB:
+junit-4.10.jar
+
+
+Optional data-source drivers:
+—————————————————————————————
+
+For access to Excel Spreadsheets data-sources:
+poi-3.8/dom4j-1.6.1.jar
+poi-3.8/poi-3.8-20120326.jar
+poi-3.8/poi-ooxml-3.8-20120326.jar
+poi-3.8/poi-ooxml-schemas-3.8-20120326.jar
+poi-3.8/stax-api-1.0.1.jar
+poi-3.8/xmlbeans-2.3.0.jar
+
+DB2 data-sources:
+db2jcc4.jar
+db2jcc_license_cu.jar
+
+Web Services data-sources (using VTI class in GaianDB: GenericWS):
+jsoup-1.7.1.jar
+juno-5.0.0.30.jar
+
+Mongo data-sources:
+mongo-java-driver-2.11.4.jar
+
+MySQL data-sources:
+mysql-connector-java-5.1.25-bin.jar
+
+Oracle data-sources:
+ojdbc6.jar
+
+PostgreSQL data-sources:
+postgresql-9.4-1201.jdbc4.jar
+postgresql-9.4-1201.jdbc41.jar
+
+MS SQL Server data-sources:
+sqljdbc4.jar
+
+Text index data-sources:
+siapi.jar
+esapi.jar
+lucene-1.4.3.jar
+
+Accumulo data-sources:
+accumulo-client-prereqs/accumulo-core-1.4.4.jar
+accumulo-client-prereqs/cloudtrace-1.4.4.jar
+accumulo-client-prereqs/commons-logging-1.1.1.jar
+accumulo-client-prereqs/commons-logging-api-1.1.1.jar
+accumulo-client-prereqs/hadoop-core-0.20.203.0.jar
+accumulo-client-prereqs/libthrift-0.6.1.jar
+accumulo-client-prereqs/log4j-1.2.16.jar
+accumulo-client-prereqs/slf4j-api-1.5.2.jar
+accumulo-client-prereqs/slf4j-log4j12-1.4.3.jar
+accumulo-client-prereqs/zookeeper-3.4.5.jar
+
+Big Data data sources:
+bigsql/db2jcc.jar
+bigsql/db2jcc4.jar
+bigsql/db2jcc_license_cu.jar
+
+Hive data-sources:
+hive-client-prereqs/commons-logging-1.1.1.jar
+hive-client-prereqs/hadoop-core-2.2.0-mr1.jar
+hive-client-prereqs/hive-exec-0.12.0.jar
+hive-client-prereqs/hive-jdbc-0.12.0.jar
+hive-client-prereqs/hive-metastore-0.12.0.jar
+hive-client-prereqs/hive-service-0.12.0.jar
+hive-client-prereqs/hive-shims-0.12.0.jar
+hive-client-prereqs/httpclient-4.2.5.jar
+hive-client-prereqs/httpcore-4.2.4.jar
+hive-client-prereqs/libfb303-0.9.0.jar
+hive-client-prereqs/libthrift-0.9.0.jar
+hive-client-prereqs/log4j-1.2.17.jar
+hive-client-prereqs/slf4j-api-1.6.1.jar
+hive-client-prereqs/slf4j-log4j12-1.6.1.jar
+
+
+

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--xtools2_universal_type_manager-->
+<?com.ibm.xtools.emf.core.signature <signature id="com.ibm.xtools.mmi.ui.signatures.diagram" version="7.0.0"><feature description="" name="Rational Modeling Platform (com.ibm.xtools.rmp)" url="" version="7.0.0"/></signature>?>
+<umlnotation:UMLDiagram xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:uml="http://www.eclipse.org/uml2/3.0.0/UML" xmlns:umlnotation="http://www.ibm.com/xtools/1.5.3/Umlnotation" xmi:id="_ygE8cIXzEd-auojSPkiVUg" type="Class" name="classdiagram2">
+  <eAnnotations xmi:id="_DX5sAKXvEd-H8K0futLb6A" source="com.ibm.xtools.common.ui.reduction.editingCapabilities">
+    <details xmi:id="_DYpS4KXvEd-H8K0futLb6A" key="com.ibm.xtools.activities.javaVisualizerActivity" value="1"/>
+  </eAnnotations>
+  <children xmi:type="umlnotation:UMLShape" xmi:id="_zIdLEIXzEd-auojSPkiVUg" fontHeight="8" lineColor="14263149" showStereotype="Label">
+    <children xmi:type="notation:DecorationNode" xmi:id="_zIm8EIXzEd-auojSPkiVUg" type="ImageCompartment">
+      <layoutConstraint xmi:type="notation:Size" xmi:id="_zIm8EYXzEd-auojSPkiVUg" width="1320" height="1320"/>
+    </children>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIm8EoXzEd-auojSPkiVUg" type="Stereotype"/>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIm8E4XzEd-auojSPkiVUg" type="Name"/>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIm8FIXzEd-auojSPkiVUg" type="Parent"/>
+    <children xmi:type="notation:SemanticListCompartment" xmi:id="_zIm8FYXzEd-auojSPkiVUg" type="AttributeCompartment"/>
+    <children xmi:type="notation:SemanticListCompartment" xmi:id="_zIm8F4XzEd-auojSPkiVUg" type="OperationCompartment"/>
+    <element xmi:type="uml:Class" href="mmi:///#jsrctype%5Ename=Row%5Bjcu%5Ename=Row.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D$uml.Class"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_zIdLEoXzEd-auojSPkiVUg" x="1585" y="13314"/>
+  </children>
+  <children xmi:type="umlnotation:UMLShape" xmi:id="_zIm8GYXzEd-auojSPkiVUg" fontHeight="8" lineColor="14263149" showStereotype="Label">
+    <children xmi:type="notation:DecorationNode" xmi:id="_zIm8HIXzEd-auojSPkiVUg" type="ImageCompartment">
+      <layoutConstraint xmi:type="notation:Size" xmi:id="_zIm8HYXzEd-auojSPkiVUg" width="1320" height="1320"/>
+    </children>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIm8HoXzEd-auojSPkiVUg" type="Stereotype"/>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIm8H4XzEd-auojSPkiVUg" type="Name"/>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIm8IIXzEd-auojSPkiVUg" type="Parent"/>
+    <children xmi:type="notation:SemanticListCompartment" xmi:id="_zIm8IYXzEd-auojSPkiVUg" type="AttributeCompartment"/>
+    <children xmi:type="notation:SemanticListCompartment" xmi:id="_zIm8I4XzEd-auojSPkiVUg" type="OperationCompartment"/>
+    <element xmi:type="uml:Class" href="mmi:///#jsrctype%5Ename=QueryContext%5Bjcu%5Ename=QueryContext.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D$uml.Class"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_zIm8G4XzEd-auojSPkiVUg" x="1268" y="951"/>
+  </children>
+  <children xmi:type="umlnotation:UMLClassifierShape" xmi:id="_zIm8JYXzEd-auojSPkiVUg" fontHeight="8" lineColor="14263149" showStereotype="Label" useClassifierShape="true">
+    <children xmi:type="notation:DecorationNode" xmi:id="_zIwGAIXzEd-auojSPkiVUg" type="ImageCompartment">
+      <layoutConstraint xmi:type="notation:Size" xmi:id="_zIwGAYXzEd-auojSPkiVUg" width="530" height="530"/>
+    </children>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIwGAoXzEd-auojSPkiVUg" type="Stereotype"/>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIwGA4XzEd-auojSPkiVUg" type="Kind"/>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIwGBIXzEd-auojSPkiVUg" type="Name"/>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIwGBYXzEd-auojSPkiVUg" type="Parent"/>
+    <children xmi:type="notation:SemanticListCompartment" xmi:id="_zIwGBoXzEd-auojSPkiVUg" type="AttributeCompartment"/>
+    <children xmi:type="notation:SemanticListCompartment" xmi:id="_zIwGCIXzEd-auojSPkiVUg" type="OperationCompartment"/>
+    <element xmi:type="uml:Interface" href="mmi:///#jsrctype%5Ename=IColumn%5Bjcu%5Ename=IColumn.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D$uml.Interface"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_zIm8J4XzEd-auojSPkiVUg" x="8712" y="6732"/>
+  </children>
+  <children xmi:type="umlnotation:UMLShape" xmi:id="_zIwGF4XzEd-auojSPkiVUg" fontHeight="8" lineColor="14263149" showStereotype="Label">
+    <children xmi:type="notation:DecorationNode" xmi:id="_zIwGGoXzEd-auojSPkiVUg" type="ImageCompartment">
+      <layoutConstraint xmi:type="notation:Size" xmi:id="_zIwGG4XzEd-auojSPkiVUg" width="1320" height="1320"/>
+    </children>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIwGHIXzEd-auojSPkiVUg" type="Stereotype"/>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIwGHYXzEd-auojSPkiVUg" type="Name"/>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIwGHoXzEd-auojSPkiVUg" type="Parent"/>
+    <children xmi:type="notation:SemanticListCompartment" xmi:id="_zIwGH4XzEd-auojSPkiVUg" type="AttributeCompartment"/>
+    <children xmi:type="notation:SemanticListCompartment" xmi:id="_zIwGIYXzEd-auojSPkiVUg" type="OperationCompartment"/>
+    <element xmi:type="uml:Class" href="mmi:///#jsrctype%5Ename=DataSource%5Bjcu%5Ename=DataSource.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D$uml.Class"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_zIwGGYXzEd-auojSPkiVUg" x="11095" y="1902"/>
+  </children>
+  <children xmi:type="umlnotation:UMLShape" xmi:id="_zIwGL4XzEd-auojSPkiVUg" fontHeight="8" lineColor="14263149" showStereotype="Label">
+    <children xmi:type="notation:DecorationNode" xmi:id="_zIwGMoXzEd-auojSPkiVUg" type="ImageCompartment">
+      <layoutConstraint xmi:type="notation:Size" xmi:id="_zIwGM4XzEd-auojSPkiVUg" width="1320" height="1320"/>
+    </children>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIwGNIXzEd-auojSPkiVUg" type="Stereotype"/>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIwGNYXzEd-auojSPkiVUg" type="Name"/>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIwGNoXzEd-auojSPkiVUg" type="Parent"/>
+    <children xmi:type="notation:SemanticListCompartment" xmi:id="_zIwGN4XzEd-auojSPkiVUg" type="AttributeCompartment"/>
+    <children xmi:type="notation:SemanticListCompartment" xmi:id="_zIwGOYXzEd-auojSPkiVUg" type="OperationCompartment"/>
+    <element xmi:type="uml:Class" href="mmi:///#jsrctype%5Ename=Column%5Bjcu%5Ename=Column.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D$uml.Class"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_zIwGMYXzEd-auojSPkiVUg" x="13728" y="7392"/>
+  </children>
+  <children xmi:type="umlnotation:UMLClassifierShape" xmi:id="_zIwGO4XzEd-auojSPkiVUg" fontHeight="8" lineColor="14263149" showStereotype="Label" useClassifierShape="true">
+    <children xmi:type="notation:DecorationNode" xmi:id="_zIwGPoXzEd-auojSPkiVUg" type="ImageCompartment">
+      <layoutConstraint xmi:type="notation:Size" xmi:id="_zIwGP4XzEd-auojSPkiVUg" width="530" height="530"/>
+    </children>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIwGQIXzEd-auojSPkiVUg" type="Stereotype"/>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIwGQYXzEd-auojSPkiVUg" type="Kind"/>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIwGQoXzEd-auojSPkiVUg" type="Name"/>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zIwGQ4XzEd-auojSPkiVUg" type="Parent"/>
+    <children xmi:type="notation:SemanticListCompartment" xmi:id="_zIwGRIXzEd-auojSPkiVUg" type="AttributeCompartment"/>
+    <children xmi:type="notation:SemanticListCompartment" xmi:id="_zIwGRoXzEd-auojSPkiVUg" type="OperationCompartment"/>
+    <element xmi:type="uml:Interface" href="mmi:///#jsrctype%5Ename=IRow%5Bjcu%5Ename=IRow.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D$uml.Interface"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_zIwGPYXzEd-auojSPkiVUg" x="1452" y="8712"/>
+  </children>
+  <children xmi:type="umlnotation:UMLShape" xmi:id="_zIwGSIXzEd-auojSPkiVUg" fontHeight="8" lineColor="14263149" showStereotype="Label">
+    <children xmi:type="notation:DecorationNode" xmi:id="_zIwGS4XzEd-auojSPkiVUg" type="ImageCompartment">
+      <layoutConstraint xmi:type="notation:Size" xmi:id="_zIwGTIXzEd-auojSPkiVUg" width="1320" height="1320"/>
+    </children>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zI53AIXzEd-auojSPkiVUg" type="Stereotype"/>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zI53AYXzEd-auojSPkiVUg" type="Name"/>
+    <children xmi:type="notation:BasicDecorationNode" xmi:id="_zI53AoXzEd-auojSPkiVUg" type="Parent"/>
+    <children xmi:type="notation:SemanticListCompartment" xmi:id="_zI53A4XzEd-auojSPkiVUg" type="AttributeCompartment"/>
+    <children xmi:type="notation:SemanticListCompartment" xmi:id="_zI53BYXzEd-auojSPkiVUg" type="OperationCompartment"/>
+    <element xmi:type="uml:Class" href="mmi:///#jsrctype%5Ename=AccessLogger%5Bjcu%5Ename=AccessLogger.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D$uml.Class"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_zIwGSoXzEd-auojSPkiVUg" x="6340" y="951"/>
+  </children>
+  <element xsi:nil="true"/>
+  <edges xmi:type="umlnotation:UMLConnector" xmi:id="_zRsmooXzEd-auojSPkiVUg" source="_zIdLEIXzEd-auojSPkiVUg" target="_zIm8JYXzEd-auojSPkiVUg" lineColor="8421504" showStereotype="Text">
+    <children xmi:type="notation:DecorationNode" xmi:id="_zR_hkIXzEd-auojSPkiVUg" type="KindLabel">
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zR_hkoXzEd-auojSPkiVUg" type="Stereotype"/>
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zR_hlIXzEd-auojSPkiVUg" type="Kind"/>
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zR_hk4XzEd-auojSPkiVUg" type="Name"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_zR_hkYXzEd-auojSPkiVUg" y="-186"/>
+    </children>
+    <element xmi:type="uml:Usage" href="mmi:///#jdep%5Bjsrctype%5Ename=Row%5Bjcu%5Ename=Row.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D%5D%5Bjsrctype%5Ename=IColumn%5Bjcu%5Ename=IColumn.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D%5D$uml.Usage"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_zRsmpIXzEd-auojSPkiVUg" points="[-14, 4577, -2633, -2712]$[2606, 6164, -13, -1125]"/>
+    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_PhzLIKXxEd-H8K0futLb6A" id="(0.5097649,0.0032738582)"/>
+  </edges>
+  <edges xmi:type="umlnotation:UMLConnector" xmi:id="_zR_hlYXzEd-auojSPkiVUg" source="_zIdLEIXzEd-auojSPkiVUg" target="_zIwGO4XzEd-auojSPkiVUg" lineColor="8421504" showStereotype="Text">
+    <children xmi:type="notation:DecorationNode" xmi:id="_zR_hmIXzEd-auojSPkiVUg" type="NameLabel">
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zR_hmoXzEd-auojSPkiVUg" type="Stereotype"/>
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zR_hm4XzEd-auojSPkiVUg" type="Name"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_zR_hmYXzEd-auojSPkiVUg" y="-186"/>
+    </children>
+    <element xmi:type="uml:InterfaceRealization" href="mmi:///#jimpl%5Bjsrctype%5Ename=Row%5Bjcu%5Ename=Row.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D%5D%5Bjsrctype%5Ename=IRow%5Bjcu%5Ename=IRow.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D%5D$uml.InterfaceRealization"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_zR_hl4XzEd-auojSPkiVUg" points="[-14, -4578, -5093, 3413]$[5066, -6165, -13, 1826]"/>
+    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_CPPv8KXxEd-H8K0futLb6A" id="(0.216818,0.02930103)"/>
+    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_ZwaUMKXxEd-H8K0futLb6A" id="(0.41349396,0.9864917)"/>
+  </edges>
+  <edges xmi:type="umlnotation:UMLConnector" xmi:id="_zR_hnIXzEd-auojSPkiVUg" source="_zIdLEIXzEd-auojSPkiVUg" target="_zIwGL4XzEd-auojSPkiVUg" lineColor="8421504" showStereotype="Text">
+    <children xmi:type="notation:DecorationNode" xmi:id="_zR_hn4XzEd-auojSPkiVUg" type="KindLabel">
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zR_hoYXzEd-auojSPkiVUg" type="Stereotype"/>
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zSJSkYXzEd-auojSPkiVUg" type="Kind"/>
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zSJSkIXzEd-auojSPkiVUg" type="Name"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_zR_hoIXzEd-auojSPkiVUg" x="-114" y="-23"/>
+    </children>
+    <element xmi:type="uml:Usage" href="mmi:///#jdep%5Bjsrctype%5Ename=Row%5Bjcu%5Ename=Row.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D%5D%5Bjsrctype%5Ename=Column%5Bjcu%5Ename=Column.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D%5D$uml.Usage"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_zR_hnoXzEd-auojSPkiVUg" points="[27, -5, -12413, 2454]$[7151, -1275, -5289, 1184]$[6435, 382, -6005, 2841]$[7494, 382, -4946, 2841]$[12412, -2442, -28, 17]"/>
+    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_RCugcKXzEd-H8K0futLb6A" id="(0.9762074708541518,0.3308988764044944)"/>
+    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_Yt3nMKXzEd-H8K0futLb6A" id="(0.7354344,0.9965799)"/>
+  </edges>
+  <edges xmi:type="umlnotation:UMLConnector" xmi:id="_zSJSmYXzEd-auojSPkiVUg" source="_zIwGL4XzEd-auojSPkiVUg" target="_zIm8JYXzEd-auojSPkiVUg" lineColor="8421504" showStereotype="Text">
+    <children xmi:type="notation:DecorationNode" xmi:id="_zSJSnIXzEd-auojSPkiVUg" type="NameLabel">
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zSJSnoXzEd-auojSPkiVUg" type="Stereotype"/>
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zSJSn4XzEd-auojSPkiVUg" type="Name"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_zSJSnYXzEd-auojSPkiVUg" y="-186"/>
+    </children>
+    <element xmi:type="uml:InterfaceRealization" href="mmi:///#jimpl%5Bjsrctype%5Ename=Column%5Bjcu%5Ename=Column.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D%5D%5Bjsrctype%5Ename=IColumn%5Bjcu%5Ename=IColumn.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D%5D$uml.InterfaceRealization"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_zSJSm4XzEd-auojSPkiVUg" points="[0, -2672, -2633, 2712]$[2620, -4260, -13, 1124]"/>
+    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_fBYzsKXzEd-H8K0futLb6A" id="(0.37035775,0.9975299)"/>
+    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_frjyEKXzEd-H8K0futLb6A" id="(0.5232859,0.033671588)"/>
+  </edges>
+  <edges xmi:type="umlnotation:UMLConnector" xmi:id="_zSJSoIXzEd-auojSPkiVUg" source="_zIwGO4XzEd-auojSPkiVUg" target="_zIm8JYXzEd-auojSPkiVUg" lineColor="8421504" showStereotype="Text">
+    <children xmi:type="notation:DecorationNode" xmi:id="_zSJSo4XzEd-auojSPkiVUg" type="KindLabel">
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zSJSpYXzEd-auojSPkiVUg" type="Stereotype"/>
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zSJSp4XzEd-auojSPkiVUg" type="Kind"/>
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zSJSpoXzEd-auojSPkiVUg" type="Name"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_zSJSpIXzEd-auojSPkiVUg" y="-186"/>
+    </children>
+    <element xmi:type="uml:Usage" href="mmi:///#jdep%5Bjsrctype%5Ename=IRow%5Bjcu%5Ename=IRow.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D%5D%5Bjsrctype%5Ename=IColumn%5Bjcu%5Ename=IColumn.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D%5D$uml.Usage"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_zSJSooXzEd-auojSPkiVUg" points="[411, 1257, -1279, -3921]$[1349, 4133, -341, -1045]"/>
+    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_XShDgKXzEd-H8K0futLb6A" id="(0.96843374,0.5777692)"/>
+  </edges>
+  <edges xmi:type="umlnotation:UMLConnector" xmi:id="_zSJSqIXzEd-auojSPkiVUg" source="_zIwGSIXzEd-auojSPkiVUg" target="_zIwGF4XzEd-auojSPkiVUg" lineColor="8421504" showStereotype="Text">
+    <children xmi:type="notation:DecorationNode" xmi:id="_zSJSq4XzEd-auojSPkiVUg" type="KindLabel">
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zSJSrYXzEd-auojSPkiVUg" type="Stereotype"/>
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zSJSr4XzEd-auojSPkiVUg" type="Kind"/>
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zSJSroXzEd-auojSPkiVUg" type="Name"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_zSJSrIXzEd-auojSPkiVUg" x="-198" y="-318"/>
+    </children>
+    <element xmi:type="uml:Usage" href="mmi:///#jdep%5Bjsrctype%5Ename=AccessLogger%5Bjcu%5Ename=AccessLogger.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D%5D%5Bjsrctype%5Ename=DataSource%5Bjcu%5Ename=DataSource.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D%5D$uml.Usage"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_zSJSqoXzEd-auojSPkiVUg" points="[0, 1826, -2725, -6165]$[2725, 3413, 0, -4578]"/>
+    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_jvuyIKXzEd-H8K0futLb6A" id="(0.99582267,0.25959116)"/>
+    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_kTWckKXzEd-H8K0futLb6A" id="(0.021021992,0.28801042)"/>
+  </edges>
+  <edges xmi:type="umlnotation:UMLConnector" xmi:id="_zSJSsIXzEd-auojSPkiVUg" source="_zIwGSIXzEd-auojSPkiVUg" target="_zIm8GYXzEd-auojSPkiVUg" lineColor="8421504" showStereotype="Text">
+    <children xmi:type="notation:DecorationNode" xmi:id="_zSJSs4XzEd-auojSPkiVUg" type="KindLabel">
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zSJStYXzEd-auojSPkiVUg" type="Stereotype"/>
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zSJSt4XzEd-auojSPkiVUg" type="Kind"/>
+      <children xmi:type="notation:BasicDecorationNode" xmi:id="_zSJStoXzEd-auojSPkiVUg" type="Name"/>
+      <layoutConstraint xmi:type="notation:Bounds" xmi:id="_zSJStIXzEd-auojSPkiVUg" y="-186"/>
+    </children>
+    <element xmi:type="uml:Usage" href="mmi:///#jdep%5Bjsrctype%5Ename=AccessLogger%5Bjcu%5Ename=AccessLogger.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D%5D%5Bjsrctype%5Ename=QueryContext%5Bjcu%5Ename=QueryContext.java%5Bjpack%5Ename=com.ibm.watson.pml.pfg.schema%5Bjsrcroot%5Esrcfolder=wpml-plugin%5Bproject%5Eid=GAIANDB%5D%5D%5D%5D%5D$uml.Usage"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_zSJSsoXzEd-auojSPkiVUg" points="[0, 1826, 2725, -6165]$[-2725, 3413, 0, -4578]"/>
+    <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_uhPXcKX0Ed-H8K0futLb6A" id="(0.001160362,0.31139737)"/>
+    <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_VW6AgKX1Ed-H8K0futLb6A" id="(0.9828261,0.28886437)"/>
+  </edges>
+</umlnotation:UMLDiagram>

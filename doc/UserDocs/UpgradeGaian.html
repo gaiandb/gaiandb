@@ -1,0 +1,232 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<head>
+   <meta name=Title content="Upgrading IBM Gaian Database" />
+   <meta name="DC.Rights" content="Copyright (c) 2007-2012 by IBM Corporation" />
+   <title>Upgrading IBM Gaian Database</title>
+</head>
+<style type="text/css">
+body, p, td, table, tr, .bodytext, {
+    font-family: Verdana, arial, sans-serif;
+    font-size: 11px;
+    line-height: 16px;
+    color: #000;
+    font-weight: normal;
+}
+
+body {
+    margin: 8px;
+    padding: 0px;
+    text-align: left;
+}
+
+p.footnote {
+    font-family: Verdana, arial, sans-serif;
+    font-size: 10px;	
+}
+table.image {
+    border:0px;
+    border-collapse:collapse;
+    font-family:Verdana,arial,sans-serif;
+    font-size:80%;
+}
+
+td.image,th.image{
+    border:0px solid #000;
+    border-collapse:collapse;
+    padding:5px;
+}
+
+td.green {
+	background-color: green;
+	width:2px;
+}
+
+td.orange {
+	background-color: orange;
+	width:2px;
+}
+
+td.red {
+	background-color: red;
+	width:2px;
+}
+
+table.data {
+    border:1px solid #000;
+    border-collapse:collapse;
+    font-family:Verdana,arial,sans-serif;
+    font-size:80%;
+}
+
+table.data pre {
+font-size:120%;
+}
+
+table.data code {
+font-size:120%;
+}
+
+td,th{
+    border:1px solid #000;
+    border-collapse:collapse;
+    padding:5px;
+}
+
+thead th{
+    background:#9cf;
+    text-align:left;
+}
+tbody th{
+    text-align:left;
+    background:#69c;
+}
+
+tbody td{
+    background:#fff;
+}
+
+tbody tr.odd td{
+    background:#f0f0f0;
+}
+
+ul, ol, dl {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-top: 4px;
+    padding-bottom: 2px;
+}
+
+pre {
+    border: 1px dashed #3c78b5;
+    margin: 20px;
+    background-color: #f0f8ff;
+    padding: 5px;
+	white-space: pre-wrap;       /* css-3 */
+	 white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+	 white-space: -pre-wrap;      /* Opera 4-6 */
+	 white-space: -o-pre-wrap;    /* Opera 7 */
+	 word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
+hr {
+    color: #3c78b5;
+    background-color: #3c78b5;
+    height: 3;
+}
+
+A:link, A:visited, A:active, A:hover { color: #36a; }
+
+h1 { font-size: 20px; line-height: normal; font-weight: bold; background-color: #f0f0f0; color: #000; padding: 2px; 
+     margin: 24px 0 4px; line-height: normal; font-weight: bold; background-color: #f0f0f0; }
+
+h2 { font-size: 18px; line-height: normal; font-weight: bold; background-color: #f0f0f0; color: #000; padding: 2px; 
+     margin: 36px 0 4px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 15px 0 4px; }
+
+h3 { font-size: 14px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 21px 0 4px; }
+
+h4 { font-size: 12px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 18px 0 4px; }
+
+h5 { font-size: 10px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 14px 0px 4px 0px; }
+
+h6 { font-size: 8px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 14px 0px 4px 0px; }
+
+</style>
+<body>
+<h1 class="title">Upgrading IBM Gaian Database</h1>
+
+<h4>COPYRIGHT &copy; International Business Machines Corp. 2007-2012</h4>
+
+<br/>
+
+<hr><h2>Contents</h2>
+<ul>
+<li><a href="#contents1">Choose your upgrade method</a></li>
+<ul>
+<li><a href="#contents2">Upgrade the current GaianDB installation</a></li>
+<li><a href="#contents3">Migrate by installation GaianDB alongside the current installation</a></li>
+<ul>
+<li><a href="#contents31">Upgrade alongside the current GaianDB installation</a></li>
+<li><a href="#contents32">Move to the new installation when ready</a></li>
+</ul>
+</ul>
+<br/><li><a href="#contents20">Authors/Contacts</a></li>
+</ul>
+
+<hr><h2><a name="contents1">Choose your upgrade method</a></h2>
+<ul>
+<li>The current GaianDB installation is on a test environment and can be replaced without impacting services:</li>
+<p>Follow <a href="#contents2">Upgrade the current GaianDB installation.</a>
+<li>The current GaianDB installation is on a production environment and cannot be replaced without impacting services:</li>
+<p>Follow <a href="#contents3">Migrate by installation GaianDB alongside the current installation.</a>
+</ul>
+
+<hr><h2><a name="contents2"></a>Upgrade the current GaianDB installation</h2>
+<p>Upgrade GaianDB without keeping the previous version.
+<br/>This installation doesn't allow for a demigration scenario. If in doubt use the <a href="#contents3">Migrate by installation GaianDB alongside the current installation.</a> method.
+<ol>
+<li>Get the new GaianDB installation zip file, copy it and unzip it on the machine you wish to upgrade.</li>
+<li>Stop the GaianDB nodes running on the machine.</li>
+<li>Copy all the files in the lib directory into your installation's lib directory.</li>
+<li>Review the GaianDB documentation and copy any new scripts provided into your current installation.</li>
+<li>Restart the nodes.</li>
+<li>Review the rest of the documentation to read about the new functionality and how to take advantage of it.</li>
+</ol>
+</p>
+<hr><h2><a name="contents3"></a>Migrate by installation GaianDB alongside the current installation</h2>
+<h3><a name="contents31">Upgrade alongside the current GaianDB installation</a></h3>
+<p>Install GaianDB in parallel to the current installation, for review and testing, before deployment. 
+<br/>This installation allows to keep both current and new environment allowing for a demigration if necessary.
+<ol>
+<li>Get the new GaianDB installation zip file, copy it on the machine you wish to upgrade.</li>
+<li>Unzip the file in a location close to the current installation, rename the directory if needed, for example GaianDB-new.</li>
+<li>Copy the following files from the current GaianDB installation into the new directory:</li>
+<ul>
+<li>All the gaiandb_config.properties files used by the nodes running from this installation.</li>
+<li>All the third-party libraries added to the lib directory.</li>
+<li>Any other third-party libraries added to the installation if not all in the lib directory.</li>
+<li>Any files (Excel, CSV..) added to the installation.</li>
+<li>Any scripts added to the installation.</li>
+<li>The GaianDB startup scripts, if they have been modified to load third-party libraries.</li>
+</ul>
+<li>Review the GaianDB documentation to read about the new functionality and how to take advantage of it.</li>
+<li>Test the setup as needed.</li>
+</ol>
+<br/>
+</p>
+<p>When you are reading to migrate, you can backup the previous GaianDB installation and move over to the new one, see below.
+<h3><a name="contents32">Move to the new installation when ready</a></h3>
+<ol>
+<li>Stop the GaianDB nodes running on the machine.</li>
+<li>Backup your current installation, for example by renaming the GaianDB installation directory to GAIANDB-backup.</li>
+<li>Either:</li>
+<ul>
+<li>Unzip the new GaianDB zip file, and copy it to replace the directory you just renamed.</li>
+Or<br/>
+<li>Use the new installation directory if you following the instructions above to install GaianDB in parallel.</li>
+</ul>
+<li>Copy the following files from the GAIANDB-backup into the new GAIANDB installation:</li>
+<ul>
+<li>All the gaiandb_config.properties files used by the nodes running from this installation.</li>
+<li>All the third-party libraries added to the lib directory.</li>
+<li>Any other third-party libraries added to the installation if not all in the lib directory.</li>
+<li>Any files (Excel, CSV..) added to the installation.</li>
+<li>Any scripts added to the installation.</li>
+<li>The GaianDB startup scripts, if they have been modified to load third-party libraries.</li>
+</ul>
+<li>Restart the nodes.</li>
+<li>Review the GaianDB documentation to read about the new functionality and how to take advantage of it.</li>
+</ol>
+</p>
+
+<hr><h2><a name="contents20">Authors/Contacts</a></h2>
+David Vyvyan (Development and Authoring): IT Specialist, IBM Hursley Labs, UK:
+<a href="mailto:drvyvyan@uk.ibm.com">drvyvyan@uk.ibm.com</a><br>
+Patrick Dantressangle (Consultancy): Senior Technical Staff Member, Information Management Architect, IBM Hursley Labs, UK:
+<a href="mailto:dantress@uk.ibm.com">dantress@uk.ibm.com</a><br>
+Graham Bent (Consultancy): Senior Technical Staff Member,  IBM Hursley Labs, UK:
+<a href="mailto:GrahamBent@uk.ibm.com">GrahamBent@uk.ibm.com</a><br>
+
+<br/>
+</body>
+</html>

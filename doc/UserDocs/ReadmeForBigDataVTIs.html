@@ -1,0 +1,725 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<head>
+   <meta name=Title content="Gaian extensions for access to Accumulo and MongoDB - Readme" />
+   <meta name="DC.Rights" content="Copyright (c) 2014 by IBM Corporation" />
+   <title>Gaian extensions for access to Accumulo and MongoDB - Readme</title>
+</head>
+<style type="text/css">
+body, p, td, table, tr, .bodytext, {
+    font-family: Verdana, arial, sans-serif;
+    font-size: 11px;
+    line-height: 16px;
+    color: #000;
+    font-weight: normal;
+}
+
+body {
+    margin: 8px;
+    padding: 0px;
+    text-align: left;
+}
+
+p.footnote {
+    font-family: Verdana, arial, sans-serif;
+    font-size: 10px;</td><td>
+}
+table.image {
+    border:0px;
+    border-collapse:collapse;
+    font-family:Verdana,arial,sans-serif;
+    font-size:80%;
+}
+
+td.image,th.image{
+    border:0px solid #000;
+    border-collapse:collapse;
+    padding:5px;
+}
+
+td.green {
+</td><td>background-color: green;
+</td><td>width:2px;
+}
+
+td.orange {
+</td><td>background-color: orange;
+</td><td>width:2px;
+}
+
+td.red {
+</td><td>background-color: red;
+</td><td>width:2px;
+}
+
+table.data {
+    border:1px solid #000;
+    border-collapse:collapse;
+    font-family:Verdana,arial,sans-serif;
+    font-size:80%;
+}
+
+table.data pre {
+font-size:120%;
+}
+
+table.data code {
+font-size:120%;
+}
+
+td,th{
+    border:1px solid #000;
+    border-collapse:collapse;
+    padding:5px;
+}
+
+thead th{
+    background:#9cf;
+    text-align:left;
+}
+tbody th{
+    text-align:left;
+    background:#69c;
+}
+
+tbody td{
+    background:#fff;
+}
+
+tbody tr.odd td{
+    background:#f0f0f0;
+}
+
+ul, ol, dl {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-top: 4px;
+    padding-bottom: 2px;
+}
+
+pre {
+    border: 1px dashed #3c78b5;
+    margin: 20px;
+    background-color: #f0f8ff;
+    padding: 5px;
+</td><td>white-space: pre-wrap;       /* css-3 */
+</td><td> white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+</td><td> white-space: -pre-wrap;      /* Opera 4-6 */
+</td><td> white-space: -o-pre-wrap;    /* Opera 7 */
+</td><td> word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
+hr {
+    color: #3c78b5;
+    background-color: #3c78b5;
+    height: 3;
+}
+
+A:link, A:visited, A:active, A:hover { color: #36a; }
+
+h1 { font-size: 20px; line-height: normal; font-weight: bold; background-color: #f0f0f0; color: #000; padding: 2px; 
+     margin: 24px 0 4px; line-height: normal; font-weight: bold; background-color: #f0f0f0; }
+
+h2 { font-size: 18px; line-height: normal; font-weight: bold; background-color: #f0f0f0; color: #000; padding: 2px; 
+     margin: 36px 0 4px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 15px 0 4px; }
+
+h3 { font-size: 14px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 21px 0 4px; }
+
+h4 { font-size: 12px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 18px 0 4px; }
+
+h5 { font-size: 10px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 14px 0px 4px 0px; }
+
+h6 { font-size: 8px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 14px 0px 4px 0px; }
+
+</style>
+
+<BODY>
+<h1 class="title">Gaian extensions for access to Accumulo and MongoDB - Readme</h1>
+
+<h4>COPYRIGHT &copy; International Business Machines Corp. 2014</h4>
+
+<br/>
+
+<hr><h2>Contents</h2>
+
+<ul>
+</td><td><li><a href="#contents100">AccumuloVTI</a></li>
+</td><td><ul>
+</td><td></td><td><li><a href="#contents110">Prerequisite java libraries</a></li>
+</td><td></td><td><li><a href="#contents120">Install instructions</a></li>
+</td><td></td><td><li><a href="#contents130">AccumuloVTI configuration and usage</a></li>
+</td><td></td><td><li><a href="#contents135">Supported data-encodings and mapping to relational data-types</a></li>
+</td><td></td><td><li><a href="#contents140">Limitation on predicate push-down</a></li>
+</td><td></td><td><li><a href="#contents150">Limitation on table design mapping</a></li>
+</td><td></ul>
+</td><td><br/>
+</td><td><li><a href="#contents200">MongoDB VTI</a></li>
+</td><td><ul>
+</td><td></td><td><li><a href="#contents210">Prerequisite java libraries</a></li>
+</td><td></td><td><li><a href="#contents220">Install instructions</a></li>
+</td><td></td><td><li><a href="#contents230">MongoDB configuration and usage</a></li>
+</td><td></td><td><li><a href="#contents235">Supported data-types</a></li>
+</td><td></td><td><li><a href="#contents240">Where clause support</a></li>
+</td><td></td><td><li><a href="#contents250">Selective Field Fetching and Column Projection</a></li>
+</td><td></ul>
+</td><td><br/>
+</ul>
+
+
+<hr><h2><a name="contents100">AccumuloVTI</a></h2>
+
+<hr><h3><a name="contents110">Prerequisite java libraries</a></h2>
+<p>
+
+Accumulo depends on Hadoop and Zookeeper. Please refer to the Accumulo documentation for full installation and configuration instructions.<p/>
+We discovered that the files named “masters” and “slaves” under folder “conf/” of the Accumulo installation need to have IP addresses or host-names changed from the default 
+value “localhost” to one that is resolvable from the Gaian client host in order to successfully federate an Accumulo table.<p/>
+Here is a minimal set of pre-requisite JAR libraries needed to run the AccumuloVTI.<p/>
+
+From Accumulo 1.4.4 installation files (<a href="http://accumulo.apache.org/downloads/">http://accumulo.apache.org/downloads/</a>)
+<ul>
+<td><li>accumulo-core-1.4.4.jar</li>
+</td><td><li>cloudtrace-1.4.4.jar</li>
+</td><td><li>commons-logging-1.1.1.jar</li>
+</td><td><li>commons-logging-api-1.1.1.jar</li>
+</td><td><li>log4j-1.2.16.jar</li>
+</td><td><li>libthrift-0.6.1.jar</li>
+</ul>
+From Hadoop 0.20.203 installation files (<a href="http://archive.apache.org/dist/hadoop/core">http://archive.apache.org/dist/hadoop/core</a>)
+<ul>
+</td><td><li>hadoop-core-0.20.203.0.jar</li>
+</td><td><li>slf4j-api-1.5.2.jar</li>
+</td><td><li>slf4j-log4j12-1.4.3.jar</li>
+</ul>
+From Zookeeper installation files (<a href="http://zookeeper.apache.org/releases.html">http://zookeeper.apache.org/releases.html</a>)
+<ul>
+<td><li>zookeeper-3.4.5.jar</li></td>
+</ul>
+<p/>
+
+These JAR libraries should all be added to Gaian's “lib/ext/” folder, along with our new JAR named: “gaian-accumulo.jar”.
+Note that any JAR added to this folder will be automatically added to a GaianNode's classpath when running the launchGaianServer.bat or.sh scripts.
+
+<hr><h3><a name="contents120">Install instructions</a></h2>
+<p/>
+
+Perform the following:
+<ol>
+</td><td><li>Unzip the Gaian Asset zip to a suitable location.</li>
+</td><td><li>Unzip GAIAN_MIPS_EXTENSIONS.zip to the same location.</li>
+</td><td><li>This should copy gaian-accumulo.jar to the Gaian Asset lib/ext/ folder</li>
+</td><td><li>Copy all pre-requisite libraries listed in the section above from their respective install locations to the Gaian Asset lib/ext/ folder</li>
+</ol>
+
+<hr><h3><a name="contents130">AccumuloVTI configuration and usage</a></h2>
+<p/>
+
+<p>The 'SETLTFORACCUMULO' procedure creates a suitable Logical table configuration for an Accumulo data source. This procedure needs to be registered with the Gaian node before it can be used.</p> 
+Run the following script to register the procedure:
+<pre>
+# for Windows environments
+> registerMongoAndAccumuloProcedures.bat
+
+# for Unix environments
+> ./registerMongoAndAccumuloProcedures.sh
+</pre>
+
+<p> The stored procedures need to be registered for every gaian node that is to be run. For a gaian node running on a non default port (6414), the script may be run with a parameter indicating the relevant port:</p>
+<pre>
+# specifying the port of the Gaian node.
+> registerMongoAndAccumuloProcedures.bat -p 6415
+</pre>
+
+Alternatively, this is the registration SQL for procedure 'SETLTFORACCUMULO'.<br/>
+Just start a GaianNode using launchGaianServer.bat(/.sh), then start queryDerby.bat(/.sh) and run the following SQL:
+<pre>
+CREATE PROCEDURE setltforaccumulo( ltname varchar(32672), connectorID varchar(32672), tablexpr varchar(32672) )
+PARAMETER STYLE JAVA LANGUAGE JAVA MODIFIES SQL DATA EXTERNAL NAME 'com.ibm.db2j.AccumuloVTI.setLogicalTableForAccumulo'
+</pre>
+
+<p>
+The procedure above is implemented in AccumuloVTI.java. This is a composite API performing 2 operations:
+<ol>
+</td><td><li>It prepares properties for a Gaian data source for accessing an Accumulo table, whose schema is derived from it's first row of data.</li>
+</td><td><li>It then creates a new logical table dedicated to federating just that one data source and having the same schema.</li>
+</ol>
+<p/>
+Example usage:<p/>
+<pre>
+# Initial call requires all static VTI properties for accessing the Accumulo instance:
+call setltforaccumulo('LTBIKES', 'gaianAccumuloConnector1:root:password@10.2.3.4,mySecondZookeeperHost/MyAccumuloInstanceName', 'myAccumuloTable')
+
+# You may then re-use 'gaianAccumuloConnector1' - which references the one registered implicitly above:
+call setltforaccumulo('LTBIKES2', 'gaianAccumuloConnector1', 'myAccumuloTable2')
+</pre>
+
+You may also wish to edit the generated properties in gaiandb_config.properties. Here for example, we have changed some of the types of the columns from VARCHAR to INT, BOOLEAN and DOUBLE.
+This will now allow us to search on some columns numerically.
+Note that you can specify the "qualifiers" tag against the table name to extract Accumulo's "Column Qualifier" field instead of the Value.
+Additionally, you can specify a visibility constraint on the table scan that AccumuloVTI will use against the Accumulo table (see expression in square brackets below).
+<pre>
+LTBIKES_DEF=ROWID VARCHAR(20), AREA VARCHAR(50), INSTALLED BOOLEAN, LAT DOUBLE, LOCKED BOOLEAN, LON DOUBLE, NUMBIKES INT, NUMEMPTYDOCKS INT, STATION VARCHAR(50), NOT_FIXED BOOLEAN
+
+LTBIKES_DS0_VTI=com.ibm.db2j.AccumuloVTI
+
+LTBIKES_DS0_ARGS=AccumuloUserInstance1, mytable, DERIVE_SCHEMA_FROM_FIRST_ROW
+#LTBIKES_DS0_ARGS=AccumuloUserInstance1, mytable qualifiers [A&B], DERIVE_SCHEMA_FROM_FIRST_ROW
+LTBIKES_DS0_OPTIONS=MAP_COLUMNS_BY_POSITION
+
+AccumuloVTI.AccumuloUserInstance1.INSTANCE=instance1
+AccumuloVTI.AccumuloUserInstance1.ZOOKEEPERS=9.71.39.154
+AccumuloVTI.AccumuloUserInstance1.USR=root
+AccumuloVTI.AccumuloUserInstance1.PWD=password
+</pre>
+
+<p>The configuration properties for Logical Tables, Data Scources and VTIs is explained in the <a href=./Readme.html#contents180>main Gaian "Readme" file. 	</a> 
+The format of the &ltDATASOURCE&gt_ARGS property is specific to the Accumulo VTI. This is a comma separated list of arguments for this datasource VTI. The fields are as follows:</p>
+<ol><li>A reference to the Accumulo connection properties. In the example above, the first field is "AccumuloUserInstance1" and so the VTI is configured using the AccumuloVTI.AccumuloUserInstance1.* properties.</li>
+<li>(space separated) The physical accumulo table name, an identifier specifying the field to extract for table values (either "values" or "qualifiers"), and a security label expression (see <a href="http://accumulo.apache.org/1.4/user_manual/Security.html#Security_Label_Expression_Syntax">Accumulo user manual</a> for details).</li>
+<li>An optional 'DERIVE_SCHEMA_FROM_FIRST_ROW' argument to tell the VTI to derive it's schema based on the first data row from accumulo</li></ol>
+
+<p> Note that in Accumulo, data is represented as key-values pairs and the key and value are comprised of the following elements. All accumulo data items with the same RowID are combined and returned as a single Logical Table row.
+<ul>
+<li><b>Key</b></li>
+<ul><li><b>Row ID</b> - this value is returned as a column with the name "ROWID" </li>
+<li><b>Column</b></li></li>
+<ul><li><b>Family</b> - this is used as the "column name" for returned data.</li>
+<li><b>Qualifier</b> - this can be used as the "value" for the data item.</li>
+<li><b>Visibility</b> - this is a security label, the Logical table definition can filter on this.</li></ul>
+<li><b>Timestamp</b> - this is not used by the VTI</li></ul>
+<li><b>Value</b> - this can be used as the "value" for the data item.</li>
+</ul></p>
+
+Finally, you just need to run a Gaian node and then startup queryderby.bat(/.sh) or dashboard.bat(/.sh) as usual to run queries:
+<pre>
+launchGaianServer.bat
+
+# Separate window:
+queryDerby.bat
+SQL> select * from ltbikes
+SQL> select * from ltbikes where ROWID>'1' AND (ROWID<'2' OR ROWID>'3') AND (ROWID<'4' OR ROWID>'5') AND ROWID<'6'
+</pre>
+
+
+<p> The following example shows the format of some accumulo data followed by the equivalent data queried as a Logical Table through Gaian:
+<pre>
+# Query using Accumulo shell
+
+user@instance1> table ce_sentences
+user@instance1 ce_sentences> scan
+Prop1 objectclass:col3 []    organisation
+Prop1 objectid:col4 []    Medellin Cartel
+Prop1 predicate:col2 []    IN_SAME_SENTENCE
+Prop1 subjectclass:col0 []    organisation
+Prop1 subjectid:col1 []    The Extraditables
+Prop10 objectclass:col3 []    organisation
+Prop10 objectid:col4 []    Medellin Cartel
+Prop10 predicate:col2 []    IN_SAME_SENTENCE
+Prop10 subjectclass:col0 []    organisation
+Prop10 subjectid:col1 []    The Extraditables
+Prop100 objectclass:col3 []    place
+Prop100 objectid:col4 []    San Salvador
+Prop100 predicate:col2 []    IN_SAME_SENTENCE
+Prop100 subjectclass:col0 []    organisation
+Prop100 subjectid:col1 []    FMLN
+...
+</pre>
+<pre>
+# Query using Gaian command line
+
+Connecting to derby database: jdbc:derby://localhost:6414/gaiandb;create=false, usr: gaiandb...
+
+sql> select * from ce_a 
+========================================================================================
+ROWID   |OBJECTCLASS |OBJECTID         |PREDICATE       |SUBJECTCLASS|SUBJECTID        |
+========================================================================================
+Prop1   |organisation|Medellin Cartel  |IN_SAME_SENTENCE|organisation|The Extraditables|
+Prop10  |organisation|Medellin Cartel  |IN_SAME_SENTENCE|organisation|The Extraditables|
+Prop100 |place       |San Salvador     |IN_SAME_SENTENCE|organisation|FMLN             |
+Prop1000|person      |Alfredo Cristiani|IN_SAME_SENTENCE|place       |San Jose         |
+========================================================================================
+</pre>
+</p>
+
+<hr><h3><a name="contents135">Supported data-encodings and mapping to relational data-types</a></h2>
+<p/>
+
+Accumulo is a Key/Value store database which manages all tables using the same table structure.
+<p/>
+The Key is composed of 5 fields: ROWID (which is repeated for all associated row entries), Column Family, Column Qualifier, Column Visibility, and Timestamp.<br/>
+The Value has a single field which is just known as Value.
+<p/>
+Accumulo field values are all stored as byte arrays, except Timestamp which is a long.
+<p/>
+The byte array fields most commonly hold UTF8 encoded strings. This should suit most purposes, although it is sometimes uneconomical (for example Integers are 
+normally stored in binary) and it will not suit some search applications wishing to order keys numerically.
+<p/>
+In this project, the AccumuloVTI is developed to support extraction of data encoded at UTF8 Strings only. However one can envisage extending it via a simple 
+interface to call external bespoke byte decoders in future.
+<p/>
+
+The Accumulo fields can be mapped to non-string data types by setting types in the logical table definition or data source
+schema property configured to access your Accumulo table using AccumuloVTI. Examples are shown below, based on the configuration listed previously.
+
+<pre>
+# Derive schema for Accumulo table from it's first set of table rows having the same ROWID:
+LTBIKES_DS0_ARGS=AccumuloUserInstance1, mytable, DERIVE_SCHEMA_FROM_FIRST_ROW
+
+# Use the data source schema if DERIVE_SCHEMA_FROM_FIRST_ROW is not specified:
+# Note that some types are mapped to integers, some to boolean values and some to Double precision floating point numbers.
+LTBIKES_DS0_SCHEMA=ROWID INT, AREA VARCHAR(50), INSTALLED BOOLEAN, LAT DOUBLE, LOCKED BOOLEAN, LON DOUBLE, NUMBIKES INT, NUMEMPTYDOCKS INT, STATION VARCHAR(50), NOT_FIXED BOOLEAN
+
+# Use the logical table definition if neither the data source schema nor DERIVE_SCHEMA_FROM_FIRST_ROW are specified:
+LTBIKES_DEF=ROWID INT, AREA VARCHAR(50), INSTALLED BOOLEAN, LAT DOUBLE, LOCKED BOOLEAN, LON DOUBLE, NUMBIKES INT, NUMEMPTYDOCKS INT, STATION VARCHAR(50), NOT_FIXED BOOLEAN
+
+# Note - to remove and/or shuffle columns around, you would need to unset the option mapping columns by position (i.e. remove it) - so that the columns are mapped by name instead:
+LTBIKES_DS0_OPTIONS=
+#MAP_COLUMNS_BY_POSITION
+
+</pre> 
+
+
+<hr><h3><a name="contents140">Limitation on predicate push-down</a></h2>
+<p/>
+
+AccumuloVTI only currently pushes down string comparisons against the ROWID field, which are translated to the Range expressions in Accumulo.
+<p/>
+A solution to extend this to other columns would require new server-side Filter objects, to be referenced under Accumulo Iterators on the client.
+<p/>
+Custom filters can indeed be written for Accumulo, or built-in ones can be used as desired, for example 'AgeOffFilter' is provided
+as part of the core Accumulo package, with usage described <a href="http://accumulo.apache.org/1.4/examples/filter.html">here</a>.
+<p/>
+Iterator predicate pushdown with hive storage manager library is described here:
+<p/>
+<a href="http://apache-accumulo.1065345.n5.nabble.com/Accumulo-Hive-Storage-Handler-td3832.html">
+http://apache-accumulo.1065345.n5.nabble.com/Accumulo-Hive-Storage-Handler-td3832.html</a>
+<br/>
+<a href="https://github.com/bfemiano/accumulo-hive-storage-manager">https://github.com/bfemiano/accumulo-hive-storage-manager</a>
+<br/>
+<a href="https://github.com/bfemiano/accumulo-hive-storage-manager/wiki/Iterator%20Predicate%20pushdown">
+https://github.com/bfemiano/accumulo-hive-storage-manager/wiki/Iterator%20Predicate%20pushdown</a>
+<br/>
+<a href="http://storage-handler-docs.s3.amazonaws.com/javadocs/org/apache/accumulo/storagehandler/predicate/AccumuloPredicateHandler.html">
+http://storage-handler-docs.s3.amazonaws.com/javadocs/org/apache/accumulo/storagehandler/predicate/AccumuloPredicateHandler.html</a>
+<br/>
+=> Requires Hive 0.10 and Accumulo 1.5+ which both use Thrift 0.9.
+<br/>
+=> Requires Hadoop 1.0/0.20.2x/CDH3.
+
+
+
+
+
+<hr><h3><a name="contents150">Limitation on table design mapping</a></h2>
+<p/>
+
+AccumuloVTI currently supports a specific mapping from an Accumulo table into it's relational table schema, 
+which is to extract the "Column Family" entries as relational table column names. 
+This assumes they must be unique for each set of rows having the same ROWID - however Accumulo does not impose restrictions
+for a given ROWID on values set against the Column Family, Column Qualifier, or even Timestamp, e.g. 2 Rows having the
+ same ROWID value can have repeated Column Family or Column Qualifier values. They can also have different Timestamps.
+
+<p/>
+Other mappings can be considered in future, including mappings from multiple Accumulo tables to a single relational one. 
+Some of these are outlined below. This would require a new mapping syntax to be defined and used in Gaian configuration.
+<p/>
+As for the AccumuloVTI cell values, these can be configured to hold either the Accumulo Value field, or the Column Qualifier field.
+A future extension could allow flexible merging of these, and also include combinations with the other 
+fields: ROWID, Column Family, Timestamp and even Visibility.
+<p/>
+
+
+The table below shows how a CE table can be stored at the moment in Accumulo so that AccumuloVTI can federate it:
+<br/>
+Fields named "Column Visibility", which represents permission for the table scan, and "Timestamp" can be ignored for now - 
+these could be combined with column cell values in future.
+<br/>
+This is a flat scheme where each Column Family value is a column name in the federated relational table, alongside ROWID which 
+is the primary key column of the table and needs to be a unique "proposition ID".
+<p/>
+
+<table class="data">
+<thead><tr><th>ROWID</th><th>Column Family</th><th>Column Qualifier</th><th>Column Visibility</th><th>Timestamp</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>John_age_22</td><td>Subject Class</td><td>(could hold value)</td><td></td><td></td><td>Man</td></tr>
+<tr><td>John_age_22</td><td>Subject ID</td><td>(could hold value)</td><td></td><td></td><td>John</td></tr>
+<tr><td>John_age_22</td><td>Object Class</td><td>(could hold value)</td><td></td><td></td><td>Number</td></tr>
+<tr><td>John_age_22</td><td>Object ID</td><td>(could hold value)</td><td></td><td></td><td>22</td></tr>
+<tr><td>John_age_22</td><td>Predicate</td><td>(could hold value)</td><td></td><td></td><td>age</td></tr>
+</tbody>
+</table>
+<p/>
+
+The following scheme also seems to map well to Accumulo fields.
+This scheme uses the "Column Qualifier" field to represent the Entity Class values (except when the row holds a Predicate).
+If we used AccumuloVTI on this, we would currently lose the Entity Class information in the federated table.
+<p/>
+<table class="data">
+<thead><tr><th>ROWID</th><th>Column Family</th><th>Column Qualifier</th><th>Column Visibility</th><th>Timestamp</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>John_age_22</td><td>Subject</td><td>Man</td><td></td><td></td><td>John</td></tr>
+<tr><td>John_age_22</td><td>Object</td><td>Number</td><td></td><td></td><td>22</td></tr>
+<tr><td>John_age_22</td><td>Predicate</td><td>(could be age)</td><td></td><td></td><td>age</td></tr>
+</tbody>
+</table>
+<p/>
+
+In both schemes above the ROWID may not be very useful here as a composite value - so perhaps we actually need it to be an entity ID rather than a 
+proposition ID and have a lookup table for it.
+
+Below is an alternate scheme using a notation suggested by the customer where ROWID holds a composite value.
+The "Column Family" field stores the predicate - which is a problem for AccumuloVTI at the moment because it will not always be unique per ROWID.
+<p/>
+Table QUINTS:
+<p/>
+<table class="data">
+<thead><tr><th>ROWID</th><th>Column Family</th><th>Column Qualifier</th><th>Column Visibility</th><th>Timestamp</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>Man|John</td><td>age</td><td>22</td><td></td><td></td><td></td></tr>
+</tbody>
+</table>
+<p/>
+
+Side-table to decode the composite Class/ID values:
+<p/>
+<table class="data">
+<thead><tr><th>ROWID</th><th>Column Family</th><th>Column Qualifier</th><th>Column Visibility</th><th>Timestamp</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>Man|John</td><td>Entity Class</td><td>Man</td><td></td><td></td><td></td></tr>
+<tr><td>Man|John</td><td>Entity ID</td><td>John</td><td></td><td></td><td></td></tr>
+</tbody>
+</table>
+<p/>
+
+This would require specialised determination of associated relational schema - based on some syntax which defines the association between
+the 2 tables and where the predicate should be taken from.<br/>
+Predicate push down on Ranges could work partially for comparisons against the Entity Class - but not the Entity ID - Specialised 
+server-side filters would be needed, as mentioned in the section titled "Limitation on predicate push-down"<br/>
+<p/>
+
+
+
+
+<hr><h2><a name="contents200">MongoDB</a></h2>
+
+<hr><h3><a name="contents210">Prerequisite java libraries</a></h2>
+<p/>
+
+The Mongo java API requires a single jar file to be included on the class path:
+
+<ul>
+</td><td><li>mongo-java-driver-{version}.jar</li>
+</ul>
+{version}=2.11.4 has used at development time, interfacing to mongoDB v2.4.9
+<p/>
+
+This jar file can be downloaded from the mongo development website (<a href="http://api.mongodb.org/java/current/index.html">http://api.mongodb.org/java/current/index.html</a>) and should be added to "{GaianHome}/lib/ext/" folder, along with our new JAR named: “gaian-mongo.jar”.
+Note that any JAR added to this folder will be automatically added to a GaianNode's classpath when running the launchGaianServer.bat or.sh scripts.
+
+<hr><h3><a name="contents220">Install instructions</a></h2>
+<p/>
+
+Perform the following:
+<ol>
+</td><td><li>Unzip the Gaian Asset zip to a suitable location.</li>
+</td><td><li>Unzip GAIAN_MIPS_EXTENSIONS.zip to the same location.</li>
+</td><td><li>This should copy gaian-mongo.jar to the Gaian Asset lib/ext/ folder</li>
+</td><td><li>Copy all pre-requisite libraries listed in the section above from their respective install locations to the Gaian Asset lib/ext/ folder</li>
+</ol>
+
+<hr><h3><a name="contents230">MongoDB configuration and usage</a></h2>
+<p/>
+
+<p>The 'SETLTFORMONGODB' procedure creates a suitable Logical table configuration for a MongoDB data source. This procedure needs to be registered with the Gaian node before it can be used.</p> 
+Run the following script to register the procedure:
+<pre>
+# for Windows environments
+> registerMongoAndAccumuloProcedures.bat
+
+# for Unix environments
+> ./registerMongoAndAccumuloProcedures.sh
+</pre>
+
+<p> The stored procedures need to be registered for every gaian node that is to be run. For a gaian node running on a non default port (6414), the script may be run with a parameter indicating the relevant port:</p>
+<pre>
+# specifying the port of the Gaian node.
+> registerMongoAndAccumuloProcedures.bat -p 6415
+</pre>
+
+Alternatively, this is the registration SQL for procedure 'SETLTFORMONGODB'.<br/>
+Just start a GaianNode using launchGaianServer.bat(/.sh), then start queryDerby.bat(/.sh) and run the following SQL:
+<pre>
+CREATE PROCEDURE setltformongodb(LTNAME VARCHAR(32672), URL VARCHAR(32672), FIELDS VARCHAR(32672))<br> PARAMETER STYLE JAVA LANGUAGE JAVA MODIFIES SQL DATA <br> EXTERNAL NAME 'com.ibm.db2j.MongoDB.setLogicalTableForMongoDB'
+</pre>
+
+<p>
+The procedure above is implemented in the com.ibm.db2j.MongoDB class. This is a composite API performing 2 operations:
+<ol>
+</td><td><li>It prepares properties for a Gaian data source for accessing a mongo collection, whose schema is derived from the first mongo document retrieved, or a provided list of fields.</li>
+</td><td><li>It then creates a new logical table dedicated to federating that one data source and having the same schema.</li>
+</ol>
+<p/>
+Syntax:<p/>
+<pre>
+# Syntax for calling procedure
+call setltformongodb (<br> ‘&ltlogical-table-name\&gt‘,<br> ‘[&ltuser&gt:&ltpassword&gt@]&ltmongo-host-address&gt:&ltmongo-port&gt/&ltdatabase&gt/&ltcollection&gt‘,<br> ‘[&ltlist of fields&gt]')
+</pre>
+
+<p>Note that a MongoDB database contains a set of "collections", each collection contains a set of "documents" and each document has a set of fields. When mapping to a Gaian Logical Table, a mongo collection is equivalent to a "table", a mongo document is equivalent to a "row" and a field is equivalent to a column in a row.</p>
+
+Example usage:<p/>
+<pre>
+# Example including user and password authentication parameters and no fields:
+call setltformongodb (‘LTCE‘ , ‘myuser:password01@ets01.hursley.ibm.com:27017/ce/sentences‘ , '')
+
+# This example has no user and password parameters and specifies which fields to include:
+call setltformongodb('bikes_m_n', 'ets01.hursley.ibm.com:27018/bikes/north', 'id, stationName, areaName, lat, lon' 
+</pre>
+
+You may also wish to edit the generated properties in gaiandb_config.properties. 
+It is possible to change the field mappings and the type parameters of the fields.
+
+<pre>
+# Example logical table configuration
+
+# Controlled English style data
+
+# Logical Table definition
+CE_ALL_DEF=id VARCHAR(255), subjectclass VARCHAR(255), subjectid VARCHAR(255), predicate VARCHAR(255), objectclass VARCHAR(255), objectid VARCHAR(255) 
+CE_ALL_CONSTANTS=
+
+# Data Source Configuration
+CE_ALL_DS0_VTI=com.ibm.db2j.MongoDB
+CE_ALL_DS0_ARGS=CE_ALLconf, ce, sentences0
+
+# Mongo connection properties.
+MongoDB.CE_ALLconf.password=password
+MongoDB.CE_ALLconf.collection=$1
+MongoDB.CE_ALLconf.db=$0
+MongoDB.CE_ALLconf.address=ets01.hursley.ibm.com
+MongoDB.CE_ALLconf.port=27017
+MongoDB.CE_ALLconf.schema=_id VARCHAR(255), subjectclass VARCHAR(255), subjectid VARCHAR(255), predicate VARCHAR(255), objectclass VARCHAR(255), objectid VARCHAR(255) 
+MongoDB.CE_ALLconf.user=biadmin
+
+# "Cycle Hire" structured data:
+
+# Logical Table definition
+BIKES_M_N_DEF=_id VARCHAR(255), id INTEGER, stationName VARCHAR(255), areaName VARCHAR(255), lat DOUBLE, lon DOUBLE, nbBikes INTEGER, nbEmptyDocks INTEGER, installed VARCHAR(255), locked VARCHAR(255), temporary VARCHAR(255) 
+BIKES_M_N_CONSTANTS=
+
+# Data Source Configuration
+BIKES_M_N_DS0_VTI=com.ibm.db2j.MongoDB 
+BIKES_M_N_DS0_ARGS=BIKES_M_Nconf, bikes, north
+
+# Mongo connection properties.
+MongoDB.BIKES_M_Nconf.address=ets01.hursley.ibm.com
+MongoDB.BIKES_M_Nconf.port=27017
+MongoDB.BIKES_M_Nconf.db=$0
+MongoDB.BIKES_M_Nconf.collection=$1
+MongoDB.BIKES_M_Nconf.schema=_id VARCHAR(255), id INTEGER, stationName VARCHAR(255), areaName VARCHAR(255), lat DOUBLE, lon DOUBLE, nbBikes INTEGER, nbEmptyDocks INTEGER, installed VARCHAR(255), locked VARCHAR(255), temporary VARCHAR(255) 
+MongoDB.BIKES_M_Nconf.user=user
+MongoDB.BIKES_M_Nconf.password=password
+</pre>
+
+<p>The configuration properties for Logical Tables, Data Scources and VTIs is explained in the <a href=./Readme.html#contents180>main Gaian "Readme" file. </a>
+As a result of the setLTforMongoDB() call, the &ltDataSource&gt_ARGS property is configured to  contain 3 comma separated values:
+<ol><li>A reference to the Mongo connection properties. In the example above, the first field is "BIKES_M_NConf" and so the VTI is configured using the MongoDB.BIKES_M_Nconf.* properties.</li>
+<li>The name of the mongoDB database to connect to. </li>
+<li>The name of the mongoDB collection within the database to connect to. </li></ol>
+
+<p> Note this the $0 and $1 parameters specified in the Mongo connection properties are replaced by the first ($0) and second ($1) parameters of the &ltDataSource&gt_ARGS property. 
+In the example above, "BIKES_M_N_DS0_ARGS=BIKES_M_Nconf, bikes, north" results in $0 being "bikes" and $1 being "north", so in the Mongo connection properties, MongoDB.BIKES_M_Nconf.db=bikes and MongoDB.BIKES_M_Nconf.collection=north</p>
+
+
+Finally, you just need to run a Gaian node and then startup queryderby.bat(/.sh) or dashboard.bat(/.sh) as usual to run queries:
+<pre>
+launchGaianServer.bat
+
+# Separate window:
+queryDerby.bat
+SQL> select * from bikes_m_n where nbbikes = 0 or areaname='Angel' and nbemptydocks> 30 
+SQL> select distinct ce1.subjectid person, ce1.objectid organisation, ce2.objectid place 
+from ce_all ce1, ce_all ce2 
+where ce1.subjectclass='person' and ce1.objectclass='organisation' and ce2.subjectclass='organisation' and ce2.objectclass='place' 
+and ce1.objectid=ce2.subjectid 
+
+</pre>
+
+<p> The following example shows the format of some mongo data followed by the equivalent data queried as a Logical Table through Gaian:
+<pre>
+# Query using Mongo shell
+
+[root@ets01 ~]# mongo
+MongoDB shell version: 2.4.9
+connecting to: test
+> use bikes
+switched to db bikes
+> db.south.find()
+{ "_id" : ObjectId("5321a49563dba726aac257f4"), "id" : 440, "stationName" : "Kennington Oval", "areaName" : "Oval", <br>  "lat" : 51.483145, "lon" : -0.113134, "nbBikes" : 11, "nbEmptyDocks" : 22, "installed" : "TRUE", "locked" : "FALSE", "temporary" : "FALSE" }
+{ "_id" : ObjectId("5321a49563dba726aac257f5"), "id" : 291, "stationName" : "Claverton Street", "areaName" : "Pimlico", <br>  "lat" : 51.48483991, "lon" : -0.138089062, "nbBikes" : 24, "nbEmptyDocks" : 7, "installed" : "TRUE", "locked" : "FALSE", "temporary" : "FALSE" }
+{ "_id" : ObjectId("5321a49563dba726aac257f6"), "id" : 245, "stationName" : "Grosvenor Road", "areaName" : "Pimlico", <br>  "lat" : 51.4853572, "lon" : -0.142207481, "nbBikes" : 15, "nbEmptyDocks" : 11, "installed" : "TRUE", "locked" : "FALSE", "temporary" : "FALSE" }
+{..
+</pre>
+<pre>
+# Query using Gaian command line
+
+Connecting to derby database: jdbc:derby://localhost:6414/gaiandb;create=false, usr: gaiandb...
+
+sql> select * from bikes_m_s 
+select * from bikes_m_s 
+======================================================================================================================================
+_ID                     |ID  |STATIONNAME      |AREANAME |LAT         |LON          |NBBIKES |NBEMPTYDOCKS|INSTALLED|LOCKED|TEMPORARY|
+======================================================================================================================================
+5321a49563dba726aac257f4| 440|Kennington Oval  |Oval     |51.483145   |-0.113134    |      11|          22|true     |false |false    |
+5321a49563dba726aac257f5| 291|Claverton Street |Pimlico  |51.48483991 |-0.138089062 |      24|           7|true     |false |false    |
+5321a49563dba726aac257f6| 245|Grosvenor Road   |Pimlico  |51.4853572  |-0.142207481 |      15|          11|true     |false |false    |
+...
+======================================================================================================================================
+</pre>
+</p>
+
+<hr><h3><a name="contents235">Supported data-types</a></h3>
+
+<p>MongoDB maintains data fields in well defined types, so it is possible to convert from these types to internal (derby database) types. The following data types are supported:</p>
+
+<table class="data">
+<thead><tr><th>MongoDB Type</th><th>Derby Type</th></tr></thead>
+<tbody>
+<tr><td>Double</td><td>DOUBLE</td></tr>
+<tr><td>String</td><td>VARCHAR</td></tr>
+<tr><td>Object</td><td>VARCHAR (string equivalent of object)</td></tr>
+<tr><td>Array</td><td>VARCHAR (string equivalent of JSON array)</td></tr>
+<tr><td>Binary data</td><td>Not Implemented Yet</td></tr>
+<tr><td>Object id</td><td>VARCHAR</td></tr>
+<tr><td>Boolean</td><td>BOOLEAN</td></tr>
+<tr><td>Date</td><td>DATE</td></tr>
+<tr><td>Regular Expression</td><td>VARCHAR (string equivalent)</td></tr>
+<tr><td>JavaScript</td><td>VARCHAR (string equivalent)</td></tr>
+<tr><td>32-bit integer</td><td>INT</td></tr>
+<tr><td>Timestamp</td><td>TIMESTAMP</td></tr>
+</tbody>
+</table>
+<p/>
+
+<hr><h3><a name="contents240">Where clause support</a></h2>	
+<p>Queries against Logical Tables can be filtered by providing a SQL Where clause. All conditions that are specified on a MongoDB datasource are encoded and passed to MongoDB so that only the
+minimum number of rows of data are returned to the Gaian Database.</p>
+
+<hr><h3><a name="contents250">Selective Field Fetching and Column Projection</a></h2>	
+<p>For performance reasons, it is desirable to reduce the amount of data retrieved from the MongoDB datasource, so we reduce the number of fields retrieved from MongoDB according to the Logical table definition.</p>
+<p>For example, if a mongo database has documents with 100 fields and we define a logical table in Gaian with 10 columns, only the relevant 10 fields will be retrieved from Mongo when the table is queried.</p>
+<p>Further optimisation is achieved by reducing the fields retrieved according to query projections. 
+For  example, if a logical table "Table1" in Gaian has 10 columns, a query "select col1, col2 from Table1" will only fetch 2 fields from MongoDB for each matching document rather than all 10.</p>
+
+<hr><h2><a name="contents400">Authors/Contacts</a></h2>
+David Vyvyan (Development and Authoring): Senior Software Engineer, IBM Hursley Labs, UK:
+<a href="mailto:drvyvyan@uk.ibm.com">drvyvyan@uk.ibm.com</a><br>
+Paul Stone (Development and Authoring): IT Architect, IBM Hursley Labs, UK:
+<a href="mailto:STONEPD@uk.ibm.com">STONEPD@uk.ibm.com</a><br>
+Patrick Dantressangle (Consultancy): Senior Technical Staff Member, Information Management Architect, IBM Hursley Labs, UK:
+<a href="mailto:dantress@uk.ibm.com">dantress@uk.ibm.com</a><br>
+
+<br/>
+
+</BODY>
+</html>

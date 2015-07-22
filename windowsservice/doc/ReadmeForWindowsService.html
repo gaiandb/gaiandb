@@ -1,0 +1,213 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<head>
+   <meta name=Title content="IBM Gaian Database as a Windows Service - Readme" />
+   <meta name="DC.Rights" content="Copyright (c) 2007-2012 by IBM Corporation" />
+   <title>IBM Gaian Database as a Windows Service - Readme</title>
+</head>
+<style type="text/css">
+body, p, td, table, tr, .bodytext, {
+    font-family: Verdana, arial, sans-serif;
+    font-size: 11px;
+    line-height: 16px;
+    color: #000;
+    font-weight: normal;
+}
+
+body {
+    margin: 8px;
+    padding: 0px;
+    text-align: left;
+}
+
+p.footnote {
+    font-family: Verdana, arial, sans-serif;
+    font-size: 10px;	
+}
+table.image {
+    border:0px;
+    border-collapse:collapse;
+    font-family:Verdana,arial,sans-serif;
+    font-size:80%;
+}
+
+td.image,th.image{
+    border:0px solid #000;
+    border-collapse:collapse;
+    padding:5px;
+}
+
+td.green {
+	background-color: green;
+	width:2px;
+}
+
+td.orange {
+	background-color: orange;
+	width:2px;
+}
+
+td.red {
+	background-color: red;
+	width:2px;
+}
+
+table.data {
+    border:1px solid #000;
+    border-collapse:collapse;
+    font-family:Verdana,arial,sans-serif;
+    font-size:80%;
+}
+
+table.data pre {
+font-size:120%;
+}
+
+table.data code {
+font-size:120%;
+}
+
+td,th{
+    border:1px solid #000;
+    border-collapse:collapse;
+    padding:5px;
+}
+
+thead th{
+    background:#9cf;
+    text-align:left;
+}
+tbody th{
+    text-align:left;
+    background:#69c;
+}
+
+tbody td{
+    background:#fff;
+}
+
+tbody tr.odd td{
+    background:#f0f0f0;
+}
+
+ul, ol, dl {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-top: 4px;
+    padding-bottom: 2px;
+}
+
+pre {
+    border: 1px dashed #3c78b5;
+    margin: 20px;
+    background-color: #f0f8ff;
+    padding: 5px;
+	white-space: pre-wrap;       /* css-3 */
+	 white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+	 white-space: -pre-wrap;      /* Opera 4-6 */
+	 white-space: -o-pre-wrap;    /* Opera 7 */
+	 word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
+hr {
+    color: #3c78b5;
+    background-color: #3c78b5;
+    height: 3;
+}
+
+A:link, A:visited, A:active, A:hover { color: #36a; }
+
+h1 { font-size: 20px; line-height: normal; font-weight: bold; background-color: #f0f0f0; color: #000; padding: 2px; 
+     margin: 24px 0 4px; line-height: normal; font-weight: bold; background-color: #f0f0f0; }
+
+h2 { font-size: 18px; line-height: normal; font-weight: bold; background-color: #f0f0f0; color: #000; padding: 2px; 
+     margin: 36px 0 4px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 15px 0 4px; }
+
+h3 { font-size: 14px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 21px 0 4px; }
+
+h4 { font-size: 12px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 18px 0 4px; }
+
+h5 { font-size: 10px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 14px 0px 4px 0px; }
+
+h6 { font-size: 8px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 14px 0px 4px 0px; }
+
+</style>
+
+<BODY>
+<h1 class="title">IBM Gaian Database as a Windows Service - Readme</h1>
+
+<h4>COPYRIGHT &copy; International Business Machines Corp. 2007-2014</h4>
+
+<br/>
+
+<hr><h2>Contents</h2>
+
+	<li><a href="#contents100">Prerequisite files</a></li>
+	
+	<li><a href="#contents120">Installation instructions</a></li>
+	
+	<li><a href="#contents140">Windows Service Configuration</a></li>
+		
+	<li><a href="#contents160">Windows Service Management</a></li>
+	
+<br/><li><a href="#contents999">Authors/Contacts</a></li>
+</ul>
+
+<hr><h3><a name="contents100">Prerequisite files</a></h2>
+<p/>
+
+<p>The Windows Service requires a windows binary installation of Apache Commons Daemon (available from http://www.apache.org/dist/commons/daemon/binaries/windows/). At the time of development, version 1.0.15 was the latest available release.</p>
+
+<hr><h3><a name="contents120">Installation instructions</a></h2>
+<p/>
+
+Perform the following:
+<ol>
+</td><td><li>Unzip the Gaian Asset zip to a suitable location (referred to as {GaianHome}).</li>
+</td><td><li>Unzip GAIAN_MIPS_EXTENSIONS.zip to the same location.</li>
+</td><td><li>This should copy manageService.bat to the {GaianHome} folder.</li>
+</td><td><li>Unzip the commons daemon binary file (e.g. commons-daemon-1.0.15-bin-windows.zip) into the "{GaianHome}/commons-daemon" folder. </li>
+</td><td><li>To check, there should exist a file "{GaianHome}/commons-daemon/prunsrv.exe".</li>
+</td><td><li>If running the service with a 64 bit JVM, replace {GaianHome}/commons-daemon/prunsrv.exe with the 64 bit equivalent which is under {GaianHome}/commons-daemon/amd64 or {GaianHome}/commons-daemon/amd64".</li>
+</td><td><li>If running the service with an IBM JVM (and no Oracle JVM is installed), run the initialiseForWindowsService.bat script.</li>
+</ol>
+
+<hr><h3><a name="contents140">Windows Service Configuration</a></h3>
+<p> Each Gaian node that runs as a service has a corresponding properties file named "gaianService&ltport&gt.properties". This file contains the java command required to run the gaian node and so includes the class path and defines the port and configuration file to be used.</p>
+<p> gaianService6414.properties and gaianService6415.properties files are provided as part of the distribution to allow the running of two Gaian nodes as services. These files can be used as templates for other nodes if required.</p>
+
+<hr><h3><a name="contents160">Windows Service Management</a></h3>
+<p> The {GaianHome}/manageService.bat file is used to install, start, stop, configure and uninstall the Gaian windows services.</p>
+
+<pre>
+<p> # This command installs the default node as a windows service (on port 6414).
+ manageService.bat install <br>
+ # This command brings up a window allowing the service to be started or stopped and its parameters to be modified.
+ manageService.bat manage<br>
+ # This command starts the windows service.
+ manageService.bat start<br>
+ # This command starts the windows service.
+ manageService.bat stop<br>
+ # This command uninstalls the windows sevice. 
+ manageService.bat uninstall<br>
+ # For Gaian nodes running on non-default ports, append the -p &ltport&gt parameter. e.g. 
+ manageService.bat install -p 6415<br>
+</pre>
+
+<p>Note that after the windows service is started, it can be a number of seconds before it is possible to connect to the Gaian node.</p> 
+<br />
+
+<hr><h2><a name="contents999">Authors/Contacts</a></h2>
+Paul Stone (Development and Authoring): IT Architect, IBM Hursley Labs, UK:
+<a href="mailto:stonepd@uk.ibm.com">stonepd@uk.ibm.com</a><br>
+David Vyvyan (Development and Authoring): IT Specialist, IBM Hursley Labs, UK:
+<a href="mailto:drvyvyan@uk.ibm.com">drvyvyan@uk.ibm.com</a><br>
+Patrick Dantressangle (Consultancy): Senior Technical Staff Member, Information Management Architect, IBM Hursley Labs, UK:
+<a href="mailto:dantress@uk.ibm.com">dantress@uk.ibm.com</a><br>
+Graham Bent (Consultancy): Senior Technical Staff Member,  IBM Hursley Labs, UK:
+<a href="mailto:GrahamBent@uk.ibm.com">GrahamBent@uk.ibm.com</a><br>
+
+<br/>
+
+</BODY>
+</html>

@@ -1,0 +1,37 @@
+/*
+ * (C) Copyright IBM Corp. 2014
+ *
+ * LICENSE: Eclipse Public License v1.0
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
+ 
+// Trigger procedure declaration
+CREATE PROCEDURE DERBY_TABLE_CHANGED(IN TABLE_NAME VARCHAR(20), IN UPDATE_TYPE VARCHAR(20)) PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME 'com.ibm.myproject.triggerProcedureOnTableUpdate';
+
+// Create triggers
+CREATE TRIGGER TABLE1_INSERT BEFORE INSERT ON TABLE1 FOR EACH STATEMENT MODE DB2SQL CALL DERBY_TABLE_CHANGED('TABLE1', 'INSERT')";
+CREATE TRIGGER TABLE1_UPDATE BEFORE UPDATE ON TABLE1 FOR EACH STATEMENT MODE DB2SQL CALL DERBY_TABLE_CHANGED('TABLE1', 'UPDATE')";
+CREATE TRIGGER TABLE1_DELETE BEFORE DELETE ON TABLE1 FOR EACH STATEMENT MODE DB2SQL CALL DERBY_TABLE_CHANGED('TABLE1', 'DELETE')";					
+
+// Drop triggers
+DROP TRIGGER TABLE1_INSERT;
+DROP TRIGGER TABLE1_UPDATE;
+DROP TRIGGER TABLE1_DELETE;
+
+// Trigger procedure implementation
+static void triggerProcedureOnTableUpdate( String table,  String update_type ) {
+
+	Connection c = DriverManager.getConnection("jdbc:default:connection");
+	ResultSet rs = c.createStatement().executeQuery("values current_user");
+	String sessionUser = rs.next() ? rs.getString(1) : null;
+	c.close();
+	
+	// Apply knock on policy for logging, updates to other tables etc...
+
+	String unhappyUpdateReason = null;
+	if ( "Bob".equals(sessionUser) && update_type.equals("INSERT") )
+		unhappyUpdateReason = "Bob is not allowed to insert rows into this table";
+
+	if ( null != unhappyUpdateReason )
+		throw new Exception(update_type + " on table " + table + " rejected, cause: " + unhappyUpdateReason);
+}

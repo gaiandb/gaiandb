@@ -1,0 +1,740 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    GaianDB
+    Copyright IBM Corp. 2013
+
+    LICENSE: Eclipse Public License v1.0
+    http://www.eclipse.org/legal/epl-v10.html
+-->
+
+<!--
+Primary use cases:
+	1. jarinstallraw:	Setup version, compile, create jars in rawJars folder and copy to lib under GAIANDB_latest install folder.
+	2. jarinstallzkm:	Setup version, compile, create jars, trim (gdb, prefuse) & obfuscate (only gdb), move results to zkm-build and copy to GAIANDB_latest.
+	3. zip:				Zip install pkg (taking gdb jars from GAIANDB_latest/lib) + zip project and javadoc.
+	4. testsxxx:		Run tests listed in target against jars from GAIANDB_latest/lib. Also evaluate code coverage with 'cobertura'.
+-->
+
+<project name="GAIANDB" default="jarinstallraw"> <!--  basedir="."> -->
+	
+	<property name="project_name" value="GAIANDB" />
+	<property name="distribution_name" value="GAIAN" />
+
+	<!-- Do not change this value unless a new COO is required (e.g. significant new features, new IP, new license, new open source dependencies) -->
+	<property name="Version-release" value="2.1" />
+	
+	<!-- Change this "modification" number more freely - use the suffix 'd' between "release builds" so that anyone that uses this code will know it is not as stable. -->
+	<property name="Version-release-modification" value="${Version-release}.6d" />
+
+	<!-- Time-bomb format is dd/mm/yyyy, e.g. 01/04/2015 -->
+	<tstamp><format property="TODAY_PLUS_365_DAYS" pattern="dd/MM/yyyy" timezone="UTC" offset="365" unit="day"/></tstamp>
+	
+	<!-- Time-bomb config (+ inclusion of trial license files): Set GDB_TIMEBOMB to be 365 days after code delivery -->
+	<!-- TO ENABLE: Set to ${TODAY_PLUS_365_DAYS} -->
+	<!-- TO DISABLE: Set to -1 -->
+	<property name="GDB_TIMEBOMB" value="${TODAY_PLUS_365_DAYS}" /> <!-- This is copied to GDB_TIMEBOMB in GaianNode.java -->
+
+	<property name="gaianjar" value="GAIANDB.jar" /> <!-- gaian-${Version-release-modification}.jar" /> => may not be worth the headache -->
+	<property name="gaiantoolsjar" value="GAIANDB-tools.jar" /> <!-- gaian-tools-${Version-release-modification}.jar" /> -->
+
+	<property name="eclipseDir" value="${eclipse.workspace_loc}" />
+	<property name="homeDir" value="${eclipseDir}/${project_name}" />
+	
+	<!-- Need a new non-production license for every new RELEASE (not for modification/fix increments) -->
+	<condition property="licenseDir"
+		value="license/Non-Production/V${Version-release}" else="license/Non-Production/V${Version-release}-trial-365-days">
+		<equals arg1="${GDB_TIMEBOMB}" arg2="-1" />
+	</condition>
+	
+	<!-- Referenced libraries - change these locations when Derby or POI levels are updated -->
+	<property name="libDir" value="${homeDir}/lib" />
+	<property name="libDerby" value="${libDir}/derby-ibm-ossc-10.8" />
+	<property name="libPoi" value="${libDir}/poi-3.8" />
+	
+	<tstamp>
+		<format property="timestamp" pattern="yyyyMMdd" timezone="UTC"/>
+		<format property="fulltimestamp" pattern="yyyy/MM/dd_HH.mm.ss" timezone="UTC"/>
+	</tstamp>
+	
+	<!-- Build, test and binary folders -->
+	<property name="buildDir" value="${homeDir}/build" />
+	<property name="testHome"  value="${homeDir}/JUnit Tests"/>
+	<property name="binDir" value="${homeDir}/bin" />
+	<property name="binDirPrefuse" value="${homeDir}/prefuse/bin" />
+	
+	<!-- extJarsDir contains ZKM jar which we can't add to the poject because we only have 1 user license... -->
+	<property name="extJarsDir" value="${eclipseDir}/../ExternalJARs" /> 
+	
+	<!-- Output dir for jars required by tests (might contain raw or obfuscated jars) -->
+	<property name="distroOutputDir" value="${buildDir}/${project_name}_latest" />
+	<property name="rawJarsDir" value="${buildDir}/rawJars" /> <!-- not processed by obfuscator/trimmer like ZKM -->
+
+	<property name="gaianSrcDir" value="${homeDir}/java" />
+	<property name="gaianAssetSrcDir" value="${homeDir}/java/Asset" />
+	<property name="gaianProtoSrcDir" value="${homeDir}/java/Prototype" />
+	<property name="prefuseSrcDir" value="${homeDir}/prefuse/src" />
+
+	<condition property="zipinstallV2"
+		value="${distribution_name}_V${Version-release-modification}_${timestamp}.zip"
+		else="${distribution_name}_V${Version-release-modification}_${timestamp}_TRIAL_365_DAYS.zip">
+		<equals arg1="${GDB_TIMEBOMB}" arg2="-1" />
+	</condition>
+	
+	<property name="zipproject" value="${distribution_name}_PROJECT_V${Version-release-modification}_${timestamp}.zip" />
+	<property name="zipjavadoc" value="${distribution_name}_javadoc.zip" />
+	
+	<taskdef resource="tasks.properties">
+	  <classpath>
+	    <pathelement location="${libDir}/cobertura/cobertura.jar"/>
+	    <pathelement location="${libDir}/cobertura/lib/asm-3.0.jar"/>
+    	<pathelement location="${libDir}/cobertura/lib/asm-tree-3.0.jar"/>
+    	<pathelement location="${libDir}/cobertura/lib/jakarta-oro-2.0.8.jar"/>
+    	<pathelement location="${libDir}/cobertura/lib/log4j-1.2.9.jar"/>
+	  </classpath>
+	</taskdef>
+	
+	<!--	
+	The following alternatives fail (fileset referencing a variable doesn't work inside taskdef):
+	#1
+	<taskdef resource="tasks.properties"><classpath><fileset dir="${libDir}/cobertura" includes="**/*.jar"/></classpath></taskdef>
+	#2
+	<path id="cobertura.classpath"><fileset dir="${libDir}/cobertura" includes="**/*.jar"/></path>
+	<taskdef resource="tasks.properties" classpathref="cobertura.classpath"/>
+	-->
+	
+	<!-- default build and deps classpath -->
+	<path id="build-classpath">
+		<pathelement path="${binDir}" />
+		<fileset dir="${libDir}"><include name="*.jar" /></fileset>
+		<fileset dir="${libDerby}"><include name="*.jar" /></fileset> <!-- do not include alternate version of derby -->
+		<fileset dir="${libPoi}"><include name="*.jar" /></fileset> <!-- do not include alternate version of poi -->
+		<fileset dir="${libDir}/accumulo-client-prereqs" includes="accumulo-core*.jar hadoop-core*.jar" />
+	</path>
+
+	<path id="test-classpath">
+		<pathelement location="${testHome}" />
+		<path refid="build-classpath" />
+		<!-- <fileset dir="${rawJarsDir}"> <include name="**/*.jar" /> </fileset> --> <!-- should not be necessary: binDir already includes this code -->
+	</path>
+	
+	<target name="clean">
+		<!-- <delete dir="${binDir}" includeEmptyDirs="true" /> -->
+		<delete><fileset dir="${buildDir}" defaultexcludes="yes" includes="*.jar"/></delete>
+		<delete><fileset dir="${testHome}" defaultexcludes="yes" includes="*.xml"/></delete>
+		<!-- <delete><fileset dir="${testHome}/common/logs" defaultexcludes="yes" includes="*.zip"/></delete> -->
+		<!-- <delete dir="${rawJarsDir}" includeEmptyDirs="true" /> -->
+		<!-- <delete dir="${distroOutputDir}/lib" includeEmptyDirs="true" /> -->
+	</target>
+
+	<target name="init" depends="clean">
+		<mkdir dir="${rawJarsDir}" />
+		<mkdir dir="${distroOutputDir}" />
+		<tstamp>
+			<format property="timestamp" pattern="yyyyMMdd_HHmm" timezone="UTC"/>
+		</tstamp>
+	</target>
+	
+	<target name="setupTimeBomb" depends="init">
+		<!-- Update Time-bomb in GaianNode -->
+		<replaceregexp file="${gaianAssetSrcDir}/Engine/com/ibm/gaiandb/GaianNode.java"
+			match="(.*\s+GDB_TIMEBOMB\s*=\s*)&quot;[^&quot;]*&quot;\s*;" replace="\1&quot;${GDB_TIMEBOMB}&quot;;"/>
+	</target>
+	
+	<target name="setupVersion" depends="init">
+		
+		<!-- Update version number in GaianNode -->
+		<replaceregexp file="${gaianAssetSrcDir}/Engine/com/ibm/gaiandb/GaianNode.java"
+			match="(.*\s+GDB_VERSION\s*=\s*)&quot;[^&quot;]*&quot;\s*;" replace="\1&quot;${Version-release-modification}&quot;;"/>
+		
+		<!-- Update version number in html doc files -->
+		<replaceregexp match="(IBM Gaian Database\s+V)[\S]+(\s+-)" replace="\1${Version-release-modification}\2" flags="g">
+		    <fileset dir="${homeDir}/doc/UserDocs" includes="*.html"/>
+		</replaceregexp>
+		
+		<!-- TODO: Auto-update copyright dates -->
+		
+	</target>
+	
+	<target name="compilelocal" depends="setupVersion,setupTimeBomb">
+		
+		<!-- Recompile the GaianNode class once the version has been set inside it -->
+		<javac sourcepath="" srcdir="${gaianAssetSrcDir}/Engine" destdir="${binDir}" includeantruntime="false"
+			classpathref="build-classpath" debug="on" debuglevel="lines,vars,source">
+			<include name="com/ibm/gaiandb/GaianNode.java"/>
+		</javac>
+		
+	</target>
+	
+	<target name="jar">
+		
+	    <delete file="${buildDir}/MANIFEST.MF"/>
+	    <manifest file="${buildDir}/MANIFEST.MF">
+			<attribute name="Implementation-Version" value="${Version-release-modification}"/> 
+			<attribute name="Build-Date" value="${buildLabel}"/>
+		</manifest>
+		
+		<jar destfile="${rawJarsDir}/${gaianjar}" basedir="${binDir}"
+			excludes="com/ibm/gaiandb/apps/dashboard/** com/ibm/gaiandb/apps/sensordemo/** com/ibm/gaiandb/draw/** com/ibm/gaiandb/sim/**
+			com/ibm/gaiandb/ztest/**" manifest="${buildDir}/MANIFEST.MF"/>
+		
+		<jar destfile="${rawJarsDir}/${gaiantoolsjar}" basedir="${binDir}" defaultexcludes="yes"
+			includes="com/ibm/gaiandb/apps/dashboard/** com/ibm/gaiandb/apps/sensordemo/** com/ibm/gaiandb/draw/** com/ibm/gaiandb/sim/**
+			com/ibm/gaiandb/apps/*" manifest="${buildDir}/MANIFEST.MF"/>
+
+		<jar destfile="${rawJarsDir}/wpml-pfg.jar" basedir="${gaianSrcDir}/PolicyPlugins" includes="com/ibm/gaiandb/plugins/**" manifest="${buildDir}/MANIFEST.MF"/>
+		<jar destfile="${rawJarsDir}/JUnit-bin.jar" basedir="${homeDir}/JUnit Tests" defaultexcludes="yes" includes="**/*.class" manifest="${buildDir}/MANIFEST.MF"/>
+		
+		<!-- Uncomment prefuse line below to re-build prefuse.jar, e.g. when we start using a newer versions of java -->
+		<!-- (remember to manually remove 3rd party classes from it to create a new prefuseclean.jar afterwards! see note at bottom of ZKMScript-V2.txt for details) -->
+		<!-- <jar destfile="${libDir}/prefuse.jar" basedir="${binDirPrefuse}" manifest="${buildDir}/MANIFEST.MF"/> -->
+		<copy tofile="${rawJarsDir}/prefusetrimmed.jar" file="${libDir}/prefuseclean.jar"/> <!-- here it is trimmed only in the sense that it is clean -->
+		
+	</target>
+
+	<target name="installjars">
+		<!-- default jar location - can be overriden by antcall parameter -->
+		<property name="jarsDir" value="${rawJarsDir}"/>
+		
+		<copy todir="${distroOutputDir}/lib" file="${jarsDir}/${gaianjar}"/>
+		<copy todir="${distroOutputDir}/lib" file="${jarsDir}/${gaiantoolsjar}"/>
+		<copy todir="${distroOutputDir}/lib" file="${jarsDir}/prefusetrimmed.jar"/>
+		
+		<!-- Copy the libs required by the nodes launched by JUnit on the build server - derived in Utilities.java using constant: BUILD_LIB_DIR -->
+		<copy todir="${distroOutputDir}/lib"><fileset dir="${libDerby}"/></copy>
+		<copy todir="${distroOutputDir}/lib"><fileset dir="${libPoi}"/></copy>
+		<copy todir="${distroOutputDir}/lib" file="${rawJarsDir}/wpml-pfg.jar"/>
+	</target>
+	
+	<target name="jarinstallraw" depends="compilelocal,jar,installjars"/>
+	
+	<target name="jarinstallzkm" depends="compilelocal,jar">
+		
+		<taskdef name="ZKM" classname="ZKMTask" classpath="${extJarsDir}/ZKM.jar" />
+		<!-- Attributes correspond to Zelix KlassMaster command line options. scriptFileName is only mandatory attribute -->
+<!--
+		<ZKM scriptFileName="${homeDir}/ZKMScript.txt" logFileName="${homeDir}/ZKMLog.txt" trimLogFileName="${homeDir}/ZKMTrimLog.txt" defaultExcludeFileName="${homeDir}/ZKMExclude.txt" defaultTrimExcludeFileName="${homeDir}/ZKMTrimExclude.txt" defaultDirectoryName="${homeDir}" isParseOnly="false" isVerbose="true">
+-->
+		<ZKM scriptFileName="${buildDir}/ZKMScript-V2.txt" defaultDirectoryName="${buildDir}" isParseOnly="false" isVerbose="false">
+			<!-- the sysproperty tag provides an easy way of setting a System property -->
+			<sysproperty key="ZKM_NEW_CHANGE_LOG_ENCODING" value="UTF-16" />
+		</ZKM>
+		
+		<move todir="${buildDir}/zkm-build" file="${buildDir}/ChangeLog.txt"/> <!-- needed for stack trace translation -->
+		
+		<move todir="${buildDir}/zkm-build" file="${buildDir}/${gaianjar}"/>
+		<move todir="${buildDir}/zkm-build" file="${buildDir}/${gaiantoolsjar}"/>
+		<move tofile="${buildDir}/zkm-build/prefusetrimmed.jar" file="${buildDir}/prefuseclean.jar"/> <!-- now thoroughly trimmed -->
+		
+		<antcall target="installjars"> <param name="jarsDir" value="${buildDir}/zkm-build"/> </antcall>
+	</target>
+	
+	<target name="javadoc-errors">
+		<!-- Error Messages -->
+		<javadoc sourcepath="${gaianAssetSrcDir}/Engine" destdir="${homeDir}/doc/javadoc-errors" packagenames="com.ibm.gaiandb.diags">
+			<fileset dir="${gaianAssetSrcDir}/Engine" includes="**/GDBMessages.java" />
+		</javadoc>
+	</target>
+	
+	<target name="javadoc" depends="javadoc-errors">
+		<!-- Primary GDB Node source code -->
+		<javadoc sourcepath="${gaianSrcDir}" destdir="${homeDir}/doc/javadoc-gaiandb" packagenames="com.ibm.db2j, com.ibm.gaiandb.*" 
+			excludepackagenames="com.ibm.gaiandb.apps.dashboard, com.ibm.gaiandb.apps.sensordemo, com.ibm.gaiandb.draw, com.ibm.gaiandb.sim">
+			<fileset dir="${gaianSrcDir}" includes="**/*.java" />
+		</javadoc>
+		
+		<!-- Dashboard source code -->
+		<javadoc sourcepath="${gaianAssetSrcDir}/ClientTools" destdir="${homeDir}/doc/javadoc-dashboard"
+			packagenames="com.ibm.gaiandb.apps, com.ibm.gaiandb.apps.dashboard, com.ibm.gaiandb.draw, com.ibm.gaiandb.sim">
+			<fileset dir="${gaianAssetSrcDir}/ClientTools" includes="**/*.java" />
+		</javadoc>
+		
+		<!-- Tests source code - currently breaks
+		<javadoc sourcepath="${testHome}" destdir="${homeDir}/doc/javadoc-tests">
+			<fileset dir="${testHome}" includes="**/*.java" />
+		</javadoc>
+		-->
+	</target>
+	
+	<!-- Targets for local build -->
+	<target name="zip">
+
+		<!-- delete zips here - not in global clean target - so we retain them when we're not zipping, and don't end up with early deletions in pending changes -->
+		<delete><fileset dir="${buildDir}" defaultexcludes="yes" includes="*.zip"/></delete>
+		
+		<property name="installConfigDir" value="${homeDir}/installConfig" />
+		
+		<fixcrlf srcdir="${installConfigDir}" includes="**/*.sh" eol="lf" eof="remove" />
+		
+		<!-- remember to set: IS_SECURITY_EXCLUDED_FROM_RELEASE and IS_UDP_DRIVER_EXCLUDED_FROM_RELEASE in GaianNode.java -->
+
+		<zip destfile="${buildDir}/${zipinstallV2}">
+			<zipfileset dir="${distroOutputDir}/lib" prefix="lib" includes="${gaianjar} ${gaiantoolsjar} prefusetrimmed.jar" />
+			<zipfileset dir="${libDerby}" prefix="lib" includes="derby.jar derbynet.jar derbyclient.jar derbytools.jar derbyrun.jar derbyLocale*.jar"/>
+			<zipfileset dir="${homeDir}/lib" prefix="lib" includes="db2jcutdown.jar SensorReader.dll" />
+
+			<zipfileset dir="${homeDir}/${licenseDir}" prefix="${licenseDir}"/> <!-- this will rightly fail if we don't have non-prod license files for this release yet -->
+			
+			<zipfileset dir="${installConfigDir}" includes="*.properties .keyStore" />
+			<zipfileset dir="${installConfigDir}" includes="*.sh *.bat" filemode="755" />
+			<zipfileset dir="${installConfigDir}/gaiandb" prefix="gaiandb" /> <!-- Pre-canned physical derby db used by gaian - speeds up startup -->
+			<zipfileset dir="${installConfigDir}/resources/new" prefix="resources" />
+			<zipfileset dir="${installConfigDir}/csvtestfiles" prefix="csvtestfiles" />
+			<zipfileset dir="${installConfigDir}/exceltestfiles" prefix="exceltestfiles" includes="address.xls sysobject.xls" />
+			<zipfileset dir="${installConfigDir}/FileImportControls" prefix="FileImportControls" />
+			<zipfileset dir="${homeDir}/tools" prefix="tools" includes="queryGDB.* demoPCM.conf explainQuery.* sensorMonitor.bat sensorDemo.bat" filemode="755" />			
+
+			<zipfileset dir="${homeDir}/doc/UserDocs" prefix="doc" includes="Readme.html WorkedExamples* UpgradeGaian.html" />
+			<zipfileset dir="${homeDir}/doc/UserDocs/images" prefix="doc/images" />
+			<zipfileset dir="${homeDir}/doc/javadoc-errors" prefix="doc/javadoc-errors" />
+		</zip>
+		
+		<zip destfile="${buildDir}/GaianApp.war">
+			<zipfileset dir="${installConfigDir}/bluemix/META-INF" prefix="META-INF" />
+			<zipfileset dir="${installConfigDir}/bluemix" includes="index.html" />
+			<zipfileset dir="${installConfigDir}/bluemix" prefix="WEB-INF" includes="web.xml" />
+			
+			<zipfileset dir="${distroOutputDir}/lib" prefix="WEB-INF/lib" includes="${gaianjar} ${gaiantoolsjar} prefusetrimmed.jar" />
+<!--		<zipfileset dir="${libDerby}" prefix="lib" includes="derby.jar derbynet.jar derbyclient.jar derbytools.jar derbyrun.jar derbyLocale*.jar"/> -->
+			<zipfileset dir="${homeDir}/lib" prefix="WEB-INF/lib" includes="db2jcutdown.jar SensorReader.dll db2jcc*.jar mongo*.jar" />
+			
+			<zipfileset dir="${homeDir}/${licenseDir}" prefix="GaianWorkspace/${licenseDir}"/> <!-- this will rightly fail if we don't have non-prod license files for this release yet -->
+
+			<zipfileset dir="${installConfigDir}/bluemix" prefix="GaianWorkspace" includes="lib *.properties *.sql" />
+			<zipfileset dir="${installConfigDir}" prefix="GaianWorkspace" includes="derby.properties .keyStore" />
+			<zipfileset dir="${installConfigDir}" prefix="GaianWorkspace" includes="*.sh *.bat" filemode="755" />
+			<zipfileset dir="${installConfigDir}/gaiandb" prefix="GaianWorkspace/gaiandb" /> <!-- Pre-canned physical derby db used by gaian - speeds up startup -->
+			<zipfileset dir="${installConfigDir}/resources/new" prefix="GaianWorkspace/resources" />
+			<zipfileset dir="${installConfigDir}/csvtestfiles" prefix="GaianWorkspace/csvtestfiles" />
+			<zipfileset dir="${installConfigDir}/bluemix/ivtestfiles" prefix="GaianWorkspace/ivtestfiles" />
+			<zipfileset dir="${installConfigDir}/exceltestfiles" prefix="GaianWorkspace/exceltestfiles" includes="address.xls sysobject.xls" />
+			<zipfileset dir="${installConfigDir}/FileImportControls" prefix="GaianWorkspace/FileImportControls" />		
+			<zipfileset dir="${homeDir}/tools" prefix="GaianWorkspace/tools" includes="queryGDB.* demoPCM.conf explainQuery.* sensorMonitor.bat sensorDemo.bat" filemode="755" />			
+
+			<zipfileset dir="${homeDir}/doc/UserDocs" prefix="GaianWorkspace/doc" includes="Readme.html WorkedExamples* UpgradeGaian.html" />
+			<zipfileset dir="${homeDir}/doc/UserDocs/images" prefix="GaianWorkspace/doc/images" />
+			<zipfileset dir="${homeDir}/doc/javadoc-errors" prefix="GaianWorkspace/doc/javadoc-errors" />
+		</zip>
+		
+<!--		
+		<zip destfile="${buildDir}/${zipproject}" basedir="${homeDir}"
+			excludes="*.ppt, *.doc, *.pdf, *.zip, *.jar, demos/**, old-stuff/**, build/**/*.zip, gaiandb*/**, bin/**">
+		</zip>
+		
+		<zip destfile="${buildDir}/${zipproject}" basedir="${homeDir}"
+			includes="build/*, java/**, JUnit*/**, installConfig/**, license/**"
+			excludes="JUnit*/testlogs.zip">
+		</zip>
+-->		
+		<zip destfile="${buildDir}/${zipjavadoc}" basedir="${homeDir}" includes="doc/javadoc*/**" />
+		
+		<!-- Now delete the original javadoc files (it is sufficient to just check-in + deliver the javadoc zip... - checking in all files is tedious) -->
+		<delete dir="${homeDir}/doc/javadoc-errors" />
+		<delete dir="${homeDir}/doc/javadoc-gaiandb" />
+		<delete dir="${homeDir}/doc/javadoc-dashboard" />
+		<delete dir="${homeDir}/doc/javadoc-tests" />
+
+	</target>
+	
+	<target name="zipmips">
+		
+		<!-- Prepare accumulo and mongo jars needed for GAIAN_MIPS_EXTENSIONS.zip -->
+		<jar destfile="${distroOutputDir}/lib/gaian-accumulo.jar" basedir="${binDir}" includes="com/ibm/db2j/AccumuloVTI*.class"/>
+		<jar destfile="${distroOutputDir}/lib/gaian-mongo.jar" basedir="${binDir}" includes="com/ibm/db2j/MongoDB.class com/ibm/db2j/MongoDB$CombinationOperator.class com/ibm/gaiandb/mongodb/*.class"/>
+		<!-- Also prepare windows service code -->
+		<jar destfile="${distroOutputDir}/lib/WindowsService.jar" basedir="${binDir}" includes="com/ibm/gaiandb/windowsservice/WindowsService.class"/>
+		
+		<zip destfile="${buildDir}/${distribution_name}_MIPS_EXTENSIONS.zip">
+			<!-- VTI jars for Accumulo and Mongo -->
+			<zipfileset dir="${distroOutputDir}/lib" prefix="lib/ext" includes="gaian-accumulo.jar gaian-mongo.jar" />
+			<!-- Registration script for Accumulo and Mongo -->
+			<zipfileset dir="${homeDir}/tools" includes="registerMongoandAccumuloProcedures.*" />
+
+			<!-- Windows Service code -->
+			<zipfileset dir="${distroOutputDir}/lib" prefix="lib" includes="WindowsService.jar" />
+			<zipfileset dir="${homeDir}/windowsservice/doc" prefix="doc" includes="ReadmeForWindowsService.html" />
+			<zipfileset dir="${homeDir}/windowsservice/resources" includes="gaianService6414.properties gaianService6415.properties initialiseForWindowsService.bat manageService.bat" />
+			
+			<!-- Readme, User docs, Project slides-->
+			<zipfileset dir="${homeDir}/doc/UserDocs" prefix="doc" includes="ReadmeForBigDataVTIs.html" />
+			
+			<!-- dependent jars - not included -->
+			<!-- <zipfileset dir="${homeDir}/lib/accumulo-client-prereqs" prefix="lib/ext" includes="*.jar"/> -->
+			<!-- <zipfileset dir="${homeDir}/lib" prefix="lib/ext" includes="mongo-java-driver*.jar"/> -->
+		</zip>
+		
+		<zip destfile="${buildDir}/${distribution_name}_MIPS_EXTENSIONS_SOURCE_CODE.zip">
+			<!-- Source code -->
+			<zipfileset dir="${gaianAssetSrcDir}/VTIs/com/ibm/db2j" prefix="src/com/ibm/db2j" includes="AccumuloVTI.java MongoDB.java" />
+			<zipfileset dir="${gaianAssetSrcDir}/VTIs/com/ibm/gaiandb/mongodb" prefix="src/com/ibm/gaiandb/mongodb" />
+		</zip>
+		
+	</target>
+	
+	<target name="testscleanup">
+		<!-- Note: do clean up before all other tests - This needs to be in it's own block as Ant runs tests alphabetically -->
+		<junit printsummary="false" failureproperty="junit.failure" showoutput="no" outputtoformatters="true" fork="yes" haltonfailure="no">
+			<formatter usefile="false" type="brief" />
+			
+			<classpath refid="test-classpath" />
+			<sysproperty key="user.dir" value="${homeDir}" />
+
+			<batchtest todir="${testHome}">
+				<fileset dir="${testHome}">
+					<include name="cleanup/Test*.java" />
+				</fileset>
+				<formatter type="xml" usefile="true" />
+			</batchtest>
+		</junit>
+	</target>
+	
+	<target name="testsprepare" depends="testscleanup">
+
+		<delete dir="${buildDir}/cobertura" />
+		
+		<mkdir dir="${buildDir}/cobertura" />
+		<cobertura-instrument datafile="${buildDir}/cobertura/cobertura.ser">
+		    <fileset dir="${distroOutputDir}/lib" defaultexcludes="yes">
+		        <include name="${gaianjar}" />
+		        <include name="${gaiantoolsjar}" />
+		    </fileset>
+		</cobertura-instrument>
+
+	</target>
+	
+	<!-- Creates a test-results-summary.txt file; then zips up the testlogs and then writes the cobertura code coverage report -->
+	<target name="testswrapup" depends="testscleanup">
+		
+		<!-- Grep summary lines from the XML test output files - don't sort the lines yet -->
+		<concat destfile="${testHome}/test-results-summary.txt.tmp" append="true">
+			<fileset dir="${testHome}" includes="*.xml"/>
+			<filterchain> <linecontains> <contains value="&lt;testsuite"/> </linecontains> </filterchain>
+		</concat>
+		
+		<!-- Count total number of test suite files -->
+		<resourcecount property="numfiles" > <tokens> <fileset file="${testHome}/test-results-summary.txt.tmp"/> <linetokenizer/> </tokens> </resourcecount>
+		<!--
+		To count total number of actual tests, use:
+		let s=$(echo `grep testsuite test-results-summary.txt | sed -e 's,.*tests=",,' -e 's,".*,,'` | sed 's, ,+,g'); echo $s
+		-->
+		
+		<!-- Count total number of errors, failures or skipped tests -->
+		<resourcecount property="numfileshavingissues" >
+			<tokens> <concat>
+				<fileset file="${testHome}/test-results-summary.txt.tmp"/>
+				<filterchain>
+					<linecontainsregexp> <regexp pattern="(?:failures|errors|skipped)=&quot;[1-9]"/> </linecontainsregexp>
+					<tokenfilter> <linetokenizer/> </tokenfilter>
+				</filterchain>
+			</concat> </tokens>
+		</resourcecount>
+
+		<!-- Re-order information in each report line for better visibility of issues -->
+		<replaceregexp file="${testHome}/test-results-summary.txt.tmp"
+			match="( errors=[^ ]*)( failures=[^ ]*)( hostname=[^ ]*)( name=[^ ]*)( skipped=[^ ]*)?( tests=[^ ]*)( time=[^ ]*)( timestamp=[^&gt;]*)"
+			replace="\8\1\2\5\6\7\3\4" byline="true"/>
+		
+		<!-- Create final test build summary file - adding summary lines, sorted by timestamp (because we re-ordered the column info) -->
+		<echo file="${testHome}/test-results-summary.txt" message="Test Build Summary:${line.separator}" />
+		<concat destfile="${testHome}/test-results-summary.txt" append="true">
+			<sort> <tokens> <fileset file="${testHome}/test-results-summary.txt.tmp"/> <linetokenizer includedelims="true"/> </tokens> </sort>
+		</concat>
+		<delete file="${testHome}/test-results-summary.txt.tmp" />
+		
+		<!-- Add build start and end times to summary file -->
+		<tstamp> <format property="endtimestamp" pattern="yyyy/MM/dd_HH.mm.ss" timezone="UTC"/> </tstamp>
+		<echo file="${testHome}/test-results-summary.txt" append="true" message="${line.separator}Build Start Time: ${fulltimestamp}; Tests End Time: ${endtimestamp}"/>
+		
+		<!-- Add the final summary line of total number of files having issues (i.e. some errors, failures or skipped tests) -->
+		<echo file="${testHome}/test-results-summary.txt" append="true"
+			message="${line.separator}Total number of test suites with issues: ${numfileshavingissues}/${numfiles}" />
+		
+		<!-- Print the file to the console -->
+		<concat> <fileset file="${testHome}/test-results-summary.txt" /> </concat>
+		
+		<!-- Zip up the test logs -->
+		<zip destfile="${testHome}/testlogs.zip">
+			<zipfileset dir="${testHome}" includes="*.xml" /> <!-- do not delete these - used for building final test report on build server -->
+			<zipfileset dir="${testHome}/common/logs" includes="*.zip" />
+		</zip>
+		
+		<!-- Note cobertura flushes it's data to cobertura.ser when the node's JVM exits..., i.e. after testscleanup (which now also waits for process completion) -->
+
+		<!-- <cobertura-merge> <fileset dir="${buildDir}/cobertura"> <include name="cobertura*.ser" /> </fileset> </cobertura-merge> -->
+		<cobertura-report format="html" datafile="${buildDir}/cobertura/cobertura.ser" destdir="${buildDir}/cobertura" srcdir="${gaianAssetSrcDir}" />
+
+		<!-- Delete this block if above works... 
+			<fileset dir="${gaianSrcDir}/Engine" includes="**/*.java" />
+			<fileset dir="${gaianSrcDir}/VTIs" includes="**/*.java" />
+			<fileset dir="${gaianSrcDir}/ClientTools" includes="**/*.java" />
+			<fileset dir="${gaianSrcDir}/Connectors" includes="**/*.java" />
+			<fileset dir="${gaianSrcDir}/UDPDriver" includes="**/*.java" />
+			<fileset dir="${gaianSrcDir}/SVA-Security" includes="**/*.java" />
+		</cobertura-report>
+		-->
+
+		<zip destfile="${buildDir}/cobertura.zip" basedir="${buildDir}/cobertura"/>
+		
+	</target>
+	
+	<target name="testsdebug" depends="testsprepare">
+		
+		<property name="testSuite.class.name" value="TestSuite" />
+
+		<!-- fork a separate VM for running the tests - only fork once for all tests (not once per test) -->
+		<junit printsummary="false" failureproperty="junit.failure" showoutput="yes" outputtoformatters="false" fork="yes" forkmode="once" haltonfailure="no">
+			<formatter usefile="false" type="brief" />
+
+			<classpath refid="test-classpath" />
+			<sysproperty key="user.dir" value="${homeDir}" />
+			
+			<!-- Note: Nothing is needed for cobertura here - It is the node which reports coverage not the clients... -->
+
+			<batchtest todir="${testHome}">
+				<fileset dir="${testHome}">
+					
+					<!-- failing tests - switch exclude to include for those you want to debug... (NOTE!: Some may only fail when run in sequence with others...) -->
+					<exclude name="api/Test_setAccessClusters.java" /> <!-- suspect: intermittent discovery protocol race conditions with nodes stopping/restarting -->
+					<exclude name="cache/TestInMemoryRows.java" /> <!-- suspect: inconsistent performance gains - INMEMORY implementation can also be improved.. -->
+					<exclude name="core/TestSpilloverDiskCachingForHeavyJoins.java" /> <!-- suspect: test is based on an old implementation of disk caching for joins -->
+					<exclude name="vti/genericws/TestJsonScanner.java" /> <!-- suspect: ??? -->
+					<exclude name="vti/genericws/TestPropReadFormat.java" /> <!-- suspect: ??? -->
+					<exclude name="vti/genericws/TestPropSchema.java" /> <!-- suspect: ??? -->
+					<exclude name="vti/genericws/TestSaxScanner.java" /> <!-- suspect: ??? -->
+					<exclude name="vti/genericws/TestStoredProcedure.java" /> <!-- suspect: commented out stored procedure API: 'setltforws', needs to be uncommented and EXP_workedExampleOne7000.txt needs to be updated -->
+																			<!-- also testNormalLocalJsonFile was always known to fail -->
+					<exclude name="vti/TestICARESTCaching.java" /> <!-- suspect: ICAREST cache table is not deleted after use of it -->
+					<exclude name="vti/TestICARESTCacheTruncation.java" /> <!-- causes hang in ICAREST: suspect: ICAREST cache table is not deleted after use of it -->
+					<exclude name="tivoli/TestLargeNumberOfDS4LT.java"/> <!-- suspect: ??? - hangs on build server - should take 18s -->
+
+					<include name="security/TestSSL.java" />
+					
+					<!--
+					<include name="api/Test*.java" />
+					<include name="cache/Test*.java" />
+					<include name="core/Test*.java" />
+					-->
+					
+					<!--
+					<include name="cache/TestInMemoryRows.java" />
+					<include name="cache/TestCacheWithJoins.java" />
+					<include name="api/Test_setltforexcel*.java" />
+					<include name="api/Test_setAccessClusters.java" />
+					<include name="api/TestFunctions.java" />					
+					<include name="api/Test_setAccessClusters.java" />
+					<include name="api/Test_setDiscoveryHosts.java" />
+					<include name="api/Test_setDiscoveryIP.java" />
+					<include name="api/Test_setDsExcel.java" />
+					<include name="api/Test_setSourceList.java" />
+					
+					<include name="api/Test_set_and_getConfigProperty.java" />
+					<include name="api/Test_setltforexcel_autoColNames.java" />
+					<include name="api/Test_setltforexcel_notFirstCol.java" />
+					<include name="api/Test_setltforfile_explicitmappings.java" />
+					
+					<include name="api/Test_setltfornode_constants.java" />
+
+					<include name="cache/TestCacheWithJoins.java" />
+					
+					<include name="core/TestAdvancedFederationConfig.java" />
+					<include name="core/TestBatchedRecordFiltering.java" />
+					<include name="core/TestLateHangDetection.java" />
+					<include name="core/TestLongQueries2Nodes.java" />
+					<include name="core/TestLongQueries3Nodes.java" />
+					<include name="core/TestNestedSelectAllWithMissingColumn.java" />
+					<include name="core/TestPreparedStatementsOnDynamicNetworks.java" />
+					<include name="core/TestSpecialGaianQuerySubqueries.java" />
+					<include name="core/TestSynchronizedNestedJoinQueries.java" />
+					<include name="core/TestTableFunctions.java" />
+					<include name="core/TestUpdatesOnLogicalTableDefs.java" />
+					
+					<include name="discovery/TestDiscovery.java" />
+					<include name="logger/Test_setDsExcelWarning.java" />
+					
+					<include name="stress/TestMultipleNodesAndClients.java" />
+					<include name="tivoli/TestLargeNumberOfDS4LT.java" />
+					<include name="types/TestMySQLTypes.java" />
+					<include name="types/TestSQLServerTypes.java" />
+					
+					<include name="workedexamples/Test_workedExampleOne.java" />
+					<include name="workedexamples/Test_workedExampleThree.java" />
+					<include name="workedexamples/Test_workedExampleTwo.java" />
+					-->
+
+					<!-- Do not remove or comment this one out - it ensures child nodes are killed - ANT 1.7 will hang on Windows otherwise -->
+					<include name="ztest/Test_runZTests.java" />
+				</fileset>
+				<formatter type="xml" usefile="true" />
+			</batchtest>
+		</junit>
+
+		<antcall target="testswrapup"/>
+		
+	</target>
+	
+	<target name="testsfast" depends="testsprepare">
+
+		<property name="testSuite.class.name" value="TestSuite" />
+
+		<!-- fork a separate VM for running the tests - only fork once for all tests (not once per test) -->
+		<junit printsummary="false" failureproperty="junit.failure" showoutput="yes" outputtoformatters="false" fork="yes" forkmode="once" haltonfailure="no">
+			<formatter usefile="false" type="brief" />
+
+			<classpath refid="test-classpath" />
+			<sysproperty key="user.dir" value="${homeDir}" />
+
+			<!-- Note: Nothing is needed for cobertura here - It is the node which reports coverage not the clients... -->
+
+			<batchtest todir="${testHome}">
+				<fileset dir="${testHome}">
+					
+					<!-- exclusions - these should be included in the debugtests while they are being fixed... -->
+					<exclude name="api/Test_setAccessClusters.java" /> <!-- suspect: intermittent discovery protocol race conditions with nodes stopping/restarting -->
+					<exclude name="cache/TestInMemoryRows.java" /> <!-- suspect: inconsistent performance gains - INMEMORY implementation can also be improved.. -->
+					<exclude name="core/TestSpilloverDiskCachingForHeavyJoins.java" /> <!-- suspect: test is based on an old implementation of disk caching for joins -->
+					<exclude name="vti/genericws/TestJsonScanner.java" /> <!-- suspect: ??? -->
+					<exclude name="vti/genericws/TestPropReadFormat.java" /> <!-- suspect: ??? -->
+					<exclude name="vti/genericws/TestPropSchema.java" /> <!-- suspect: ??? -->
+					<exclude name="vti/genericws/TestSaxScanner.java" /> <!-- suspect: ??? -->
+					<exclude name="vti/genericws/TestStoredProcedure.java" /> <!-- suspect: commented out stored procedure API: 'setltforws', needs to be uncommented and EXP_workedExampleOne7000.txt needs to be updated -->
+					<exclude name="vti/TestICARESTCaching.java" /> <!-- suspect: ICAREST cache table is not deleted after use of it -->
+					<exclude name="vti/TestICARESTCacheTruncation.java" /> <!-- causes hang in ICAREST: suspect: ICAREST cache table is not deleted after use of it -->
+					<exclude name="tivoli/TestLargeNumberOfDS4LT.java"/> <!-- suspect: ??? - hangs on build server - should take 18s -->
+					
+					<!-- inclusions -->
+					<include name="api/Test*.java" />
+					<include name="cache/Test*.java" />
+					<include name="core/Test*.java" />
+					<include name="discovery/Test*.java" />
+					<include name="logger/Test*.java" />
+					<include name="readme/Test*.java"/>
+					<include name="security/Test*.java" />
+					<include name="stress/Test*.java" />
+					<include name="testutilities/Test*.java" />
+					<include name="tivoli/Test*.java"/>
+					<include name="types/Test*.java"/>
+					<include name="vti/Test*.java"/>
+					<include name="workedexamples/Test*.java"/>
+					<!-- <include name="vti/genericws/Test*.java"/> --> <!-- need to update ZKMScript-V2.txt with entry points for GenericWS code for these to pass the ZKM Test Build -->
+					
+					<!-- Do not remove or comment this one out - it ensures child nodes are killed - ANT 1.7 will hang on Windows otherwise -->
+					<include name="ztest/Test*.java" />
+				</fileset>
+				<formatter type="xml" usefile="true" />
+			</batchtest>
+		</junit>
+
+		<antcall target="testswrapup"/>
+
+	</target>
+	
+	<target name="testslong" depends="testsfast">
+
+		<!-- fork a separate VM for running the tests - only fork once for all tests (not once per test) -->
+		<junit printsummary="false" failureproperty="junit.failure" showoutput="yes" outputtoformatters="false" fork="yes" forkmode="once" haltonfailure="no">
+			<formatter usefile="false" type="brief" />
+			
+			<classpath refid="test-classpath" />
+			<sysproperty key="user.dir" value="${homeDir}" />
+
+			<batchtest todir="${testHome}">
+				<fileset dir="${testHome}">
+					<!--include name="com/ibm/gaiandb/jdbc/discoveryclient/Test*.java" /-->
+					<!-- <include name="memory/Test*.java" /> -->
+					<!-- <include name="config/Test*.java" /> -->
+					<include name="config/Test_configWriteAhead.java" />
+					<!--exclude name="stress/Test*.java" />
+					<exclude name="SVA/*.java" />
+					<exclude name="**/*VQB*.java" />
+					<exclude name="**/*ICA*.java" /-->
+					<exclude name="api/Test_setAccessClusters.java" /><!-- known to fail occasionally due to race conditions -->
+
+				</fileset>
+				<formatter type="xml" usefile="true" />
+			</batchtest>
+		</junit>
+
+		<antcall target="testscleanup"/>
+
+		<zip destfile="${testHome}/longtestslogs.zip">
+			<zipfileset dir="${testHome}" includes="*.xml" />
+			<zipfileset dir="${testHome}/common/logs" includes="*.zip" />
+		</zip>
+		
+	</target>
+	
+	<target name="testsnobackends" depends="testsprepare">
+
+		<property name="testSuite.class.name" value="TestSuite" />
+
+		<!-- fork a separate VM for running the tests - only fork once for all tests (not once per test) -->
+		<junit printsummary="false" failureproperty="junit.failure" showoutput="yes" outputtoformatters="false" fork="yes" forkmode="once" haltonfailure="no">
+			<formatter usefile="false" type="brief" />
+
+			<classpath refid="test-classpath" />
+			<sysproperty key="user.dir" value="${homeDir}" />
+
+			<!-- Note: Nothing is needed for cobertura here - It is the node which reports coverage not the clients... -->
+
+			<batchtest todir="${testHome}">
+				<fileset dir="${testHome}">
+					
+					<!-- Exclude tests below which depend on having a connection to the build servers which host RDBMS instances for DB2, MySQL, Oracle and SQLServer -->
+					<exclude name="api/Test_setSourceList.java" />
+					<exclude name="readme/Test_readMeOne.java" />
+					<exclude name="readme/Test_readMeOneWithMySQL.java" />
+					<exclude name="readme/Test_readMeOneWithOracle.java" />
+					<exclude name="readme/Test_readMeOneWithSQLServer.java" />
+					<exclude name="types/TestDB2Types.java" />
+					<exclude name="types/TestMySQLTypes.java" />
+					<exclude name="types/TestOracleTypes.java" />
+					<exclude name="types/TestSQLServerTypes.java" />
+					<exclude name="vti/TestSpatialQueryFiltering.java" />
+					<exclude name="workedexamples/Test_workedExampleOne.java" />
+					<exclude name="workedexamples/Test_workedExampleThree.java" />
+					
+					<!-- exclusions - these should be included in the debugtests while they are being fixed... -->
+					<exclude name="api/Test_setAccessClusters.java" /> <!-- suspect: intermittent discovery protocol race conditions with nodes stopping/restarting -->
+					<exclude name="cache/TestInMemoryRows.java" /> <!-- suspect: inconsistent performance gains - INMEMORY implementation can also be improved.. -->
+					<exclude name="core/TestSpilloverDiskCachingForHeavyJoins.java" /> <!-- suspect: test is based on an old implementation of disk caching for joins -->
+					<exclude name="vti/genericws/TestJsonScanner.java" /> <!-- suspect: ??? -->
+					<exclude name="vti/genericws/TestPropReadFormat.java" /> <!-- suspect: ??? -->
+					<exclude name="vti/genericws/TestPropSchema.java" /> <!-- suspect: ??? -->
+					<exclude name="vti/genericws/TestSaxScanner.java" /> <!-- suspect: ??? -->
+					<exclude name="vti/genericws/TestStoredProcedure.java" /> <!-- suspect: commented out stored procedure API: 'setltforws', needs to be uncommented and EXP_workedExampleOne7000.txt needs to be updated -->
+					<exclude name="vti/TestICARESTCaching.java" /> <!-- hang in ICAREST: line 460: currentResultBatch = fetchBuffer.takeFirst(); - populator thread seems to have completed without adding poison pill -->
+	<!-- also, when test doesn't hang then some results are missing in cache (test case line 190), or TEST_CACHE_EXPIRES_QUERY should throw exception in test file line 217 and doesn't -->
+					<exclude name="vti/TestICARESTCacheTruncation.java" /> <!-- hang in ICAREST: line 460 - populator thread completed without adding poison pill -->
+					<exclude name="tivoli/TestLargeNumberOfDS4LT.java"/> <!-- suspect: ??? - hangs on build server - should take 18s -->
+					
+					<!-- inclusions -->
+					<include name="api/Test*.java" />
+					<include name="cache/Test*.java" />
+					<include name="core/Test*.java" />
+					<include name="discovery/Test*.java" />
+					<include name="logger/Test*.java" />
+					<include name="readme/Test*.java"/>
+					<include name="security/Test*.java" />
+					<!-- <include name="stress/Test*.java" /> --> <!-- hangs in local test build ??? -->
+					<include name="testutilities/Test*.java" />
+					<include name="tivoli/Test*.java"/>
+					<include name="types/Test*.java"/>
+					<include name="vti/Test*.java"/>
+					<include name="vti/genericws/Test*.java"/>
+					<include name="workedexamples/Test*.java"/>
+					
+					
+					<!-- Do not remove or comment this one out - it ensures child nodes are killed - ANT 1.7 will hang on Windows otherwise -->
+					<include name="ztest/Test*.java" />
+				</fileset>
+				<formatter type="xml" usefile="true" />
+			</batchtest>
+		</junit>
+
+		<antcall target="testswrapup"/>
+
+	</target>
+
+</project>
+
+<!-- end file build.xml -->

@@ -1,0 +1,39 @@
+
+Benefits of virtualisation / data federation layer provided by Gaian:
+
+- Reduced Maintenance
+	-> Using simplified abstract data model as opposed to full physical data model for each back-end
+	-> Views do not need to be created in back-end databases
+	-> Data sets from separate providers can be joined with SQL + configuration only (no need for code)
+	-> Many types of data-sources are supported out-of-the-box (including RDBMS tables, structured text files or XL spreadsheets)
+	-> Other data-sources can be exposed via a Gaian Java plugin interface wrapper.
+	-> Simplified model for Migrating/swapping underlying data-sources - only requires configuration updates.
+
+- Provenance
+	-> Gaian provides provenance information for every data record.
+	-> This facilitates development of Governance aspects which can also be applied at the Gaian layer.
+
+- Ownership
+	-> Gaian nodes can be attributed to each data owner.
+	-> Data owners provide/deny access to their data as they wish - Graphical/intuitive tools for this are in development.
+	-> Intermediary data stores for published data are no longer required.
+
+- Distributed Access + Scalability
+	-> A plurality of interconnected Gaian nodes provides the ability to connect and query through any node.
+	-> Nodes can be configured differently to allow access to more or less data structures.
+	-> Gaian networks can provide scalability by attributing distinct data set partitions to different Gaian instances.
+
+- Distributed Processing
+	-> Processing functions can be deployed dynamically (in a JAR file). Gaian does not need restarting.
+
+- Policy
+	-> Access rules can be implemented to cover access to all data providers (incl. files etc) in one place.
+	-> Policy functions can be deployed dynamically (in a JAR file). Gaian does not need to be restarted.
+
+- Caching
+	-> Gaian can act as a cache location for pre-processed results, faster access, etc
+	-> Gaian can also host surrogate key tables for linking different datasets together (e.g. same locations expressed in different languages)
+
+- Real-time data
+	-> Gaian provides access to current endpoint data - as opposed to "old" data exported by data owner.
+

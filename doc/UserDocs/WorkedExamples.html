@@ -1,0 +1,1139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<head>
+   <meta name=Title content="IBM Gaian Database V2.1.6d - WorkedExamples" />
+   <meta name="DC.Rights" content="Copyright (c) 2007-2014 by IBM Corporation" />
+   <title>IBM Gaian Database V2.1.6d - WorkedExamples</title>
+</head>
+<style type="text/css">
+body, p, td, table, tr, .bodytext, {
+    font-family: Verdana, arial, sans-serif;
+    font-size: 11px;
+    line-height: 16px;
+    color: #000;
+    font-weight: normal;
+}
+
+body {
+    margin: 8px;
+    padding: 0px;
+    text-align: left;
+}
+
+ul, ol, dl {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-top: 4px;
+    padding-bottom: 2px;
+}
+
+pre {
+    border: 1px dashed #3c78b5;
+    margin: 20px;
+    background-color: #f0f8ff;
+    padding: 5px;
+}
+
+hr {
+    color: #3c78b5;
+    background-color: #3c78b5;
+    height: 3;
+}
+
+A:link, A:visited, A:active, A:hover { color: #36a; }
+
+h1 { font-size: 20px; line-height: normal; font-weight: bold; background-color: #f0f0f0; color: #000; padding: 2px;
+     margin: 24px 0 4px; line-height: normal; font-weight: bold; background-color: #f0f0f0; }
+
+h2 { font-size: 18px; line-height: normal; font-weight: bold; background-color: #f0f0f0; color: #000; padding: 2px;
+     margin: 36px 0 4px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 15px 0 4px; }
+
+h3 { font-size: 14px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 21px 0 4px; }
+
+h4 { font-size: 12px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 18px 0 4px; }
+
+h5 { font-size: 10px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 14px 0px 4px 0px; }
+
+h6 { font-size: 8px; line-height: normal; font-weight: bold; background-color: #f0f0f0; padding: 2px; margin: 14px 0px 4px 0px; }
+
+</style>
+
+<BODY>
+
+<h1 class="title">IBM Gaian Database V2.1.6d - Worked Examples</h1>
+
+<h4>COPYRIGHT &copy; International Business Machines Corp. 2007-2014</h4>
+
+<hr size=5 noshade=true><h2>Table of Contents</h2>
+<ol>
+<li><a href="#contents1">Logical Table and Data Source configuration on 2 nodes using the API.</a></li>
+<ol>
+<li><a href="#contents11">Listing stored procedures and functions</a></li>
+<li><a href="#contents12">Listing Logical Tables</a></li>
+<li><a href="#contents13">Showing the 'explain' route information of a distributed query</a></li>
+<li><a href="#contents14">Setting up a new logical table</a></li>
+<li><a href="#contents15">Modifying a logical table</a></li>
+<li><a href="#contents16">Setting a file data source for the logical table</a></li>
+<li><a href="#contents17">Switching servers on the command line and setting up a matching logical table there</a></li>
+<li><a href="#contents18">Creating a 'CARS' table under the MySQL database 'test' using user root</a> - [Requires MySQL]</li>
+<li><a href="#contents19">Setting a relational database table data source for the logical table on the 2nd node</a> - [Requires MySQL]</li>
+<li><a href="#contents110">Querying all data sources and final results in the logical table</a> - [Requires MySQL]</li>
+</ol>
+<br/>
+<li><a href="#contents2">Performing INSERT/UPDATE/DELETE/CREATE/CALL commands over 3 distributed nodes.</a></li>
+<ol>
+<li><a href="#contents21">Create the local tables</a></li>
+<li><a href="#contents22">Verify the tables have been created</a></li>
+<li><a href="#contents23">Add data into the tables</a></li>
+<li><a href="#contents24">Check the content of the tables</a></li>
+<li><a href="#contents25">Update data in the tables</a></li>
+<li><a href="#contents26">Check the content of the tables</a></li>
+<li><a href="#contents27">Perform a distributed 'join' between the local tables and a logical table</a></li>
+<li><a href="#contents28">Delete the tables</a></li>
+<li><a href="#contents29">Verify the tables have been deleted</a></li>
+</ol>
+<br/>
+<li><a href="#contents3">Performing INSERT/UPDATE/DELETE/CREATE/CALL commands over 3 external database providers connected to one node.</a></li>
+<ol>
+<li><a href="#contents31">Create the database connections</a></li>
+<li><a href="#contents32">Create a Source list for all 3 database connections</a></li>
+<li><a href="#contents33">Create the remote tables</a></li>
+<li><a href="#contents34">Add data into the tables</a></li>
+<li><a href="#contents35">Check the content of the tables</a></li>
+<li><a href="#contents36">Update data in the tables</a></li>
+<li><a href="#contents37">Check the content of the tables</a></li>
+<li><a href="#contents38">Delete one row in each table</a></li>
+<li><a href="#contents39">Check the content of the tables</a></li>
+<li><a href="#contents310">Delete the tables</a></li>
+</ol> 
+<br/> 
+<li><a href="#contents41">Simple JDBC Application using the GaianDB discovery client.</a></li>
+  <ol>
+  <li><a href="#contents410">Overview</a></li>
+  <li><a href="#contents411">Simple JDBC Application</a></li>
+  <li><a href="#contents412">A simple configuration file for the GaianDB discovery sample above</a></li>
+  </ol>
+<!-- <li><a href="#contents42">Simple WAS  Application using the GaianDB discovery client.</a></li> -->
+</ol>
+<p/>
+
+<hr>
+<h2><a name="contents1">Example 1: Logical Table and Data Source configuration on 2 nodes using the API</a></h2>
+<p><b>Note:</b> All paths, whether on Windows or Unix, should use forward slashes (/) and not backslashes (\).</p>
+<p><b>Note:</b> Steps 8, 9 & 10 of this example require that you install the MySQL community server database, and its latest JDBC client 'connector/J' - 
+both available freely from <a href="http://dev.mysql.com/downloads/">http://dev.mysql.com/downloads/</a></p>
+<p>First, start 2 GaianDB servers by opening a command prompt, navigating to the GaianDB install directory and running: 'launchMultipleNodes.bat 2' on Windows or './launchMultipleNodes.sh 2' on Unix and MAC OS X.<br>
+<p>When these have started, double click on 'queryDerby.bat' on Windows, or on Unix and MAC OS X open a new command prompt and run './queryDerby.sh' which will start a Command Line Processor connected to the GaianDB server, then follow the example below...</p>
+
+<p><b>Note:</b> You can also use the <a href="Readme.html#contents344">Dashboard Graphical User Interface</a> client utility to perform these examples.
+ In this case you would use the GUI to change between nodes, instead of the CLP commands (for example, when changing the port in step 7).</p>
+<pre>
+java version "1.5.0"
+Java(TM) 2 Runtime Environment, Standard Edition (build pwi32dev-20070201 (SR4))
+IBM J9 VM (build 2.3, J2RE 1.5.0 IBM J9 2.3 Windows XP x86-32 j9vmwi3223-20070201 (JIT enabled)
+J9VM - 20070131_11312_lHdSMR
+JIT  - 20070109_1805ifx1_r8
+GC   - 200701_09)
+JCL  - 20070131
+
+Connecting to GAIAN server using url: jdbc:derby://localhost:6414/gaiandb;create=false, usr: gaiandb...
+
+sql> # This command line environment was started by double clicking on queryDerby.bat
+sql> # 2 GaianDB servers are running on this host 'L3R3844': one on port 6414 and the other on 6415
+sql>
+</pre>
+<ol>
+<li><a name="contents11"><b><u>Listing stored procedures and functions</u></b></a></li><pre>
+sql> # To start with, list all available stored procedures and functions
+sql>
+sql> call listspfs()
+call listspfs()
+===========================================================================================================================================================================================================================================|
+ALIAS               |ALIASTYPE|ALIASINFO                                                                                                                                                                                                   |
+===========================================================================================================================================================================================================================================|
+ADDGATEWAY          |P        |addGateway(IN "IPADDRESS" VARCHAR(32672))                                                                                                                                                                   |
+ADDQUERY            |P        |addQuery(IN "ID" VARCHAR(32),IN "DESCRIPTION" VARCHAR(1024),IN "ISSUER" VARCHAR(32),IN "QUERY" VARCHAR(32672),IN "FIELDS" VARCHAR(32672))                                                                   |
+AUTHTOKEN           |F        |jSetAuthToken("ST" VARCHAR(32672)) RETURNS VARCHAR(32672)                                                                                                                                                   |
+CANCELQUERY         |P        |cancelQuery(IN "QUERYID" VARCHAR(32672))                                                                                                                                                                    |
+CONCATRS            |F        |concatResultSet("SQL_QUERY" VARCHAR(32672),"ROWDEL" VARCHAR(32672),"COLDEL" VARCHAR(32672)) RETURNS CLOB(2147483647)                                                                                        |
+COPYFILE            |F        |copyFileFromNode("FROM_NODE" VARCHAR(32672),"FROM_PATH" VARCHAR(32672),"TO_PATH" VARCHAR(32672)) RETURNS INTEGER                                                                                            |
+GCONNECT            |P        |gaianConnect(IN "CONNECTIONID" VARCHAR(32672),IN "HOST" VARCHAR(32672))                                                                                                                                     |
+GCONNECTX           |P        |gaianConnect(IN "CONNECTIONID" VARCHAR(32672),IN "HOST" VARCHAR(32672),IN "PORT" INTEGER,IN "USR" VARCHAR(32672),IN "PWD" VARCHAR(32672))                                                                   |
+GDBGC               |F        |garbageCollect("COUNT" INTEGER) RETURNS INTEGER                                                                                                                                                             |
+GDBINIT_USERDB      |P        |initialiseGdbUserDatabase()                                                                                                                                                                                 |
+GDBRUNSTATUS        |F        |getNodeRunStatus() RETURNS VARCHAR(80)                                                                                                                                                                      |
+GDBTRIGGER          |F        |setTriggerEvent("S" VARCHAR(32672)) RETURNS INTEGER                                                                                                                                                         |
+GDB_NODE_CPU        |F        |getNodeCPUInLastPeriod() RETURNS INTEGER                                                                                                                                                                    |
+GDB_PID             |F        |getPID() RETURNS INTEGER                                                                                                                                                                                    |
+GDB_QRY_ACTIVITY    |F        |getQueryActivity() RETURNS INTEGER                                                                                                                                                                          |
+GDB_THROUGHPUT      |F        |getDataThroughput() RETURNS BIGINT                                                                                                                                                                          |
+GDISCONNECT         |P        |gaianDisconnect(IN "CONNECTIONID" VARCHAR(32672))                                                                                                                                                           |
+GETCONFIGPROPERTY   |F        |getConfigProperty("PROPERTY_NAME_SQLPATTERN" VARCHAR(32672)) RETURNS VARCHAR(32672)                                                                                                                         |
+GETFILEB            |F        |getFileB("FILE_PATH" VARCHAR(32672)) RETURNS BLOB(2147483647)                                                                                                                                               |
+GETFILEBZ           |F        |getFileBZ("FILE_PATH" VARCHAR(32672)) RETURNS BLOB(2147483647)                                                                                                                                              |
+GETFILESTATS        |P        |getFileStats(IN "FILE_PATH" VARCHAR(32672))                                                                                                                                                                 |
+GETLTS              |F        |getLogicalTables() RETURNS TABLE ( "NODEID" VARCHAR(20), "LTNAME" VARCHAR(32672), "LTDEF" VARCHAR(32672) )                                                                                                  |
+GETNODECOUNT        |F        |getNodeCount() RETURNS BIGINT                                                                                                                                                                               |
+GETNODES            |F        |getGaianNodes() RETURNS TABLE ( "NODEID" VARCHAR(80) )                                                                                                                                                      |
+GKILL               |F        |stop("CODE" INTEGER) RETURNS INTEGER                                                                                                                                                                        |
+GKILLALL            |P        |killAll(IN "CODE" INTEGER)                                                                                                                                                                                  |
+GKILLNODES          |P        |killNodes(IN "NODELIST" VARCHAR(32672))                                                                                                                                                                     |
+INTERNALDIAGS       |F        |internalDiags("VARNAME" VARCHAR(32672)) RETURNS VARCHAR(32672)                                                                                                                                              |
+JFORMAT             |F        |jGetFormattedString("FORMAT_STRING" VARCHAR(32672),"CSVARGS" VARCHAR(32672)) RETURNS VARCHAR(32672)                                                                                                         |
+JHASH               |F        |jHash("S" VARCHAR(32672)) RETURNS INTEGER                                                                                                                                                                   |
+JMATCHER            |F        |jMatchRegex("S" VARCHAR(32672),"REGEX" VARCHAR(32672)) RETURNS SMALLINT                                                                                                                                     |
+JMEMORY             |F        |jMemory() RETURNS BIGINT                                                                                                                                                                                    |
+JMEMORYMAX          |F        |jMemoryMax() RETURNS BIGINT                                                                                                                                                                                 |
+JMEMORYNONHEAP      |F        |jMemoryNonHeap() RETURNS BIGINT                                                                                                                                                                             |
+JMEMORYPERCENT      |F        |jMemoryPercent() RETURNS INTEGER                                                                                                                                                                            |
+JMILLIS             |F        |jTimestampMilliseconds("T" TIMESTAMP) RETURNS BIGINT                                                                                                                                                        |
+JQUOTED             |F        |jGetQuotedParameter("QUOTED_STRING" VARCHAR(32672),"POSITION" INTEGER) RETURNS VARCHAR(128)                                                                                                                 |
+JREPLACE            |F        |jReplaceAll("S" VARCHAR(32672),"REGEX" VARCHAR(32672),"REPLACEMENT" VARCHAR(32672)) RETURNS VARCHAR(32672)                                                                                                  |
+JREPLACEFIRST       |F        |jReplaceFirst("S" VARCHAR(32672),"REGEX" VARCHAR(32672),"REPLACEMENT" VARCHAR(32672)) RETURNS VARCHAR(32672)                                                                                                |
+JSECS               |F        |jTimestampSeconds("T" TIMESTAMP) RETURNS BIGINT                                                                                                                                                             |
+JSLEEP              |F        |jSleep("MILLIS" INTEGER) RETURNS SMALLINT                                                                                                                                                                   |
+JTSTAMP             |F        |jMillis2Timestamp("I" BIGINT) RETURNS TIMESTAMP                                                                                                                                                             |
+JURLDECODE          |F        |jURLDecode("S" VARCHAR(32672)) RETURNS VARCHAR(32672)                                                                                                                                                       |
+JURLENCODE          |F        |jURLEncode("S" VARCHAR(32672)) RETURNS VARCHAR(32672)                                                                                                                                                       |
+LISTAPI             |P        |listAPI()                                                                                                                                                                                                   |
+LISTCONFIG          |P        |listConfig()                                                                                                                                                                                                |
+LISTDERBYTABLES     |P        |listDerbyTables()                                                                                                                                                                                           |
+LISTDS              |P        |listDataSources()                                                                                                                                                                                           |
+LISTEXPLAIN         |P        |listExplainGaianTableOrQuery(IN "LTNAME_OR_GSQL" VARCHAR(32672))                                                                                                                                            |
+LISTFLOOD           |P        |listFlood()                                                                                                                                                                                                 |
+LISTLTMATCHES       |P        |listLogicalTableMatches()                                                                                                                                                                                   |
+LISTLTS             |P        |listLogicalTables()                                                                                                                                                                                         |
+LISTNET             |P        |listNet(IN "IP_PREFIX" VARCHAR(32672))                                                                                                                                                                      |
+LISTNODES           |P        |listGaianNodes()                                                                                                                                                                                            |
+LISTQUERIES         |P        |listQueries(IN "DEPTH" INTEGER)                                                                                                                                                                             |
+LISTRDBC            |P        |listRDBConnections()                                                                                                                                                                                        |
+LISTSPFS            |P        |listStoredProceduresAndFunctions()                                                                                                                                                                          |
+LISTWARNINGS        |P        |listWarnings()                                                                                                                                                                                              |
+LISTWARNINGSX       |P        |listWarningsToDepth(IN "DEPTH" INTEGER)                                                                                                                                                                     |
+LOGTAIL             |P        |logTail(IN "NODELIST" VARCHAR(32672),IN "NUMLINES" INTEGER)                                                                                                                                                 |
+LTMATCH             |F        |matchTableDefinitions("LTDEF1" VARCHAR(32672),"LTDEF2" VARCHAR(32672)) RETURNS SMALLINT                                                                                                                     |
+MAINTAINCONNECTION2 |F        |maintainConnection2("NODEID" VARCHAR(100),"USR" VARCHAR(10),"PWD" VARCHAR(10),"EXTRAINFO" VARCHAR(32672)) RETURNS VARCHAR(32672)                                                                            |
+NESTEXEC            |P        |nestExecuteQuery(IN "SQL_QUERY" VARCHAR(32672),IN "SQL_NESTED" VARCHAR(32672))                                                                                                                              |
+REMOVEDS            |P        |removeDataSource(IN "DSID" VARCHAR(32672))                                                                                                                                                                  |
+REMOVEGATEWAY       |P        |removeGateway(IN "IPADDRESS" VARCHAR(32672))                                                                                                                                                                |
+REMOVELT            |P        |removeLogicalTable(IN "LTNAME" VARCHAR(32672))                                                                                                                                                              |
+REMOVEQUERY         |P        |removeQuery(IN "ID" VARCHAR(32))                                                                                                                                                                            |
+REMOVERDBC          |P        |removeRDBConnection(IN "CONNECTIONID" VARCHAR(32672))                                                                                                                                                       |
+SETACCESSCLUSTERS   |P        |setAccessClusters(IN "CLUSTERSCSV" VARCHAR(32672))                                                                                                                                                          |
+SETCONFIGPROPERTY   |P        |setConfigProperty(IN "PROPERTYNAME" VARCHAR(32672),IN "VALUE" VARCHAR(32672))                                                                                                                               |
+SETDISCOVERYHOSTS   |P        |setDiscoveryHosts(IN "HOSTSCSV" VARCHAR(32672))                                                                                                                                                             |
+SETDISCOVERYIP      |P        |setDiscoveryIP(IN "IPADDRESS" VARCHAR(32672))                                                                                                                                                               |
+SETDSEXCEL          |P        |setDataSourceExcel(IN "LTNAME" VARCHAR(32672),IN "DSNAME" VARCHAR(32672),IN "FILENAME" VARCHAR(32672),IN "OPTIONS" VARCHAR(32672),IN "COLUMNS" VARCHAR(32672))                                              |
+SETDSFILE           |P        |setDataSourceFile(IN "LTNAME" VARCHAR(32672),IN "DSNAME" VARCHAR(32672),IN "FILENAME" VARCHAR(32672),IN "OPTIONS" VARCHAR(32672),IN "COLUMNSCSV" VARCHAR(32672))                                            |
+SETDSLOCALDERBY     |P        |setDataSourceRDBTable(IN "LTNAME" VARCHAR(32672),IN "DSNAME" VARCHAR(32672),IN "RDBTABLE" VARCHAR(32672),IN "OPTIONS" VARCHAR(32672),IN "COLUMNSCSV" VARCHAR(32672))                                        |
+SETDSRDBTABLE       |P        |setDataSourceRDBTable(IN "LTNAME" VARCHAR(32672),IN "DSNAME" VARCHAR(32672),IN "CONNECTIONID" VARCHAR(32672),IN "RDBTABLE" VARCHAR(32672),IN "OPTIONS" VARCHAR(32672),IN "COLUMNSCSV" VARCHAR(32672))       |
+SETDSVTI            |P        |setDataSourceVTI(IN "LTNAME" VARCHAR(32672),IN "DSNAME" VARCHAR(32672),IN "VTICLASS" VARCHAR(32672),IN "ARGS" VARCHAR(32672),IN "OPTIONS" VARCHAR(32672),IN "COLUMNSCSV" VARCHAR(32672))                    |
+SETLOGLEVEL         |P        |setLogLevel(IN "LEVEL" VARCHAR(32672))                                                                                                                                                                      |
+SETLT               |P        |setLogicalTable(IN "LTNAME" VARCHAR(32672),IN "DEFINITION" VARCHAR(32672),IN "CONSTANTS" VARCHAR(32672))                                                                                                    |
+SETLTCONSTANTS      |P        |setLogicalTableConstants(IN "LTNAME" VARCHAR(32672),IN "CONSTANTS" VARCHAR(32672))                                                                                                                          |
+SETLTFOREXCEL       |P        |setLogicalTableForExcel(IN "LTNAME" VARCHAR(32672),IN "SPREADSHEETLOCATION" VARCHAR(32672))                                                                                                                 |
+SETLTFORFILE        |P        |setLogicalTableForFile(IN "LTNAME" VARCHAR(32672),IN "FILENAME" VARCHAR(32672))                                                                                                                             |
+SETLTFORNODE        |P        |setLogicalTableForNode(IN "LTNAME" VARCHAR(32672),IN "NODEID" VARCHAR(32672))                                                                                                                               |
+SETLTFORRDBTABLE    |P        |setLogicalTableForRDBTable(IN "LTNAME" VARCHAR(32672),IN "CID" VARCHAR(32672),IN "RDBTABLEORFROMEXPRESSION" VARCHAR(32672))                                                                                 |
+SETMAXPOOLSIZES     |P        |setMaxPoolsizes(IN "SIZE" INTEGER)                                                                                                                                                                          |
+SETMAXPROPAGATION   |P        |setMaxPropagation(IN "DEPTH" INTEGER)                                                                                                                                                                       |
+SETMINCONNECTIONS   |P        |setNumConnectionsSought(IN "NUMCONNECTIONS" INTEGER)                                                                                                                                                        |
+SETMSGBROKERDETAILS |P        |setMsgBrokerDetails(IN "HOST" VARCHAR(32672),IN "PORT" INTEGER,IN "TOPIC" VARCHAR(32672))                                                                                                                   |
+SETNODECONSTANTS    |P        |setNodeConstants(IN "NODECONSTANTS" VARCHAR(32672))                                                                                                                                                         |
+SETQUERYFIELDSQL    |P        |setQueryFieldSql(IN "QUERY_ID" VARCHAR(32),IN "FIELD" VARCHAR(32),IN "QUERY" VARCHAR(32672))                                                                                                                |
+SETRDBC             |P        |setRDBConnection(IN "CONNECTIONID" VARCHAR(32672),IN "DRIVER" VARCHAR(32672),IN "URL" VARCHAR(32672),IN "USR" VARCHAR(32672),IN "PWD" VARCHAR(32672))                                                       |
+SETSOURCELIST       |P        |setSourceList(IN "LISTID" VARCHAR(32672),IN "SOURCESCSV" VARCHAR(32672))                                                                                                                                    |
+WSGET               |F        |webServiceGetAsString("URL" VARCHAR(32672),"OPTIONS" VARCHAR(32672)) RETURNS VARCHAR(32672)                                                                                                                 |
+===========================================================================================================================================================================================================================================|
+Fetched 93 rows. Total Time: 108ms (Execution Time: 75ms)
+
+sql>
+sql>
+</pre><li><a name="contents12"><b><u>Listing Logical Tables</u></b></a></li><pre>
+sql>
+sql> # List defined logical tables - There are 2 nodes in the network: L3R3844 and L3R3844:6415. Only some of the tables are defined on both nodes.
+sql>
+sql> call listlts()
+call listlts()
+===========================================================================================================================================================================
+GDB_NODE            |LTNAME              |LTDEF                                                                                                                           |
+===========================================================================================================================================================================
+L3R3844             |DERBY_TABLES        |TABNAME VARCHAR(30), TABTYPE CHAR, COLNAME VARCHAR(30), COLTYPE VARCHAR(80)                                                     |
+L3R3844             |GDB_LTLOG           |COLUMN1 VARCHAR(255)                                                                                                            |
+L3R3844             |GDB_LTNULL          |CNULL CHAR(1)                                                                                                                   |
+L3R3844             |LT0                 |LOCATION VARCHAR(30), MISC VARCHAR(30), NUMBER INTEGER                                                                          |
+L3R3844             |LT1                 |DERBYCOL1 VARCHAR(30), DERBYCOL2 VARCHAR(30)                                                                                    |
+L3R3844:6415        |DERBY_TABLES        |TABNAME VARCHAR(30), TABTYPE CHAR, COLNAME VARCHAR(30), COLTYPE VARCHAR(80)                                                     |
+L3R3844:6415        |GDB_LTLOG           |COLUMN1 VARCHAR(255)                                                                                                            |
+L3R3844:6415        |GDB_LTNULL          |CNULL CHAR(1)                                                                                                                   |
+L3R3844:6415        |LT0                 |LOCATION VARCHAR(30), MISC VARCHAR(30)                                                                                          |
+===========================================================================================================================================================================
+Fetched 9 rows. Total Time: 210ms (Execution Time: 204ms)
+
+sql>
+</pre><li><a name="contents13"><b><u>Showing the 'explain' route information of a distributed query</u></b></a></li><pre>
+sql>
+sql> # Show characteristics of a query route for a query against logical table 'LT0'
+sql> # L3R3844:6415 federates sources that hold 5 rows for LT0 and L3R4844 has 8 rows (=13-5). The full row count from both nodes is 13.
+sql>
+sql> call listexplain('LT0')
+call listexplain('LT0')
+===========================================================================================
+GDBX_FROM_NODE      |GDBX_TO_NODE        |GDBX_DEPTH |GDBX_PRECEDENCE|GDBX_COUNT          |
+===========================================================================================
+L3R3844             |L3R3844:6415        |          1|F              |                   5|
+&lt;SQL QUERY&gt;         |L3R3844             |          0|F              |                  13|
+===========================================================================================
+Fetched 2 rows. Total Time: 46ms (Execution Time: 46ms)
+
+sql>
+</pre><li><a name="contents14"><b><u>Setting up a new logical table</u></b></a></li><pre>
+sql>
+sql> # Now setup a new logical table 'STOCK' on L3R3844
+sql>
+sql> call setlt('STOCK', 'ITEM VARCHAR(20), COST REAL', 'BUILDING INT 1')
+call setlt('STOCK', 'ITEM VARCHAR(20), COST REAL', 'BUILDING INT 1')
+
+sql>
+sql> # List the logical tables again to see the new definition for STOCK on L3R3844
+sql>
+sql> call listlts()
+call listlts()
+===========================================================================================================================================================================
+GDB_NODE            |LTNAME              |LTDEF                                                                                                                           |
+===========================================================================================================================================================================
+L3R3844             |DERBY_TABLES        |TABNAME VARCHAR(30), TABTYPE CHAR, COLNAME VARCHAR(30), COLTYPE VARCHAR(80)                                                     |
+L3R3844             |GDB_LTLOG           |COLUMN1 VARCHAR(255)                                                                                                            |
+L3R3844             |GDB_LTNULL          |CNULL CHAR(1)                                                                                                                   |
+L3R3844             |LT0                 |LOCATION VARCHAR(30), MISC VARCHAR(30), NUMBER INTEGER                                                                          |
+L3R3844             |LT1                 |DERBYCOL1 VARCHAR(30), DERBYCOL2 VARCHAR(30)                                                                                    |
+L3R3844             |STOCK               |ITEM VARCHAR(20), COST REAL, BUILDING INT                                                                                       |
+L3R3844:6415        |DERBY_TABLES        |TABNAME VARCHAR(30), TABTYPE CHAR, COLNAME VARCHAR(30), COLTYPE VARCHAR(80)                                                     |
+L3R3844:6415        |GDB_LTLOG           |COLUMN1 VARCHAR(255)                                                                                                            |
+L3R3844:6415        |GDB_LTNULL          |CNULL CHAR(1)                                                                                                                   |
+L3R3844:6415        |LT0                 |LOCATION VARCHAR(30), MISC VARCHAR(30)                                                                                          |
+===========================================================================================================================================================================
+Fetched 10 rows. Total Time: 30ms (Execution Time: 24ms)
+
+sql>
+sql> # Now select all rows from logical table 'STOCK' - this curently has no data sources attached to it on this node.
+sql> # Note that 'STOCK' in the query below is actually a Derby VIEW on all rows of the logical table 'STOCK'. This view is managed by the GaianDB.
+sql> # The query below is therefore a shorthand for: select * from new com.ibm.db2j.GaianTable('STOCK') T
+sql>
+sql> select * from STOCK
+select * from STOCK
+===========================================================
+ITEM                |COST         |BUILDING   |NODEINDEX  |
+===========================================================
+===========================================================
+Fetched 0 rows. Total Time: 31ms (Execution Time: 15ms)
+
+sql>
+</pre><li><a name="contents15"><b><u>Modifying a logical table</u></b></a></li><pre>
+sql>
+sql> # Now modify the definition for STOCK by adding a constant column. In this example, we assume the stock on node L3R3844 only applies to 'BUILDING 1'
+sql>
+sql> call setlt('STOCK', 'ITEM VARCHAR(20), COST REAL, QUANTITY INT', 'BUILDING INT 1')
+call setlt('STOCK', 'ITEM VARCHAR(20), COST REAL, QUANTITY INT', 'BUILDING INT 1')
+
+sql>
+sql> # Show the data again - still no data - but we have a new defintion
+sql>
+sql> select * from STOCK
+select * from STOCK
+=======================================================================
+ITEM                |COST         |QUANTITY   |BUILDING   |NODEINDEX  |
+=======================================================================
+=======================================================================
+Fetched 0 rows. Total Time: 31ms (Execution Time: 15ms)
+
+sql>
+</pre><li><a name="contents16"><b><u>Setting a file data source for the logical table</u></b></a></li><pre>
+sql>
+sql> # Create a first data source for the logical table 'STOCK'
+sql> # This will be a file data source 'file1' which points to physical file 'datafile1' situated where the GaianDB server for this node was started from.
+sql> # This is a CSV file whose physical column numbers are understood by GAIANDB as being column1, column2, column3, etc..
+sql> # In this example, we are positionally mapping 'column2' to 'ITEM', 'column8' to 'COST' and 'column1' to 'QUANTITY'.
+sql> # Note that columns from the file must be parsable into the defined logical table types.
+sql>
+sql> call setdsfile('stock', 'file1', './csvtestfiles/datafile.dat', '', 'column2, column8, column1')
+call setdsfile('stock', 'file1', './csvtestfiles/datafile.dat', '', 'column2, column8, column1')
+
+sql> call listds()
+call listds()
+=================================================================================================================================================================================
+GDB_NODE    |DSID                |DSTYPE|DSWRAPPER           |DSHANDLE                                                                               |DSOPTIONS                 |
+=================================================================================================================================================================================
+L3R3844     |LT0_DS0             |V     |FileImport:1        |./csvtestfiles/datafile.dat                                                            |INMEMORY                  |
+L3R3844     |LT1_DS0             |R     |EmbedConnection30:1 |jdbc:derby:gaiandb;create=true::TABLE1                                                 |-                         |
+L3R3844     |STOCK_DSFILE1       |V     |FileImport:1        |./csvtestfiles/datafile.dat                                                            |                          |
+L3R3844     |DERBY_TABLES_DSLOC  |R     |EmbedConnection30:1 |jdbc:derby:gaiandb;create=true::sys.systables,sys.syscolumns where tableid=referenceid |-                         |
+L3R3844:6415|LT0_DS0             |V     |FileImport:1        |./csvtestfiles/datafile2.dat                                                           |-                         |
+L3R3844:6415|DERBY_TABLES_DSLOC  |R     |EmbedConnection30:1 |jdbc:derby:gaiandb;create=true::sys.systables,sys.syscolumns where tableid=referenceid |-                         |
+=================================================================================================================================================================================
+Fetched 6 rows. Total Time: 63ms (Execution Time: 31ms)
+
+sql>
+sql>
+sql> # Query data from the logical table
+sql>
+sql> select * from STOCK
+select * from STOCK
+=======================================================================
+ITEM                |COST         |QUANTITY   |BUILDING   |NODEINDEX  |
+=======================================================================
+111111111           |65.6         |          0|          1|          1|
+WWWWWWWWW           |65.6         |          3|          1|          1|
+991111111           |65.6         |          0|          1|          1|
+SZZZSK_DAVIDSFILE   |68.0         |          7|          1|          1|
+AAAAAAAAA           |65.6         |          1|          1|          1|
+CCCCCCCCC           |65.6         |          3|          1|          1|
+SYSK_DATAFILE1!!    |65.6         |          4|          1|          1|
+TTTTTTTTT           |65.6         |          2|          1|          1|
+=======================================================================
+Fetched 8 rows. Total Time: 31ms (Execution Time: 0ms)
+
+sql>
+</pre><li><a name="contents17"><b><u>Switching servers on the command line and setting up a matching logical table there</u></b></a></li><pre>
+sql>
+sql>
+sql> # SWITCH SERVERS BY ENTERING A NEW PORT VALUE WHERE THE SECOND INSTANCE OF GAIANDB IS RUNNING ON THIS HOST: L3R3844:6415
+sql> -p 6415
+sql>
+sql> # Setup the logical table definition on this node aswell, mirroring the definition set up above on node L3R3844 (port 6414)
+sql> # Note that the constant columns are not copied over - they need defining independantly
+sql> # Note also that the system needs to reconnect as we have switched ports to 6415
+sql>
+sql> call setltfornode('stock', 'L3R3844')
+
+Attempting to re-connect...
+
+Connecting to GAIAN server using url: jdbc:derby://localhost:6415/gaiandb6415;create=false, usr: gaiandb...
+Connection attempt succeeded, Re-run query [Y/n] ?
+call setltfornode('stock', 'L3R3844')
+
+sql>
+sql> call setltconstants('stock', 'BUILDING INT 2')
+call setltconstants('stock', 'BUILDING INT 2')
+
+sql>
+sql> # Note the new Logical table def for STOCK on L3R3844:6415
+sql>
+sql> call listlts()
+call listlts()
+===========================================================================================================================================================================
+GDB_NODE            |LTNAME              |LTDEF                                                                                                                           |
+===========================================================================================================================================================================
+L3R3844             |DERBY_TABLES        |TABNAME VARCHAR(30), TABTYPE CHAR, COLNAME VARCHAR(30), COLTYPE VARCHAR(80)                                                     |
+L3R3844             |GDB_LTLOG           |COLUMN1 VARCHAR(255)                                                                                                            |
+L3R3844             |GDB_LTNULL          |CNULL CHAR(1)                                                                                                                   |
+L3R3844             |LT0                 |LOCATION VARCHAR(30), MISC VARCHAR(30), NUMBER INTEGER                                                                          |
+L3R3844             |LT1                 |DERBYCOL1 VARCHAR(30), DERBYCOL2 VARCHAR(30)                                                                                    |
+L3R3844             |STOCK               |ITEM VARCHAR(20), COST REAL, BUILDING INT                                                                                       |
+L3R3844:6415        |DERBY_TABLES        |TABNAME VARCHAR(30), TABTYPE CHAR, COLNAME VARCHAR(30), COLTYPE VARCHAR(80)                                                     |
+L3R3844:6415        |GDB_LTLOG           |COLUMN1 VARCHAR(255)                                                                                                            |
+L3R3844:6415        |GDB_LTNULL          |CNULL CHAR(1)                                                                                                                   |
+L3R3844:6415        |LT0                 |LOCATION VARCHAR(30), MISC VARCHAR(30)                                                                                          |
+L3R3844:6415        |STOCK               |ITEM VARCHAR(20), COST REAL, QUANTITY INT, BUILDING INT                                                                         |
+===========================================================================================================================================================================
+
+sql> 
+sql>
+</pre><li><a name="contents18"><b><u>Creating a 'CARS' table under the MySQL database 'test' using user root - [Requires MySQL]</u></b></a></li>
+<p>The following sections require that you install the MySQL community server database, and its latest JDBC client 'connector/J' - 
+both available freely from <a href="http://dev.mysql.com/downloads/">http://dev.mysql.com/downloads/</a>
+</p>
+<pre>
+mysql>
+mysql> # Create a MySQL table with data using the SQL below:
+mysql>
+mysql> CREATE TABLE CARS ( CAR CHAR(10) NOT NULL, VALUE REAL NOT NULL, COUNT INTEGER, PRIMARY KEY (CAR) );
+mysql> INSERT INTO CARS VALUES('AUDI', 15999.99, 14), ('BMW', 25000.0, 93), ('Mercedes', 30657, 3), ('Jaguar', 39999.99, 87), ('Renault', 5400, 7), ('Vauxhall', 3505, 21);
+mysql>
+mysql>
+</pre><li><a name="contents19"><b><u>Setting a relational database table data source for the logical table on the 2nd node - [Requires MySQL]</u></b></a></li><pre>
+sql> # Setup an RDB connection to a MySQL database data source 
+sql>
+sql> call setrdbc('mysql5', 'com.mysql.jdbc.Driver', 'jdbc:mysql://localhost:3306/test', 'root', '')
+call setrdbc('mysql5', 'com.mysql.jdbc.Driver', 'jdbc:mysql://localhost:3306/test', 'root', '')
+sql>
+sql> # Setup an RDB data source 'mydb' for logical table 'STOCK' on this node (L3R3844:6415)
+sql> # This data source uses the newly defined MySQL RDB connection: 'mysql5' and targets a table 'CARS' under the database 'test' (as defined in the connection URL)
+sql> # There are no options, and the column mappings are: CAR -> ITEM ; VALUE -> COST ; COUNT -> QUANTITY
+sql>
+sql> call setdsrdbtable('stock', 'mydb', 'mysql5', 'CARS', '', 'car, value, count')
+call setdsrdbtable('stock', 'mydb', 'mysql5', 'CARS', '', 'car, value, count')
+
+sql>
+sql>
+</pre><li><a name="contents110"><b><u>Querying all data sources and final results in the logical table - [Requires MySQL]</u></b></a></li><pre>
+sql>
+sql> # Data source has now been set successfully! Check out the data sources with the next API call - note the presence of the new 'STOCK_DSMYDB'
+sql>
+sql> call listds()
+call listds()
+=================================================================================================================================================================================
+GDB_NODE    |DSID                |DSTYPE|DSWRAPPER           |DSHANDLE                                                                               |DSOPTIONS                 |
+=================================================================================================================================================================================
+L3R3844     |LT0_DS0             |V     |FileImport:1        |./csvtestfiles/datafile.dat                                                            |INMEMORY                  |
+L3R3844     |LT1_DS0             |R     |EmbedConnection30:1 |jdbc:derby:gaiandb;create=true::TABLE1                                                 |-                         |
+L3R3844     |STOCK_DSFILE1       |V     |FileImport:1        |datafile.dat                                                                           |                          |
+L3R3844     |DERBY_TABLES_DSLOC  |R     |EmbedConnection30:1 |jdbc:derby:gaiandb;create=true::sys.systables,sys.syscolumns where tableid=referenceid |-                         |
+L3R3844:6415|LT0_DS0             |V     |FileImport:1        |./csvtestfiles/datafile2.dat                                                           |-                         |
+L3R3844:6415|DERBY_TABLES_DSLOC  |R     |EmbedConnection30:1 |jdbc:derby:gaiandb;create=true::sys.systables,sys.syscolumns where tableid=referenceid |-                         |
+L3R3844:6415|STOCK_DSMYDB        |R     |-                   |jdbc:mysql://localhost:3306/test::CARS                                                 |                          |
+=================================================================================================================================================================================
+Fetched 7 rows. Total Time: 47ms (Execution Time: 16ms)
+
+sql>
+sql>
+sql> # Now have a look at the new data on the 2 active nodes - also show provenance info
+sql> # Note the use of the view with suffix '_P': 'STOCK_P' which designates the logical table STOCK with provenance columns
+sql> # This is a shorthand for "select * from new com.ibm.db2j.GaianTable('STOCK', 'with_provenance') T"
+sql>
+sql> select * from STOCK_P
+select * from STOCK_P
+
+===============================================================================================================================================
+ITEM                |COST         |QUANTITY   |BUILDING   |NODEINDEX  |GDB_NODE            |GDB_LEAF                                          |
+===============================================================================================================================================
+111111111           |65.6         |          0|          1|          1|L3R3844             |./csvtestfiles/datafile.dat                       |
+WWWWWWWWW           |65.6         |          3|          1|          1|L3R3844             |./csvtestfiles/datafile.dat                       |
+991111111           |65.6         |          0|          1|          1|L3R3844             |./csvtestfiles/datafile.dat                       |
+SZZZSK_DAVIDSFILE   |68.0         |          7|          1|          1|L3R3844             |./csvtestfiles/datafile.dat                       |
+AAAAAAAAA           |65.6         |          1|          1|          1|L3R3844             |./csvtestfiles/datafile.dat                       |
+CCCCCCCCC           |65.6         |          3|          1|          1|L3R3844             |./csvtestfiles/datafile.dat                       |
+SYSK_DATAFILE1!!    |65.6         |          4|          1|          1|L3R3844             |./csvtestfiles/datafile.dat                       |
+TTTTTTTTT           |65.6         |          2|          1|          1|L3R3844             |./csvtestfiles/datafile.dat                       |
+===============================================================================================================================================
+Fetched 8 rows. Total Time: 47ms (Execution Time: 31ms)
+sql>
+sql>
+sql> # Note we only have the values for node L3R3844 above, not the node running on port 6415 with our new MySQL data!
+sql> # To determine what may have gone wrong, use API call: listwarnings()
+sql>
+sql> call listwarnings()
+call listwarnings()
+=========================================================================================================================================================================
+GDB_NODE            |TSTAMP                    |WARNING                                                                                                                 |
+=========================================================================================================================================================================
+L3R3844:6415        |2009-09-09 16:42:41.515   |Asynchronous DB connection attempt failed: java.sql.SQLException: Unable to load db driver: com.mysql.jdbc.Driver, cause: java.lang.
+ClassNotFoundException: com.mysql.jdbc.Driver|
+L3R3844:6415        |2009-09-09 16:40:34.843   |Unable to PREPARE statement (returning null result): Unable to load db driver: com.mysql.jdbc.Driver, cause: java.lang.ClassNotFound
+Exception: com.mysql.jdbc.Driver|
+L3R3844:6415        |2009-09-09 16:38:40.765   |Asynchronous DB connection attempt failed: java.sql.SQLException: Unable to load db driver: com.mysql.jdbc.Driver, cause: java.lang.
+ClassNotFoundException: com.mysql.jdbc.Driver|
+=========================================================================================================================================================================
+Fetched 3 rows. Total Time: 78ms (Execution Time: 47ms)
+
+sql>
+sql> # Note the warnings show an error case above, as the MySQL connector jar file had not been included on the classpath of the IBM Gaian Database server running on L3R3844:6415
+sql> # We correct this and restart the server with the JDBC connector JAR for mysql added to the CLASSPATH in launchGaianServer.bat: e.g. 
+sql> # SET CLASSPATH=%CLASSPATH%;C:/APPS/MySQL5/jdbc/mysql-connector-java-5.1.7-bin.jar
+sql> # Note: All paths, whether on Windows or Unix, should use forward slashes (/) and not backslashes (\).
+sql> # Kill the GaianDb node on port 6415 and restart it using the command: launchGaianServer.bat -p 6415 -c gaiandb_config2.properties
+sql> # Now re-run the query against STOCK_P as below... no need to close and restart the command window.
+sql> # This will cause an automatic reconnect to the restarted server... notice we now have 14 rows returned.
+sql>
+sql> select * from STOCK_P
+select * from STOCK_P
+
+Caught Exception: java.sql.SQLException: A communications error has been detected: Connection reset by peer: socket write error.
+
+Attempting to re-connect...
+sqlConnect() url: jdbc:derby://localhost:6415/gaiandb6415;create=false...
+
+Connection attempt succeeded, Re-run query [Y/n] ?
+select * from STOCK_P
+===============================================================================================================================================
+ITEM                |COST         |QUANTITY   |BUILDING   |NODEINDEX  |GDB_NODE            |GDB_LEAF                                          |
+===============================================================================================================================================
+111111111           |65.6         |          0|          1|          1|L3R3844             |./csvtestfiles/datafile.dat                       |
+WWWWWWWWW           |65.6         |          3|          1|          1|L3R3844             |./csvtestfiles/datafile.dat                       |
+991111111           |65.6         |          0|          1|          1|L3R3844             |./csvtestfiles/datafile.dat                       |
+SZZZSK_DAVIDSFILE   |68.0         |          7|          1|          1|L3R3844             |./csvtestfiles/datafile.dat                       |
+AAAAAAAAA           |65.6         |          1|          1|          1|L3R3844             |./csvtestfiles/datafile.dat                       |
+CCCCCCCCC           |65.6         |          3|          1|          1|L3R3844             |./csvtestfiles/datafile.dat                       |
+SYSK_DATAFILE1!!    |65.6         |          4|          1|          1|L3R3844             |./csvtestfiles/datafile.dat                       |
+TTTTTTTTT           |65.6         |          2|          1|          1|L3R3844             |./csvtestfiles/datafile.dat                       |
+AUDI                |15999.99     |         14|          2|          2|L3R3844:6415        |jdbc:mysql://localhost:3306/test::CARS            |
+BMW                 |25000.0      |         93|          2|          2|L3R3844:6415        |jdbc:mysql://localhost:3306/test::CARS            |
+Jaguar              |39999.99     |         87|          2|          2|L3R3844:6415        |jdbc:mysql://localhost:3306/test::CARS            |
+Mercedes            |30657.0      |          3|          2|          2|L3R3844:6415        |jdbc:mysql://localhost:3306/test::CARS            |
+Renault             |5400.0       |          7|          2|          2|L3R3844:6415        |jdbc:mysql://localhost:3306/test::CARS            |
+Vauxhall            |3505.0       |         21|          2|          2|L3R3844:6415        |jdbc:mysql://localhost:3306/test::CARS            |
+===============================================================================================================================================
+Fetched 14 rows. Total Time: 172ms (Execution Time: 141ms)
+sql>
+sql>
+sql>
+</pre>
+</ol>
+
+<hr>
+<h2><a name="contents2">Example 2: Performing INSERT/UPDATE/DELETE/CREATE/CALL commands over 3 distributed nodes.</a></h2>
+<p>First, please note that distributed CREATE/INSERT/UPDATE/DELETE against logical tables is not yet supported in this release of the IBM Gaian Database. 
+However it does support a "pass-through" mechanism for executing these directly against the remote physical sources. This example demonstrates this mechanism.
+<p>This example shows how to distribute some data in a local table EXAMPLE to all nodes participating in the query, how to add data into all local nodes, 
+then how to do a distributed local join with this data and after getting the results, finally how to delete all distributed local tables EXAMPLE.
+<br/>See the <a href="Readme.html#contents315">Readme's Advanced Features section</a> for descriptions of the commands used in this example.
+<p>This example is using 3 GaianDB servers configured to discover each other and connect together.
+<br/>You will need to ensure ALLOW_PROPAGATED_WRITES=TRUE is set in each of the node's gaiandb_config.properties files.
+<br/>See the <a href="Readme.html#contents209">Readme's Configuration section</a> for the list of options used in the GaianDB configuration file or the corresponding SQL API.
+<p>Start 3 GaianDB servers by opening a command prompt, navigating to the GaianDB install directory and running: 'launchMultipleNodes.bat 3' on Windows or './launchMultipleNodes.sh 3' on Unix and MAC OS X.<br>
+<p>When these have started, double click on 'queryDerby.bat' on Windows, or on Unix and MAC OS X open a new command prompt and run './queryDerby.sh' which will start a Command Line Processor connected to the GaianDB server, then follow the example below...</p>
+<pre>
+$ ./queryDerby.sh 
+java version "1.6.0"
+Java(TM) SE Runtime Environment (build pxi3260sr9fp2-20110625_01(SR9 FP2))
+IBM J9 VM (build 2.4, JRE 1.6.0 IBM J9 2.4 Linux x86-32 jvmxi3260sr9-20110624_85526 (JIT enabled, AOT enabled)
+J9VM - 20110624_085526
+JIT  - r9_20101028_17488ifx17
+GC   - 20101027_AA)
+JCL  - 20110530_01
+Processing args: []
+
+Connecting to derby database: jdbc:derby://localhost:6414/gaiandb;create=false, usr: gaiandb...
+
+sql>
+sql> # In this example we are running on a Linux machine installed with Ubuntu 11.04 (Natty Narwhal)
+sql> # 3 GaianDB servers are running on this host 'sphere': one on port 6414, one on port 6415 and the last one on port 6416
+sql>
+</pre>
+<ol>
+<li><a name="contents21"><b><u>Create the local tables</u></b></a></li>
+
+<pre>
+sql> # Create a local table called EXAMPLE on 3 distributed nodes.
+sql>
+sql> select * from new com.ibm.db2j.GaianQuery('create table example(a int)', 'with_provenance') GQ
+select * from new com.ibm.db2j.GaianQuery('create table example(a int)', 'with_provenance') GQ
+=====================================================================================
+UPDATE_COUNT|GDB_NODE            |GDB_LEAF                                          |
+=====================================================================================
+           0|sphere              |jdbc:derby:gaiandb;create=true                    |
+           0|sphere:6416         |jdbc:derby:gaiandb6416;create=true                |
+           0|sphere:6415         |jdbc:derby:gaiandb6415;create=true                |
+=====================================================================================
+Fetched 3 rows. Total Time: 218ms (Execution Time: 217ms)
+
+</pre>
+<li><a name="contents22"><b><u>Verify the tables have been created</u></b></a></li>
+<pre>
+sql> # Use a Gaian procedure to report all local tables on all distributed nodes
+sql>
+sql> call listderbytables()
+call listderbytables()
+====================================================
+GDB_NODE            |DERBYTABLE                    |
+====================================================
+sphere              |GDB_LOCAL_METRICS             |
+sphere              |GDB_LOCAL_QUERIES             |
+sphere              |GDB_LOCAL_QUERY_FIELDS        |
+sphere              |EXAMPLE                       |
+sphere:6415         |GDB_LOCAL_METRICS             |
+sphere:6415         |GDB_LOCAL_QUERIES             |
+sphere:6415         |GDB_LOCAL_QUERY_FIELDS        |
+sphere:6415         |EXAMPLE                       |
+sphere:6416         |GDB_LOCAL_METRICS             |
+sphere:6416         |GDB_LOCAL_QUERIES             |
+sphere:6416         |GDB_LOCAL_QUERY_FIELDS        |
+sphere:6416         |EXAMPLE                       |
+====================================================
+Fetched 12 rows. Total Time: 31ms (Execution Time: 28ms)
+</pre>
+<li><a name="contents23"><b><u>Add data into the tables</u></b></a></li>
+<pre>
+sql> # Insert 3 rows in the local tables EXAMPLE
+sql>
+sql> select * from new com.ibm.db2j.GaianQuery('insert into example values(1), (2), (3)', 'with_provenance') GQ
+select * from new com.ibm.db2j.GaianQuery('insert into example values(1), (2), (3)', 'with_provenance') GQ
+=====================================================================================
+UPDATE_COUNT|GDB_NODE            |GDB_LEAF                                          |
+=====================================================================================
+           3|sphere              |jdbc:derby:gaiandb;create=true                    |
+           3|sphere:6415         |jdbc:derby:gaiandb6415;create=true                |
+           3|sphere:6416         |jdbc:derby:gaiandb6416;create=true                |
+=====================================================================================
+Fetched 3 rows. Total Time: 92ms (Execution Time: 90ms)
+</pre>
+<li><a name="contents24"><b><u>Check the content of the tables</u></b></a></li>
+<pre>
+sql> # Check what we have in tables EXAMPLE on all nodes, we can see that it contains the data we just inserted.
+sql> # All the table definitions must match for the sub-query to work. 
+sql>
+sql> select * from new com.ibm.db2j.GaianQuery('select * from example','with_provenance') GQ
+select * from new com.ibm.db2j.GaianQuery('select * from example','with_provenance') GQ
+====================================================================================
+A          |GDB_NODE            |GDB_LEAF                                          |
+====================================================================================
+          1|sphere              |jdbc:derby:gaiandb;create=true                    |
+          2|sphere              |jdbc:derby:gaiandb;create=true                    |
+          3|sphere              |jdbc:derby:gaiandb;create=true                    |
+          1|sphere:6415         |jdbc:derby:gaiandb6415;create=true                |
+          2|sphere:6415         |jdbc:derby:gaiandb6415;create=true                |
+          3|sphere:6415         |jdbc:derby:gaiandb6415;create=true                |
+          1|sphere:6416         |jdbc:derby:gaiandb6416;create=true                |
+          2|sphere:6416         |jdbc:derby:gaiandb6416;create=true                |
+          3|sphere:6416         |jdbc:derby:gaiandb6416;create=true                |
+====================================================================================
+Fetched 9 rows. Total Time: 67ms (Execution Time: 64ms)
+</pre>
+<li><a name="contents25"><b><u>Update the data in the tables</u></b></a></li>
+<pre>
+sql> # Update 3 rows in the local tables EXAMPLE
+sql>
+sql> select * from new com.ibm.db2j.GaianQuery('update example set a=4 where a=2', 'with_provenance') GQ
+select * from new com.ibm.db2j.GaianQuery('update example set a=4 where a=2', 'with_provenance') GQ
+=====================================================================================
+UPDATE_COUNT|GDB_NODE            |GDB_LEAF                                          |
+=====================================================================================
+           3|sphere              |jdbc:derby:gaiandb;create=true                    |
+           3|sphere:6415         |jdbc:derby:gaiandb6415;create=true                |
+           3|sphere:6416         |jdbc:derby:gaiandb6416;create=true                |
+=====================================================================================
+Fetched 3 rows. Total Time: 92ms (Execution Time: 90ms)
+</pre>
+<li><a name="contents26"><b><u>Check the content of the tables</u></b></a></li>
+<pre>
+sql> # Check what we have in tables EXAMPLE on all nodes, we can see that it contains the data we just inserted.
+sql> # All the table definitions must match for the sub-query to work. 
+sql>
+sql> select * from new com.ibm.db2j.GaianQuery('select * from example','with_provenance') GQ
+select * from new com.ibm.db2j.GaianQuery('select * from example','with_provenance') GQ
+====================================================================================
+A          |GDB_NODE            |GDB_LEAF                                          |
+====================================================================================
+          1|sphere              |jdbc:derby:gaiandb;create=true                    |
+          4|sphere              |jdbc:derby:gaiandb;create=true                    |
+          3|sphere              |jdbc:derby:gaiandb;create=true                    |
+          1|sphere:6415         |jdbc:derby:gaiandb6415;create=true                |
+          4|sphere:6415         |jdbc:derby:gaiandb6415;create=true                |
+          3|sphere:6415         |jdbc:derby:gaiandb6415;create=true                |
+          1|sphere:6416         |jdbc:derby:gaiandb6416;create=true                |
+          4|sphere:6416         |jdbc:derby:gaiandb6416;create=true                |
+          3|sphere:6416         |jdbc:derby:gaiandb6416;create=true                |
+====================================================================================
+Fetched 9 rows. Total Time: 67ms (Execution Time: 64ms)
+</pre>
+<li><a name="contents27"><b><u>Perform a distributed 'join' between the local tables and a logical table</u></b></a></li>
+<pre>
+sql> # Now we join the local tables EXAMPLE and the logical tables LT0 in a distributed manner
+sql> # We CAST the data from the MISC column in LT0 into an INT to be able to compare it with the A column in EXAMPLE
+sql> # Because this query is done over the distributed nodes, we get data coming from all 3 of them.
+sql>
+sql> select * from new com.ibm.db2j.GaianQuery('select * from example, lt0 where example.a = cast(lt0.misc as int)', 'with_provenance') GQ
+select * from new com.ibm.db2j.GaianQuery('select * from example, lt0 where example.a = cast(lt0.misc as int)', 'with_provenance') GQ
+==================================================================================================================================================
+A          |LOCATION                      |MISC                          |GDB_NODE            |GDB_LEAF                                          |
+==================================================================================================================================================
+          3|AAAAAAAAA                     |3                             |sphere:6416         |jdbc:derby:gaiandb6416;create=true                |
+          3|IIIIIIIIIIII1111111111        |3                             |sphere:6416         |jdbc:derby:gaiandb6416;create=true                |
+          3|ZZZZZZZZZZZZ1111111111        |3                             |sphere:6416         |jdbc:derby:gaiandb6416;create=true                |
+          1|ZZZZZ                         |1                             |sphere:6416         |jdbc:derby:gaiandb6416;create=true                |
+          3|BLAHBLAH                      |3                             |sphere:6416         |jdbc:derby:gaiandb6416;create=true                |
+          3|IIIIIIIIIIII1111111111        |3                             |sphere:6415         |jdbc:derby:gaiandb6415;create=true                |
+          3|ZZZZZZZZZZZZ1111111111        |3                             |sphere:6415         |jdbc:derby:gaiandb6415;create=true                |
+          1|ZZZZZ                         |1                             |sphere:6415         |jdbc:derby:gaiandb6415;create=true                |
+          3|AAAAAAAAA                     |3                             |sphere:6415         |jdbc:derby:gaiandb6415;create=true                |
+          3|BLAHBLAH                      |3                             |sphere:6415         |jdbc:derby:gaiandb6415;create=true                |
+          3|AAAAAAAAA                     |3                             |sphere              |jdbc:derby:gaiandb;create=true                    |
+          3|BLAHBLAH                      |3                             |sphere              |jdbc:derby:gaiandb;create=true                    |
+          3|IIIIIIIIIIII1111111111        |3                             |sphere              |jdbc:derby:gaiandb;create=true                    |
+          3|ZZZZZZZZZZZZ1111111111        |3                             |sphere              |jdbc:derby:gaiandb;create=true                    |
+          1|ZZZZZ                         |1                             |sphere              |jdbc:derby:gaiandb;create=true                    |
+==================================================================================================================================================
+Fetched 15 rows. Total Time: 104ms (Execution Time: 100ms)
+</pre>
+<li><a name="contents28"><b><u>Delete the tables</u></b></a></li>
+<pre>
+sql> # Remove the local tables
+sql>
+sql> select * from new com.ibm.db2j.GaianQuery('drop table example','with_provenance') GQ
+select * from new com.ibm.db2j.GaianQuery('drop table example','with_provenance') GQ
+=====================================================================================
+UPDATE_COUNT|GDB_NODE            |GDB_LEAF                                          |
+=====================================================================================
+           0|sphere:6416         |jdbc:derby:gaiandb6416;create=true                |
+           0|sphere              |jdbc:derby:gaiandb;create=true                    |
+           0|sphere:6415         |jdbc:derby:gaiandb6415;create=true                |
+=====================================================================================
+Fetched 3 rows. Total Time: 261ms (Execution Time: 260ms)
+</pre>
+<li><a name="contents29"><b><u>Verify the tables have been deleted</u></b></a></li>
+<pre>
+sql> # We call the listderbytables() procedure again to check that the tables have been deleted on
+sql> # every distributed node.
+sql>
+sql> call listderbytables()
+call listderbytables()
+====================================================
+GDB_NODE            |DERBYTABLE                    |
+====================================================
+sphere              |GDB_LOCAL_METRICS             |
+sphere              |GDB_LOCAL_QUERIES             |
+sphere              |GDB_LOCAL_QUERY_FIELDS        |
+sphere:6415         |GDB_LOCAL_METRICS             |
+sphere:6415         |GDB_LOCAL_QUERIES             |
+sphere:6415         |GDB_LOCAL_QUERY_FIELDS        |
+sphere:6416         |GDB_LOCAL_METRICS             |
+sphere:6416         |GDB_LOCAL_QUERIES             |
+sphere:6416         |GDB_LOCAL_QUERY_FIELDS        |
+====================================================
+Fetched 9 rows. Total Time: 61ms (Execution Time: 58ms)
+</pre>
+</ol>
+<hr>
+<h2><a name="contents3">Example 3: Performing INSERT/UPDATE/DELETE/CREATE/CALL commands over 3 external database providers connected to one node.</a></h2>
+<p>This example shows how to distribute some data created into an external table on 3 third-party database providers: DB2, Oracle and MySQL.
+<br/>See the <a href="Readme.html#contents315">Readme's Advanced Features section</a> for descriptions of the commands used in this example.
+<p>This example is using 1 GaianDB node.
+<br/>You will need to ensure ALLOW_PROPAGATED_WRITES=TRUE is set in the node's gaiandb_config.properties files.
+<br/>See the <a href="Readme.html#contents209">Readme's Configuration section</a> for the list of options used in the GaianDB configuration file or the corresponding SQL API.
+<p>Start 1 GaianDB node by opening a command prompt, navigating to the GaianDB install directory and running: 'launchGaianServer.bat' on Windows or './launchGaianServer.sh' on Unix and MAC OS X.<br>
+<p>When these have started, double click on 'queryDerby.bat' on Windows, or on Unix and MAC OS X open a new command prompt and run './queryDerby.sh' which will start a Command Line Processor connected to the GaianDB node, then follow the example below...</p>
+<pre>
+$ ./queryDerby.sh -p 7000
+java version "1.6.0"
+Java(TM) SE Runtime Environment (build pxi3260sr9fp2-20110625_01(SR9 FP2))
+IBM J9 VM (build 2.4, JRE 1.6.0 IBM J9 2.4 Linux x86-32 jvmxi3260sr9-20110624_85526 (JIT enabled, AOT enabled)
+J9VM - 20110624_085526
+JIT  - r9_20101028_17488ifx17
+GC   - 20101027_AA)
+JCL  - 20110530_01
+Processing args: []
+
+Connecting to derby database: jdbc:derby://localhost:7000/gaiandb;create=false, usr: gaiandb...
+
+sql>
+sql> # In this example we are running on a Linux machine installed with Ubuntu 11.04 (Natty Narwhal)
+sql> # 1 GaianDB node is running on this host 'sphere': one on port 7000
+sql>
+</pre>
+<ol>
+<li><a name="contents31"><b><u>Create the database connections</u></b></a></li>
+<pre>
+sql> # Setup an RDB connection to a MySQL database data source 
+sql>
+sql> call setrdbc('MYSQLCONN', 'com.mysql.jdbc.Driver', 'jdbc:mysql://localhost:3306/TEST', 'mysqlid', 'mysqlpwd')
+call setrdbc('MYSQLCONN', 'com.mysql.jdbc.Driver', 'jdbc:mysql://localhost:3306/TEST', 'mysqlid', 'mysqlpwd')
+
+sql> # Setup an RDB connection to a DB2 database data source 
+sql>
+sql> call setrdbc('DB2CONN', 'com.ibm.db2.jcc.DB2Driver', 'jdbc:db2://localhost:50000/TEST', 'db2id', 'db2pwd')
+call setrdbc('DB2CONN', 'com.ibm.db2.jcc.DB2Driver', 'jdbc:db2://localhost:50000/TEST', 'db2id', 'db2pwd')
+
+sql> # Setup an RDB connection to an Oracle database data source 
+sql>
+sql> call setrdbc('ORCLCONN', 'oracle.jdbc.OracleDriver', 'jdbc:oracle:thin:@localhost:1521/TEST', 'oracleid', 'oraclepwd')
+call setrdbc('ORCLCONN', 'oracle.jdbc.OracleDriver', 'jdbc:oracle:thin:@localhost:1521/TEST', 'oracleid', 'oraclepwd')
+</pre>
+
+<li><a name="contents32"><b><u>Create a Source list for all 3 database connections</u></b></a></li>
+<pre>
+sql> # Create a Source list to be able to pass each command to each database provider
+sql>
+sql> call setsourcelist('RDBMS', 'DB2CONN, MYSQLCONN, ORCLCONN')
+call setsourcelist('RDBMS', 'DB2CONN, MYSQLCONN, ORCLCONN')
+</pre>
+
+<li><a name="contents33"><b><u>Create the remote tables</u></b></a></li>
+<pre>
+sql> # Create the table on the 3 third-party databases.
+sql>
+sql> select * from new com.ibm.db2j.GaianQuery('create table example(a int, b varchar(30))', 'with_provenance', 'SOURCELIST=RDBMS') GQ
+select * from new com.ibm.db2j.GaianQuery('create table example(a int, b varchar(30))', 'with_provenance', 'SOURCELIST=RDBMS') GQ
+=====================================================================================
+UPDATE_COUNT|GDB_NODE            |GDB_LEAF                                          |
+=====================================================================================
+           0|sphere:7000         |jdbc:mysql://sphere:3306/TEST                     |
+           0|sphere:7000         |jdbc:oracle:thin:@sphere:1521/TEST                |
+           0|sphere:7000         |jdbc:db2://sphere:50000/TEST                      |
+=====================================================================================
+Fetched 3 rows. Total Time: 1013ms (Execution Time: 1007ms)
+</pre>
+
+<li><a name="contents34"><b><u>Add data into the tables</u></b></a></li>
+<pre>
+sql> # To be able to add data into the 3 different tables, we need to use a common SQL syntax, 
+sql> # in this case doing 3 inserts as each database provider has a different syntax to make multiple inserts in one line.
+sql>
+sql> select * from new com.ibm.db2j.GaianQuery('insert into example values(1, ''entry1'')', 'with_provenance', 'SOURCELIST=RDBMS') GQ
+select * from new com.ibm.db2j.GaianQuery('insert into example values(1, ''entry1'')', 'with_provenance', 'SOURCELIST=RDBMS') GQ
+=====================================================================================
+UPDATE_COUNT|GDB_NODE            |GDB_LEAF                                          |
+=====================================================================================
+           1|sphere:7000         |jdbc:mysql://sphere:3306/TEST                     |
+           1|sphere:7000         |jdbc:db2://sphere:50000/TEST                      |
+           1|sphere:7000         |jdbc:oracle:thin:@sphere:1521/TEST                |
+=====================================================================================
+Fetched 3 rows. Total Time: 96ms (Execution Time: 93ms)
+</pre>
+
+<pre>
+select * from new com.ibm.db2j.GaianQuery('insert into example values(2, ''entry2'')', 'with_provenance', 'SOURCELIST=RDBMS') GQ
+=====================================================================================
+UPDATE_COUNT|GDB_NODE            |GDB_LEAF                                          |
+=====================================================================================
+           1|sphere:7000         |jdbc:mysql://sphere:3306/TEST                     |
+           1|sphere:7000         |jdbc:db2://sphere:50000/TEST                      |
+           1|sphere:7000         |jdbc:oracle:thin:@sphere:1521/TEST                |
+=====================================================================================
+Fetched 3 rows. Total Time: 64ms (Execution Time: 63ms)
+</pre>
+
+<pre>
+select * from new com.ibm.db2j.GaianQuery('insert into example values(3, ''entry4'')', 'with_provenance', 'SOURCELIST=RDBMS') GQ
+=====================================================================================
+UPDATE_COUNT|GDB_NODE            |GDB_LEAF                                          |
+=====================================================================================
+           1|sphere:7000         |jdbc:mysql://sphere:3306/TEST                     |
+           1|sphere:7000         |jdbc:db2://sphere:50000/TEST                      |
+           1|sphere:7000         |jdbc:oracle:thin:@sphere:1521/TEST                |
+=====================================================================================
+Fetched 3 rows. Total Time: 66ms (Execution Time: 65ms)
+</pre>
+
+<li><a name="contents35"><b><u>Check the content of the tables</u></b></a></li>
+<pre>
+sql> # Check what we have in tables EXAMPLE on all providers, we can see that it contains the data we just inserted.
+sql>
+sql> select * from new com.ibm.db2j.GaianQuery('select * from example','with_provenance', 'SOURCELIST=RDBMS') GQ
+select * from new com.ibm.db2j.GaianQuery('select * from example','with_provenance', 'SOURCELIST=RDBMS') GQ
+===================================================================================================================
+A          |B                             |GDB_NODE            |GDB_LEAF                                          |
+===================================================================================================================
+          1|entry1                        |sphere:7000         |jdbc:mysql://sphere:3306/TEST                     |
+          2|entry2                        |sphere:7000         |jdbc:mysql://sphere:3306/TEST                     |
+          3|entry4                        |sphere:7000         |jdbc:mysql://sphere:3306/TEST                     |
+          1|entry1                        |sphere:7000         |jdbc:db2://sphere:50000/TEST                      |
+          2|entry2                        |sphere:7000         |jdbc:db2://sphere:50000/TEST                      |
+          3|entry4                        |sphere:7000         |jdbc:db2://sphere:50000/TEST                      |
+          3|entry4                        |sphere:7000         |jdbc:oracle:thin:@sphere:1521/TEST                |
+          1|entry1                        |sphere:7000         |jdbc:oracle:thin:@sphere:1521/TEST                |
+          2|entry2                        |sphere:7000         |jdbc:oracle:thin:@sphere:1521/TEST                |
+===================================================================================================================
+Fetched 9 rows. Total Time: 103ms (Execution Time: 100ms)
+</pre>
+
+<li><a name="contents36"><b><u>Update data in the tables</u></b></a></li>
+<pre>
+sql> # Update one row in each table
+sql>
+sql> select * from new com.ibm.db2j.GaianQuery('update example set b=''entry3'' where a=3','with_provenance', 'SOURCELIST=RDBMS') GQ
+select * from new com.ibm.db2j.GaianQuery('update example set b=''entry3'' where a=3','with_provenance', 'SOURCELIST=RDBMS') GQ
+=====================================================================================
+UPDATE_COUNT|GDB_NODE            |GDB_LEAF                                          |
+=====================================================================================
+           1|sphere:7000         |jdbc:mysql://sphere:3306/TEST                     |
+           1|sphere:7000         |jdbc:db2://sphere:50000/TEST                      |
+           1|sphere:7000         |jdbc:oracle:thin:@sphere:1521/TEST                |
+=====================================================================================
+Fetched 3 rows. Total Time: 62ms (Execution Time: 60ms)
+</pre>
+
+<li><a name="contents37"><b><u>Check the content of the tables</u></b></a></li>
+<pre>
+sql> # Check what we have in tables EXAMPLE on all providers, verify the string 'entry4' has been updated correctly to 'entry3'
+sql>
+sql> select * from new com.ibm.db2j.GaianQuery('select * from example','with_provenance', 'SOURCELIST=RDBMS') GQ
+select * from new com.ibm.db2j.GaianQuery('select * from example','with_provenance', 'SOURCELIST=RDBMS') GQ
+===================================================================================================================
+A          |B                             |GDB_NODE            |GDB_LEAF                                          |
+===================================================================================================================
+          1|entry1                        |sphere:7000         |jdbc:mysql://sphere:3306/TEST                     |
+          2|entry2                        |sphere:7000         |jdbc:mysql://sphere:3306/TEST                     |
+          3|entry3                        |sphere:7000         |jdbc:mysql://sphere:3306/TEST                     |
+          1|entry1                        |sphere:7000         |jdbc:db2://sphere:50000/TEST                      |
+          2|entry2                        |sphere:7000         |jdbc:db2://sphere:50000/TEST                      |
+          3|entry3                        |sphere:7000         |jdbc:db2://sphere:50000/TEST                      |
+          3|entry3                        |sphere:7000         |jdbc:oracle:thin:@sphere:1521/TEST                |
+          1|entry1                        |sphere:7000         |jdbc:oracle:thin:@sphere:1521/TEST                |
+          2|entry2                        |sphere:7000         |jdbc:oracle:thin:@sphere:1521/TEST                |
+===================================================================================================================
+Fetched 9 rows. Total Time: 25ms (Execution Time: 23ms)
+</pre>
+
+<li><a name="contents38"><b><u>Delete one row in each table</u></b></a></li>
+<pre>
+sql> # Delete one row in each table
+sql>
+sql> select * from new com.ibm.db2j.GaianQuery('delete from example where a=2 ','with_provenance', 'SOURCELIST=RDBMS') GQ
+select * from new com.ibm.db2j.GaianQuery('delete from example where a=2 ','with_provenance', 'SOURCELIST=RDBMS') GQ
+=====================================================================================
+UPDATE_COUNT|GDB_NODE            |GDB_LEAF                                          |
+=====================================================================================
+           1|sphere:7000         |jdbc:mysql://sphere:3306/TEST                     |
+           1|sphere:7000         |jdbc:db2://sphere:50000/TEST                      |
+           1|sphere:7000         |jdbc:oracle:thin:@sphere:1521/TEST                |
+=====================================================================================
+Fetched 3 rows. Total Time: 84ms (Execution Time: 82ms)
+</pre>
+
+<li><a name="contents39"><b><u>Check the content of the tables</u></b></a></li>
+<pre>
+sql> # Check what we have in tables EXAMPLE on all providers, verify the row has been deleted in all tables
+sql>
+sql> select * from new com.ibm.db2j.GaianQuery('select * from example','with_provenance', 'SOURCELIST=RDBMS') GQ
+select * from new com.ibm.db2j.GaianQuery('select * from example','with_provenance', 'SOURCELIST=RDBMS') GQ
+===================================================================================================================
+A          |B                             |GDB_NODE            |GDB_LEAF                                          |
+===================================================================================================================
+          1|entry1                        |sphere:7000         |jdbc:db2://sphere:50000/TEST                      |
+          3|entry3                        |sphere:7000         |jdbc:db2://sphere:50000/TEST                      |
+          1|entry1                        |sphere:7000         |jdbc:mysql://sphere:3306/TEST                     |
+          3|entry3                        |sphere:7000         |jdbc:mysql://sphere:3306/TEST                     |
+          3|entry3                        |sphere:7000         |jdbc:oracle:thin:@sphere:1521/TEST                |
+          1|entry1                        |sphere:7000         |jdbc:oracle:thin:@sphere:1521/TEST                |
+===================================================================================================================
+Fetched 6 rows. Total Time: 20ms (Execution Time: 18ms)
+</pre>
+
+<li><a name="contents310"><b><u>Delete the tables</u></b></a></li>
+<pre>
+sql> # Drop all the tables
+sql>
+sql> select * from new com.ibm.db2j.GaianQuery('drop table example','with_provenance', 'SOURCELIST=RDBMS') GQ
+select * from new com.ibm.db2j.GaianQuery('drop table example','with_provenance', 'SOURCELIST=RDBMS') GQ
+=====================================================================================
+UPDATE_COUNT|GDB_NODE            |GDB_LEAF                                          |
+=====================================================================================
+           0|sphere:7000         |jdbc:mysql://sphere:3306/TEST                     |
+           0|sphere:7000         |jdbc:oracle:thin:@sphere:1521/TEST                |
+           0|sphere:7000         |jdbc:db2://sphere:50000/TEST                      |
+=====================================================================================
+Fetched 3 rows. Total Time: 386ms (Execution Time: 384ms)
+</pre> 
+</ol>
+<hr>
+
+
+<h2><a name="contents41">Example 4: Simple JDBC Application using the GaianDB discovery client</a></h2>
+<ol>
+<li><a name="contents410"><b><u>Overview</u></b></a></li>
+   GaianDB makes available a client JDBC driver  that allows any application to create a JDBC connection to any active GaianDB in the network without the need to specify  a host name or IP  address.
+   The Discovery Client code is already packages in the GaianDB.jar.  
+   The driver will discover nodes according to the parameters configured in the &quot;gaiandb_client_config.properties&quot; file, allowing broadcast and multi cast discovery and the configuration of access clusters and permitted and denied hostnames.
+ <p>   
+   Discovery  strategies can be of one of the following:
+     <ol>
+       <li>ATTACHMENT_PREFERENTIAL_ON_HIGH_CONNECTIVITY (default) 
+       <li>ATTACHMENT_RANDOM
+       <li>ATTACHMENT_TO_USER_DB_NODE
+     </ol>    
+<P>
+<li><a name="contents411"><b><u>A simple JAVA program using the GaianDB discovery Driver</u></b></a></li>
+<pre>
+  package default;
+  //this little class shows how to connect to any GaianDB in the network using the GaianDB  discovery client. 
+  //a configuration file with the connection strategy need to be reachable by this code. 
+  // from the application point of view,  to connect  to any GaianDB using the discovery protocol you only need to do the following : 
+  // Note: I'm not checking errors and other things here. just showing you the core capabilities, there rest is just  usual jdbc programming
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
+import com.ibm.gaiandb.GaianDBConfig;
+            import com.ibm.gaiandb.jdbc.discoveryclient.*
+
+public class SingleDiscoveryTest {
+	static final String GAIAN_SEEKER_DRIVER="com.ibm.gaiandb.jdbc.discoveryclient.DiscoveryDriver";
+	/** The time, in seconds, before a query times out. */
+     static final int QUERY_TIMEOUT = 5;
+
+	static protected Connection getConnection() {
+		Properties blankConnProperties = new Properties();
+		return getConnection(blankConnProperties);
+	}
+
+	static protected Connection getConnection(Properties connProperties) {
+		final String url = DiscoveryDriver.SEEKER_DRIVER_URL_PREFIX;
+		// load the driver class
+		try {
+			Class.forName(GAIAN_SEEKER_DRIVER);
+			Class.forName(GaianDBConfig.DERBY_CLIENT_DRIVER);
+		} catch (ClassNotFoundException e) {
+			System.out.println("Could not load the GaianDB discovery JDBC driver.");
+			e.printStackTrace();
+			return null;
+		}
+		Connection conn = null;
+		try {
+			conn = DriverManager.getConnection(url, connProperties);
+		} catch (SQLException e) {
+			System.out.println("Connection Failed!");
+			return null;
+		}
+		return conn;
+	}
+	/**
+	 *   this connect to any available gaianDB...execute a query and exits...
+	 *    no exceptions checked here.. .just throws them
+	 * @param args
+	 * @throws SQLException 
+	 */
+	public static void main(String[] args) throws SQLException {		 
+		Connection conn = null;
+		//Query to Get the GDB node name we are connected to .. .
+		String     query= "SELECT gdbx_to_node node FROM new com.ibm.db2j.GaianTable('gdb_ltnull', 'explain, maxDepth=0') T";
+		Properties connProperties = new Properties();
+		connProperties.put("user","gaiandb");
+		connProperties.put("password","mypassword");
+
+		//now get any GDb connection...
+		conn = getConnection(connProperties);
+		System.out.println("Connection to a GaianDB successful.");
+		//try to run a SQL statement.
+		Statement statement = conn.createStatement();
+		statement.setQueryTimeout(QUERY_TIMEOUT);
+		
+		ResultSet resultSet = statement.executeQuery(query);
+
+		//we don't check the results..
+		if (null != resultSet) {
+			while (resultSet.next()) {
+				String GDBhostname = resultSet.getString(1); 
+				System.out.println("Connected to "+GDBhostname );
+				}
+			System.out.println("Query successful.");
+		}	
+		resultSet.close();
+		conn.close();
+	}
+ }
+</PRE> 
+
+<P>
+<li><a name="contents412"><b><u>A simple configuration file for the GaianDB discovery sample above</u></b></a></li>
+<p>
+The configuration details for the client are expected in the gaiandb_client_config.properties.
+These configuration settings are mostly the same as the normal Gaian Node connection parameters (excluding gateways). 
+The connection strategy can be specified to provide an even distribution of connections between the available hosts as opposed to a preferential attachment strategy.
+<P>
+Note that the client driver code will take �Client� as the default strategy if none are specified, so this configuration setting is optional.
+
+<PRE>
+ACCESS_CLUSTERS=ME
+DISCOVERY_IP=127.255.255.255
+#chose one of these connection strategy(first one is the default option)
+ CONNECTION_STRATEGY= ATTACHMENT_PREFERENTIAL_ON_HIGH_CONNECTIVITY
+#CONNECTION_STRATEGY= ATTACHMENT_RANDOM
+#CONNECTION_STRATEGY= ATTACHMENT_TO_USER_DB_NODE
+</PRE>
+</ol>
+
+<!--
+<h2><a name="contents41">Example 5: Simple WAS  Application using the GaianDB pooled Discovery client</a></h2>
+<ol>
+<li><a name="contents410"><b><u>Simple JDBC Application</u></b></a></li>
+<pre>
+  code here...
+</PRE> 
+</ol>
+-->
+
+</BODY>
+</HTML>
