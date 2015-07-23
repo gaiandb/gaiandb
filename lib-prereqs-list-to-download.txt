@@ -37,7 +37,6 @@ derbytools.jar
 
 UI topology graphing tool: to be downloaded/built from http://prefuse.org/
 prefuse.jar
-(prefusetrimmed.jar (included) is sufficient at run-time)
 
 
 Optional:
