@@ -1,10 +1,11 @@
-package com.ibm.gaiandb;
- * 
+/* 
  * (C) Copyright IBM Corp. 2013
  *
  * LICENSE: Eclipse Public License v1.0
  * http://www.eclipse.org/legal/epl-v10.html
  */
+
+package com.ibm.gaiandb;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
