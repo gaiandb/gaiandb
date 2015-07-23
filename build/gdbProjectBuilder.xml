@@ -33,7 +33,7 @@ Primary use cases:
 	<!-- Time-bomb config (+ inclusion of trial license files): Set GDB_TIMEBOMB to be 365 days after code delivery -->
 	<!-- TO ENABLE: Set to ${TODAY_PLUS_365_DAYS} -->
 	<!-- TO DISABLE: Set to -1 -->
-	<property name="GDB_TIMEBOMB" value="${TODAY_PLUS_365_DAYS}" /> <!-- This is copied to GDB_TIMEBOMB in GaianNode.java -->
+	<property name="GDB_TIMEBOMB" value="-1" /> <!-- This is copied to GDB_TIMEBOMB in GaianNode.java -->
 
 	<property name="gaianjar" value="GAIANDB.jar" /> <!-- gaian-${Version-release-modification}.jar" /> => may not be worth the headache -->
 	<property name="gaiantoolsjar" value="GAIANDB-tools.jar" /> <!-- gaian-tools-${Version-release-modification}.jar" /> -->

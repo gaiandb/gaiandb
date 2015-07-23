@@ -86,7 +86,7 @@ public class GaianNode {
 
 	// DO NOT CHANGE THIS CONSTANT (without also changing it in the build script)
 	static final String GDB_VERSION = "2.1.6d"; // This constant is referenced and updated by build script: gdbProjectBuilder.xml
-	static final String GDB_TIMEBOMB = "22/07/2016"; // format is "dd/mm/yyyy" when enabled: This constant is referenced and updated by build script: gdbProjectBuilder.xml
+	static final String GDB_TIMEBOMB = "-1"; // format is "dd/mm/yyyy" when enabled: This constant is referenced and updated by build script: gdbProjectBuilder.xml
 	
 	// Possible modes:
 	//		Standard node		=>		UDP driver excluded from bytecode. Only TCP Derby driver handles transport and parsing
