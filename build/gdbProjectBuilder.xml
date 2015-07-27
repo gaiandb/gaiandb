@@ -336,15 +336,15 @@ Primary use cases:
 
 	</target>
 	
-	<target name="zipmips">
+	<target name="zipbigdata">
 		
-		<!-- Prepare accumulo and mongo jars needed for GAIAN_MIPS_EXTENSIONS.zip -->
+		<!-- Prepare accumulo and mongo jars needed for GAIAN_BIGDATA_EXTENSIONS.zip -->
 		<jar destfile="${distroOutputDir}/lib/gaian-accumulo.jar" basedir="${binDir}" includes="com/ibm/db2j/AccumuloVTI*.class"/>
 		<jar destfile="${distroOutputDir}/lib/gaian-mongo.jar" basedir="${binDir}" includes="com/ibm/db2j/MongoDB.class com/ibm/db2j/MongoDB$CombinationOperator.class com/ibm/gaiandb/mongodb/*.class"/>
 		<!-- Also prepare windows service code -->
 		<jar destfile="${distroOutputDir}/lib/WindowsService.jar" basedir="${binDir}" includes="com/ibm/gaiandb/windowsservice/WindowsService.class"/>
 		
-		<zip destfile="${buildDir}/${distribution_name}_MIPS_EXTENSIONS.zip">
+		<zip destfile="${buildDir}/${distribution_name}_BIGDATA_EXTENSIONS.zip">
 			<!-- VTI jars for Accumulo and Mongo -->
 			<zipfileset dir="${distroOutputDir}/lib" prefix="lib/ext" includes="gaian-accumulo.jar gaian-mongo.jar" />
 			<!-- Registration script for Accumulo and Mongo -->
@@ -363,7 +363,7 @@ Primary use cases:
 			<!-- <zipfileset dir="${homeDir}/lib" prefix="lib/ext" includes="mongo-java-driver*.jar"/> -->
 		</zip>
 		
-		<zip destfile="${buildDir}/${distribution_name}_MIPS_EXTENSIONS_SOURCE_CODE.zip">
+		<zip destfile="${buildDir}/${distribution_name}_BIGDATA_EXTENSIONS_SOURCE_CODE.zip">
 			<!-- Source code -->
 			<zipfileset dir="${gaianAssetSrcDir}/VTIs/com/ibm/db2j" prefix="src/com/ibm/db2j" includes="AccumuloVTI.java MongoDB.java" />
 			<zipfileset dir="${gaianAssetSrcDir}/VTIs/com/ibm/gaiandb/mongodb" prefix="src/com/ibm/gaiandb/mongodb" />
