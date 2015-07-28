@@ -17,7 +17,7 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.ibm.db2j.GenericWS;
-import com.ibm.gaiandb.diags.GDBMessages;
+//import com.ibm.gaiandb.diags.GDBMessages;
 
 import static com.ibm.gaiandb.webservices.patternmatcher.MatcherManager.GOT_RESULT;
 

@@ -8,11 +8,10 @@ package com.ibm.gaiandb.webservices.patternmatcher;
 
 import java.util.ArrayList;
 
-import com.ibm.gaiandb.webservices.XmlElement;
-import com.ibm.gaiandb.webservices.parser.NonParsableStringException;
-import com.ibm.gaiandb.webservices.parser.properties.GenericWsPropertiesParser;
+//import com.ibm.gaiandb.webservices.XmlElement;
+//import com.ibm.gaiandb.webservices.parser.NonParsableStringException;
+//import com.ibm.gaiandb.webservices.parser.properties.GenericWsPropertiesParser;
 import com.ibm.gaiandb.webservices.scanner.Tag;
-import com.ibm.gsk.ikeyman.util.Pair;
 
 /**
  * The purpose of this class is to provide a TagMatcher able to check and

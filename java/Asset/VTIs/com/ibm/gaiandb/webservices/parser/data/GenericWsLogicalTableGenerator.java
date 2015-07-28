@@ -14,7 +14,7 @@ import java.util.Map;
 import com.ibm.db2j.GenericWS;
 import com.ibm.gaiandb.webservices.parser.properties.GenericWsPropertiesPrinter;
 import com.ibm.gaiandb.webservices.patternmatcher.TagMatcher;
-import com.ibm.gaiandb.webservices.patternmatcher.TagPattern;
+//import com.ibm.gaiandb.webservices.patternmatcher.TagPattern;
 import com.ibm.gaiandb.webservices.scanner.WsDataFormat;
 
 /**

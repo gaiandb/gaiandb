@@ -10,12 +10,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.xml.sax.Attributes;
+//import org.xml.sax.Attributes;
 
+import com.ibm.gaiandb.utils.Pair;
 import com.ibm.gaiandb.webservices.parser.AttributeDefinition;
 import com.ibm.gaiandb.webservices.parser.properties.AttributeComparator;
 import com.ibm.gaiandb.webservices.scanner.Tag;
-import com.ibm.gsk.ikeyman.util.Pair;
 
 /**
  * The purpose of this class is to define a pattern that the 

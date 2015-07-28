@@ -46,7 +46,7 @@ public class Inserter {
 	 * <p>
 	 * 
 	 */
-	private static final String URL_VARIABLE_DELIMITER = "$";
+//	private static final String URL_VARIABLE_DELIMITER = "$";
 	private static final String URL_VARIABLE_DELIMITER_REGEX = "\\$";
 	
 	

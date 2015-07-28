@@ -1,0 +1,200 @@
+<html lang="en">
+<title>Release Notes for IBM Derby SDK 10.10.2.0.1582446 release</title>
+<body>
+<h1>
+<a name="Release Notes for IBM Derby SDK 10.10.2.0.1582446"></a>Release Notes for IBM Derby SDK 10.10.2.0.1582446</h1>
+<div>
+<p>These notes describe the difference between the IBM Derby SDK 10.10.2.0.1582446 release and the previous IBM Derby SDK 10.8 releases.</p>
+</div>
+<ul>
+<li>
+<a href="#Overview">Overview</a>
+</li>
+<li>
+<a href="#New Features">New Features</a>
+</li>
+<li>
+<a href="#Bug Fixes">Bug Fixes</a>
+</li>
+<li>
+<a href="#Issues">Issues</a>
+</li>
+</ul>
+<h2>
+<a name="Overview"></a>Overview</h2>
+<div>
+
+
+<p>
+IBM Derby SDK 10.10.2.0.1582446 is based on the Apache Derby release 10.10.2.0.
+</p>
+
+<p>
+The Derby SDK release differs from the Apache Derby release in the 
+following ways:
+<ul>
+<li>
+The packaging is different, which shows, among other things, in the following ways:
+ <ul>
+ <li>The IBM Derby SDK does not include source code.
+ </li>
+ <li>IBM Derby SDK does not include debug code, although this can be provided on demand for analysis of problem situations. 
+ </li>
+ <li>The IBM Derby SDK supports the servlet code only as a demo. derby.war has been moved to the 'servlet' directory in the demo directory. However, the servlet documentation is still part of the full documentation.
+ </li>
+ <li>The IBM Derby SDK is only provided as zip files (the Apache product comes in tgz files as well).
+ </li>
+ <li>The IBM Derby SDK is provided in two parts; a _core.zip, holding the jar files and release notes, and a _extra.zip, holding all other files. 
+ </li>
+ <li>The IBM Derby SDK does not automatically include jars for running the tests. These can be provided separately if desired.
+ </li>
+ </ul>
+</li>
+<li>
+The previous Derby SDK release was based on Apache Derby release 10.8. There were fixes and features introduced between Apache Derby 10.8 and Apache Derby 10.10.2.0 which were released as Apache Derby 10.9 and Apache Derby 10.10.1.1. Only a select number of the bug fixes were backported to later pointreleases of IBM Derby SDK 10.8. For an overview of all fixes, refer to the Release Notes in the releasenotes section:
+<ul>
+<li>
+  <a href="releasenotes/10.9.1.0_RELEASE-NOTES.html">10.9.1.0_RELEASE-NOTES.html</a>
+</li>
+<li>
+  <a href="releasenotes/10.10.1.1_RELEASE-NOTES.html">10.10.1.1_RELEASE-NOTES.html</a>
+</li>
+<li>
+  <a href="releasenotes/10.10.2.0_RELEASE-NOTES.html">10.10.2.0_RELEASE-NOTES.html</a>
+</li>
+</ul>
+</ul>
+</p>
+
+<p>
+Apache Derby is a pure Java relational database engine using standard SQL and
+JDBC as its APIs. More information about Derby can be found on the
+<a href="http://db.apache.org/derby/">Apache web site</a>.
+Derby functionality includes:
+</p>
+<ul>
+
+<li>Embedded engine with JDBC drivers</li>
+
+<li>Network Server</li>
+
+<li>Network client JDBC drivers</li>
+
+<li>Command line tools: ij (SQL scripting), dblook (schema dump) and sysinfo (system info)</li>
+
+</ul>
+
+
+<p>
+Java and JDBC versions supported:
+</p>
+
+<ul>
+  
+<li>Java SE 6 and higher with JDBC 4.1 and 4.2.</li>
+  
+<li>Java ME CDC/Foundation Profile 1.1 with JSR-169 JDBC Optional Package for CDC/Foundation Profile.</li>
+
+</ul>
+
+</div>
+<h2>
+<a name="New Features"></a>New Features</h2>
+<div>
+
+
+<p>
+This is a feature release. For full details of new features, see the Apache Derby Release Notes:
+<ul>
+<li>
+  <a href="releasenotes/10.9.1.0_RELEASE-NOTES.html">10.9.1.0_RELEASE-NOTES.html</a>
+</li>
+<li>
+  <a href="releasenotes/10.10.1.1_RELEASE-NOTES.html">10.10.1.1_RELEASE-NOTES.html</a>
+</li>
+<li>
+  <a href="releasenotes/10.10.2.0_RELEASE-NOTES.html">10.10.2.0_RELEASE-NOTES.html</a>
+</li>
+</ul>
+</p>
+
+
+
+</div>
+<h2>
+<a name="Bug Fixes"></a>Bug Fixes</h2>
+<div>
+<p>All bug fixes are listed in the Release Notes for the following Releases:</p>
+<ul>
+<li>
+  <a href="releasenotes/10.9.1.0_RELEASE-NOTES.html">10.9.1.0_RELEASE-NOTES.html</a>
+</li>
+<li>
+  <a href="releasenotes/10.10.1.1_RELEASE-NOTES.html">10.10.1.1_RELEASE-NOTES.html</a>
+</li>
+<li>
+  <a href="releasenotes/10.10.2.0_RELEASE-NOTES.html">10.10.2.0_RELEASE-NOTES.html</a>
+</li>
+</ul>
+</p>
+</div>
+</h2>
+
+<h2>
+<a name="Issues"></a>Issues</h2>
+<div>
+<p>IBM Derby SDK 10.10.2.0.1582446 introduces new features and incompatibilities. They are identified in the corresponding sections in the following Release Notes:
+<ul>
+<li>
+  <a href="releasenotes/10.9.1.0_RELEASE-NOTES.html">10.9.1.0_RELEASE-NOTES.html</a>
+</li>
+<li>
+  <a href="releasenotes/10.10.1.1_RELEASE-NOTES.html">10.10.1.1_RELEASE-NOTES.html</a>
+</li>
+<li>
+  <a href="releasenotes/10.10.2.0_RELEASE-NOTES.html">10.10.2.0_RELEASE-NOTES.html</a>
+</li>
+</ul>
+</p>
+
+<hr>
+
+</div>
+<div>
+</div>
+
+
+<h2>
+<a name="Support Issues"></a>Support Issues</h2>
+<div>
+<p>The team supporting the IBM Derby SDK common component does not support all features of Apache Derby SDK. Specifically, the following is not supported:
+</p>
+<ul>
+<li>
+Builtin Authentication. Even though there have been changes to Embedded built-in authentication, this is not secure. You should use LDAP or a custom authentication scheme.
+</li>
+<li>
+Locale files. Although the translated message files are included in the distributions, these were not created through the IBM localization services and there is no guarantee attached. 
+</li>
+<li>
+Accessibility. Although the basic software only outputs standard text or creates only standard text, neither the javadoc, nor the docs meet IBMs accessibility complience rules. If an embedding product desires to both include docs as well as the core functionality, they either must document a deviation from accessibility, or create their own dedicated documentation.
+</li>
+<li>
+Replication. The IBM Derby SDK team does not support Apache Derby Replication.
+This feature is Incomplete. Use other IBM Replication solutions.
+</li>
+<li>
+Java 5. The IBM Derby SDK team does not support Java 5 with this version of Derby.
+</li>
+</li>
+<li>
+SQL ROW_NUMBER(). Incomplete feature. Performs poorly.
+</ul>
+</div>
+</h2>
+
+copyright IBM Corp., 2014.
+
+</div>
+</body>
+</html>

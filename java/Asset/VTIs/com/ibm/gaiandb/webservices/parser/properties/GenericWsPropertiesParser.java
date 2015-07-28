@@ -6,12 +6,10 @@
  */
 package com.ibm.gaiandb.webservices.parser.properties;
 import java.util.ArrayList;
-import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.ibm.gaiandb.Util;
 import com.ibm.gaiandb.diags.GDBMessages;
+import com.ibm.gaiandb.utils.Pair;
 import com.ibm.gaiandb.webservices.XmlElement;
 import com.ibm.gaiandb.webservices.parser.AttributeDefinition;
 import com.ibm.gaiandb.webservices.parser.NonParsableStringException;
@@ -19,7 +17,6 @@ import com.ibm.gaiandb.webservices.parser.extractors.PPElementExtractor;
 import com.ibm.gaiandb.webservices.parser.extractors.PPElementType;
 import com.ibm.gaiandb.webservices.patternmatcher.TagPattern;
 import com.ibm.gaiandb.webservices.scanner.Tag;
-import com.ibm.gsk.ikeyman.util.Pair;
 
 /**
  * <p>

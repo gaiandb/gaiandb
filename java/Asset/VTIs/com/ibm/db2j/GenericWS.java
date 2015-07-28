@@ -32,6 +32,7 @@ import com.ibm.gaiandb.CachedHashMap;
 import com.ibm.gaiandb.Logger;
 import com.ibm.gaiandb.RowsFilter;
 import com.ibm.gaiandb.diags.GDBMessages;
+import com.ibm.gaiandb.utils.Pair;
 import com.ibm.gaiandb.webservices.XmlElement;
 import com.ibm.gaiandb.webservices.caching.CachableInputStream;
 import com.ibm.gaiandb.webservices.caching.StringCacher;
@@ -54,7 +55,6 @@ import com.ibm.gaiandb.webservices.ws.PostRestWS;
 import com.ibm.gaiandb.webservices.ws.RestWS;
 import com.ibm.gaiandb.webservices.ws.SoapWS;
 import com.ibm.gaiandb.webservices.ws.WebService;
-import com.ibm.gsk.ikeyman.util.Pair;
 
 /**
  * <p>

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import org.xml.sax.Attributes;
 
-import com.ibm.gsk.ikeyman.util.Pair;
+import com.ibm.gaiandb.utils.Pair;
 
 /**
  * <p>

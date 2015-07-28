@@ -3,17 +3,13 @@ Jars required for building
 Please download these jars online and place them in lib/:
 
 Pre-included:
-————————————-
+-------------
 
 For access to CSV files:
 db2jcutdown.jar
 
 For reading sensors (e.g. temperature, accelerometer) in Lenovo laptops:
 SensorReader.dll
-
-
-Required:
-—————————
 
 Derby database driver files:
 derby.jar
@@ -35,17 +31,60 @@ derbynet.jar
 derbyrun.jar
 derbytools.jar
 
-UI topology graphing tool: to be downloaded/built from http://prefuse.org/
-prefuse.jar
+UI topology graphing tool: Downloaded/built from http://prefuse.org/ - only includes required classes
+prefusetrimmed.jar
+
+
+Required:
+---------
+
+To run Gaian as a servlet using GaianServlet.java:
+com.ibm.ws.javaee.servlet.3.0_1.0.2.jar
+
+DB2 messages and data-sources:
+db2jcc4.jar
+db2jcc_license_cu.jar
+
+AccumuloVTI.java dependencies for access to an Accumulo data-source:
+accumulo-client-prereqs/accumulo-core-1.4.4.jar
+accumulo-client-prereqs/cloudtrace-1.4.4.jar
+accumulo-client-prereqs/commons-logging-1.1.1.jar
+accumulo-client-prereqs/commons-logging-api-1.1.1.jar
+accumulo-client-prereqs/hadoop-core-0.20.203.0.jar
+accumulo-client-prereqs/libthrift-0.6.1.jar
+accumulo-client-prereqs/log4j-1.2.16.jar
+accumulo-client-prereqs/slf4j-api-1.5.2.jar
+accumulo-client-prereqs/slf4j-log4j12-1.4.3.jar
+accumulo-client-prereqs/zookeeper-3.4.5.jar
+
+Text index data-sources (using VTIs):
+siapi.jar (needed by SearchSIAPI.java VTI)
+esapi.jar (needed by DocumentFinder.java VTI)
+
+Web Services data-sources (needed by GenericWS.java VTI):
+jsoup-1.7.1.jar
+junit-4.10.jar
+juno-5.0.0.30.jar
+
+Mongo data-sources:
+mongo-java-driver-2.11.4.jar
+
+For access to Excel Spreadsheets data-sources:
+poi-3.8/dom4j-1.6.1.jar
+poi-3.8/poi-3.8-20120326.jar
+poi-3.8/poi-ooxml-3.8-20120326.jar
+poi-3.8/poi-ooxml-schemas-3.8-20120326.jar
+poi-3.8/stax-api-1.0.1.jar
+poi-3.8/xmlbeans-2.3.0.jar
+
+For receiving messages via MQTT (Using Gaian's thread running in: MQTTMessageStorer.java):
+wmqtt.jar
 
 
 Optional:
-—————————
+---------
 
-For receiving messages via MQTT (Using Gaian’s thread running in: MQTTMessageStorer.java):
-wmqtt.jar
-
-For integration with Watson Policy Management Library:
+For integration with Watson Policy Management Library (PolicyPlugins code):
 wpml.jar
 
 OSGI integration:
@@ -58,39 +97,12 @@ cobertura/lib/asm-tree-3.0.jar
 cobertura/lib/jakarta-oro-2.0.8.jar
 cobertura/lib/log4j-1.2.9.jar
 
-To run Gaian as a servlet using GaianServlet.java:
-servlet-api.jar
-com.ibm.ws.javaee.servlet.3.0_1.0.2.jar
-
 Security - Key/certificate handling
-gskikm.jar
 ibmjgssprovider.jar
-
-For Unit-Testing GaianDB:
-junit-4.10.jar
 
 
 Optional data-source drivers:
-—————————————————————————————
-
-For access to Excel Spreadsheets data-sources:
-poi-3.8/dom4j-1.6.1.jar
-poi-3.8/poi-3.8-20120326.jar
-poi-3.8/poi-ooxml-3.8-20120326.jar
-poi-3.8/poi-ooxml-schemas-3.8-20120326.jar
-poi-3.8/stax-api-1.0.1.jar
-poi-3.8/xmlbeans-2.3.0.jar
-
-DB2 data-sources:
-db2jcc4.jar
-db2jcc_license_cu.jar
-
-Web Services data-sources (using VTI class in GaianDB: GenericWS):
-jsoup-1.7.1.jar
-juno-5.0.0.30.jar
-
-Mongo data-sources:
-mongo-java-driver-2.11.4.jar
+-----------------------------
 
 MySQL data-sources:
 mysql-connector-java-5.1.25-bin.jar
@@ -106,21 +118,7 @@ MS SQL Server data-sources:
 sqljdbc4.jar
 
 Text index data-sources:
-siapi.jar
-esapi.jar
 lucene-1.4.3.jar
-
-Accumulo data-sources:
-accumulo-client-prereqs/accumulo-core-1.4.4.jar
-accumulo-client-prereqs/cloudtrace-1.4.4.jar
-accumulo-client-prereqs/commons-logging-1.1.1.jar
-accumulo-client-prereqs/commons-logging-api-1.1.1.jar
-accumulo-client-prereqs/hadoop-core-0.20.203.0.jar
-accumulo-client-prereqs/libthrift-0.6.1.jar
-accumulo-client-prereqs/log4j-1.2.16.jar
-accumulo-client-prereqs/slf4j-api-1.5.2.jar
-accumulo-client-prereqs/slf4j-log4j12-1.4.3.jar
-accumulo-client-prereqs/zookeeper-3.4.5.jar
 
 Big Data data sources:
 bigsql/db2jcc.jar

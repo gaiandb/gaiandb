@@ -8,7 +8,7 @@ package com.ibm.gaiandb.webservices.scanner;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.Normalizer.Form;
+//import java.text.Normalizer.Form;
 
 import junit.framework.Assert;
 

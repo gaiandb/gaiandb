@@ -9,7 +9,7 @@ package com.ibm.gaiandb.webservices.ws;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+//import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Set;

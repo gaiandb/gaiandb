@@ -10,7 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Assert;
-import org.junit.Test;
+//import org.junit.Test;
 
 import com.ibm.gaiandb.diags.GDBMessages;
 import com.ibm.gaiandb.webservices.parser.AttributeDefinition;

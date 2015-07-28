@@ -12,11 +12,11 @@ import java.util.Set;
 
 import static com.ibm.gaiandb.webservices.parser.extractors.PPElementExtractor.ATTRIBUTE_TO_FIND_MARKER;
 
+import com.ibm.gaiandb.utils.Pair;
 import com.ibm.gaiandb.webservices.patternmatcher.AttributeMatcher;
 import com.ibm.gaiandb.webservices.patternmatcher.TagMatcher;
 import com.ibm.gaiandb.webservices.patternmatcher.TagPattern;
 import com.ibm.gaiandb.webservices.patternmatcher.ValueMatcher;
-import com.ibm.gsk.ikeyman.util.Pair;
 
 /**
  * The purpose of this class is to print a Tag Matcher into a String.

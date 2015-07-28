@@ -6,21 +6,21 @@
  */
 package com.ibm.gaiandb.webservices.parser.data;
 
-import java.io.IOException;
+//import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
+//import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 import com.ibm.gaiandb.Logger;
 import com.ibm.gaiandb.diags.GDBMessages;
 import com.ibm.gaiandb.webservices.patternmatcher.MatcherManager;
 import com.ibm.gaiandb.webservices.patternmatcher.TagMatcher;
-import com.ibm.gaiandb.webservices.scanner.FormatSpecifierInputStream;
+//import com.ibm.gaiandb.webservices.scanner.FormatSpecifierInputStream;
 import com.ibm.gaiandb.webservices.scanner.WsDataFormat;
 import com.ibm.gaiandb.webservices.scanner.json.JsonScanner;
 import com.ibm.gaiandb.webservices.scanner.sax.SaxScanner;
-import com.ibm.gaiandb.webservices.ws.RestWS;
-import com.ibm.gaiandb.webservices.ws.WebService;
+//import com.ibm.gaiandb.webservices.ws.RestWS;
+//import com.ibm.gaiandb.webservices.ws.WebService;
 
 /**
  * <p>
