@@ -19,7 +19,7 @@ Primary use cases:
 <project name="GAIANDB" default="jarinstallraw"> <!--  basedir="."> -->
 	
 	<property name="project_name" value="GAIANDB" />
-	<property name="distribution_name" value="GAIAN" />
+	<property name="distribution_name" value="GAIANDB" />
 
 	<!-- Do not change this value unless a new COO is required (e.g. significant new features, new IP, new license, new open source dependencies) -->
 	<property name="Version-release" value="2.1" />
