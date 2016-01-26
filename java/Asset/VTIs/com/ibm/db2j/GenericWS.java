@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Scanner;
@@ -134,7 +135,7 @@ public class GenericWS extends AbstractVTI {
 	 * Property to read in gaian_config.properties. It defines the prefix of
 	 * the column property definition. The name of the full property (for the 
 	 * column having the index '2' in the VTI, will be: 
-	 * <b>C2.XML_LOCATE_EXPRESSION</b>. The indexes of the columns start at 1. 
+	 * <b>C2</b>. The indexes of the columns start at 1.
 	 * <p>
 	 * Property name: 'genericWs.CX', X being an integer.
 	 */
@@ -145,7 +146,7 @@ public class GenericWS extends AbstractVTI {
 	 * Property to read in gaian_config.properties. It defines the suffix of
 	 * the column property definition. The name of the full property (for the 
 	 * column having the index '2' in the VTI, will be: 
-	 * <b>C2.XML_LOCATE_EXPRESSION</b>. The indexes of the columns start at 0. 
+	 * <b>C2.XML_LOCATE_EXPRESSION</b>. The indexes of the columns start at 1.
 	 * <p>
 	 * Property name: 'genericWs.C#.XML_LOCATE_EXPRESSION', # being an integer.
 	 */
@@ -319,7 +320,7 @@ public class GenericWS extends AbstractVTI {
 	 * Each String[] represents a line which is going to be inserted in the VTI. 
 	 * The arrayLit represent all the set to be inserted.
 	 */
-	private ArrayBlockingQueue<String[]> records = 
+	private ArrayBlockingQueue<String[]> recordsQ =
 							new ArrayBlockingQueue<String[]>(RECORD_CAPACITY);
 	
 	/** The number of records received when sending the request. */
@@ -414,19 +415,21 @@ public class GenericWS extends AbstractVTI {
 		
 		// --- Checks that the record is not empty
 		boolean recordHasValue = false;
-		String records[] = this.columnsPropertiesManager.getResult();
-		for (String record : records){
-			if (record != null) {
+		String recordCells[] = this.columnsPropertiesManager.getResult();
+		for (String cell : recordCells){
+			if (cell != null) {
 				recordHasValue = true;
 				break;
 			}
 		}
+
+		logger.logDetail("Got new record: " + Arrays.asList(recordCells));
 		
 		// --- Pastes the record in the list of records to write in the VTI 
 		try {
-			if (records != null && recordHasValue) {
+			if (recordCells != null && recordHasValue) {
 				// Write in the ArrayBlockingQueue
-				this.records.put(records);
+				this.recordsQ.put(recordCells);
 				this.nbRecords++;
 				
 				// Reinitialise the current record
@@ -444,7 +447,7 @@ public class GenericWS extends AbstractVTI {
 	 */
 	public void confirmSendingOfLastRecord() {
 		try {
-			this.records.put(POISON_PILL);
+			this.recordsQ.put(POISON_PILL);
 		} catch (InterruptedException e) {
 			logger.logException(GDBMessages.DSWRAPPER_GENERICWS_KILLED_PROCESS, 
 					"A process of GaianDB has been killed and the application might " +
@@ -485,6 +488,8 @@ public class GenericWS extends AbstractVTI {
 		// Scans xml file returned by request and stores the results in  
 		InputStream is = this.getData();
 		
+		logger.logInfo("Starting data scan");
+
 		if (is != null){
 			this.startScan(is);
 		}
@@ -531,12 +536,14 @@ public class GenericWS extends AbstractVTI {
 		// Gets the first row
 		try {
 			
+			logger.logDetail("Getting nextRow()");
+
 			boolean isFilledDvd = false;
 			
 			// Fill the DVD with the last record until the record passes the qualifiers
 			while (!isFilledDvd) {
 				
-				String [] firstLine = (String[])this.records.take();
+				String [] firstLine = (String[])this.recordsQ.take();
 				
 				// if records are still being found
 				if (!isPoisonPill(firstLine)) {

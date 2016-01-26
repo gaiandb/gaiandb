@@ -39,7 +39,7 @@ public class MetricMonitor implements Runnable {
 	public static final String COPYRIGHT_NOTICE = "(c) Copyright IBM Corp. 2009";
 
 	// Keep this symbol referred to from here - to minimise updates required when eclipse gets upset about mapping this char with UTF8
-	public static final char TEMPERATURE_SYMBOL = '°';
+	public static final char TEMPERATURE_SYMBOL = '\u00b0';
 	
 	/**
 	 * An interface, of which implementing objects can be added to

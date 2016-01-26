@@ -500,7 +500,7 @@ public class GaianTable extends AbstractVTI implements VTICosting, IQualifyable,
 			// If this is a subquery call, only process arguments listed beyond the sourcelist arg 
 			// and its colon delimiter
 //			int colonsIndex = tableArguments.indexOf("::");
-			String[] options = Util.splitByCommas( tableArguments ); //.substring(colonsIndex+1) );
+			String[] options = Util.splitByTrimmedDelimiterNonNestedInCurvedBracketsOrSingleQuotes(tableArguments, ','); //.substring(colonsIndex+1) );
 			for (int i=0; i<options.length; i++) {
 				final String option = options[i];
 				final int valIndex = option.indexOf('=')+1;
@@ -548,12 +548,12 @@ public class GaianTable extends AbstractVTI implements VTICosting, IQualifyable,
 					}
 					else {
 						if ( null != value ) {
-							// Validate key - only use so far is for custom dsWrapper args
+							// Validate key and extract assigned value
 							String key = parmName.toUpperCase();
-							if ( key.endsWith( VTIBasic.EXEC_ARG_CUSTOM_VTI_ARGS ) || key.equals( ORIGINATING_CLUSTER_IDS ) ) {
-								queryDetails.put( key, value );
-								continue;
-							}
+							System.out.println("Getting param for key: " + key);
+							if ( key.endsWith( VTIBasic.EXEC_ARG_CUSTOM_VTI_ARGS ) ) { queryDetails.put( key, value ); continue; }
+							else if ( key.equalsIgnoreCase( ORIGINATING_CLUSTER_IDS ) )
+								{ queryDetails.put( ORIGINATING_CLUSTER_IDS, 2 > value.length() ? "" : /* remove wrapping brackets => */ value.substring(1, value.length()-1) ); continue; }
 							throw new SQLException("Unrecognised table argument key: " + key);
 						}
 						// Check remaining possible unary arguments
@@ -582,7 +582,7 @@ public class GaianTable extends AbstractVTI implements VTICosting, IQualifyable,
 			
 			// Initiate the query path
 			tableArguments = (null==tableArguments?"":tableArguments+",") +
-				QRY_PATH+"="+gdbNodeID + (null!=originatingClusterIDs ? ORIGINATING_CLUSTER_IDS+"="+originatingClusterIDs : "");
+				QRY_PATH+"="+gdbNodeID + (null!=originatingClusterIDs ? ","+ORIGINATING_CLUSTER_IDS+"=("+originatingClusterIDs+")" : "");
 			
 			// Also fwd whether we want to log this query on nodes it is propagated to
 			if ( isSystemQuery() ) tableArguments += ","+Logger.LOG_EXCLUDE;
@@ -639,8 +639,18 @@ public class GaianTable extends AbstractVTI implements VTICosting, IQualifyable,
 				
 				if ( !isMaxDepthArgSet ) maxPropagation = GaianDBConfig.getMaxPropagation();
 				isLogPerfOn = GaianDBConfig.isLogPerformanceOn();
-    			sqlQueryFilter = GaianDBConfig.getSQLQueryFilter();
-    			sqlResultFilter = GaianDBConfig.getSQLResultFilter();
+
+				if ( false == isMetaDataLookupOnly ) {
+	    			sqlQueryFilter = GaianDBConfig.getSQLQueryFilter();
+	    			sqlResultFilter = GaianDBConfig.getSQLResultFilter();
+				}
+
+//				if ( false == isMetaDataLookupOnly ) {
+//					System.out.println("Provisioning new policy objects");
+//					// Note they may exist already on a first repetition of a query - however they should be reset to null after a close().
+//	    			sqlQueryFilter = null == sqlQueryFilter ? GaianDBConfig.getSQLQueryFilter() : sqlQueryFilter;
+//	    			sqlResultFilter = null == sqlResultFilter ? GaianDBConfig.getSQLResultFilter() : sqlResultFilter;
+//				}
 			}
 			
 			// Drop views using a Derby embedded driver connection (to avoid deadlock)

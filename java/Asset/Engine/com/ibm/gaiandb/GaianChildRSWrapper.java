@@ -289,9 +289,9 @@ public class GaianChildRSWrapper implements GaianChildVTI {
 		return // null == parentCalledProcedureConnection ? resultSet.getStatement() : parentCalledProcedureConnection.createStatement();
 			new VTI60() {
 				private final Statement s = resultSet.getStatement();
-				public void close() throws SQLException { s.close(); }
+				public void close() throws SQLException { if (null!=s) s.close(); }
 				public Connection getConnection() throws SQLException {
-					return null == parentCalledProcedureConnection ? s.getConnection() : parentCalledProcedureConnection;
+					return null == parentCalledProcedureConnection && null != s ? s.getConnection() : parentCalledProcedureConnection;
 				}
 			};
 	}

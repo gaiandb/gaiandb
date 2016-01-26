@@ -85,7 +85,7 @@ public class GaianNode {
 	private static long[] t1 = { -1, -1 };
 
 	// DO NOT CHANGE THIS CONSTANT (without also changing it in the build script)
-	static final String GDB_VERSION = "2.1.6d"; // This constant is referenced and updated by build script: gdbProjectBuilder.xml
+	static final String GDB_VERSION = "2.1.7"; // This constant is referenced and updated by build script: gdbProjectBuilder.xml
 	static final String GDB_TIMEBOMB = "-1"; // format is "dd/mm/yyyy" when enabled: This constant is referenced and updated by build script: gdbProjectBuilder.xml
 	
 	// Possible modes:
@@ -99,7 +99,7 @@ public class GaianNode {
 	// Currently, one cannot start the node in UDP mode alone. The 3 other modes are possible.
 	
 	// These final statics are used to eliminate code at compile time if required. The Zelix ZKM trimmer will remove all unreferenced classes. 
-	public static final boolean IS_UDP_DRIVER_EXCLUDED_FROM_RELEASE = true;
+	public static final boolean IS_UDP_DRIVER_EXCLUDED_FROM_RELEASE = false;
 	public static final boolean IS_SECURITY_EXCLUDED_FROM_RELEASE = true;
 	
 	static final String javaVersionS = System.getProperty("java.version");
@@ -1022,7 +1022,7 @@ public class GaianNode {
 //					loadedUsrLibURLs.add( new File(GDB_WORKSPACE+"/"+libDir+"/"+lib).toURI().toURL() );	
 //			}
 			
-			computeThreadInfoAndNodeCPUInPeriod(); // get an early measure before the first sleep
+			computeCPUsForThreadsAndNodeInPeriod(); // get an early measure before the first sleep
 			
 			while ( THREADNAME_WATCHDOG.equals( Thread.currentThread().getName() ) && isStarted() ) {
 				
@@ -1038,14 +1038,21 @@ public class GaianNode {
 				
 				if ( isMessageStorerAvailable && null == messageStorer ) initialiseMessageStorer();
 				
-				double memoryUsed = GaianDBUtilityProcedures.jMemory();
-				if ( Math.abs( memoryUsed - memoryUsedPrevious ) > 10000000 ) {
-					logger.logAlways("Used Heap Memory changed by >10MB. jMemory (MB): " + (memoryUsed/1000000) + 
-							" (= " + GaianDBUtilityProcedures.jMemoryPercent() + 
-							"%, jMemoryMax (MB): " + (double)GaianDBUtilityProcedures.jMemoryMax()/1000000 + ")" + 
-							". jMemoryNonHeap (MB): " + (double)GaianDBUtilityProcedures.jMemoryNonHeap()/1000000 +
-							" - (suspected hanging queries being checked: "+DatabaseConnectionsChecker.getNumberOfSuspectedHangingQueriesBeingChecked()+")");
-					memoryUsedPrevious = memoryUsed;
+				try {
+					if ( -1 < memoryUsedPrevious ) {
+						double memoryUsed = GaianDBUtilityProcedures.jMemory();
+						if ( Math.abs( memoryUsed - memoryUsedPrevious ) > 10000000 ) {
+							logger.logAlways("Used Heap Memory changed by >10MB. jMemory (MB): " + (memoryUsed/1000000) +
+									" (= " + GaianDBUtilityProcedures.jMemoryPercent() +
+									"%, jMemoryMax (MB): " + (double)GaianDBUtilityProcedures.jMemoryMax()/1000000 + ")" +
+									". jMemoryNonHeap (MB): " + (double)GaianDBUtilityProcedures.jMemoryNonHeap()/1000000 +
+									" - (suspected hanging queries being checked: "+DatabaseConnectionsChecker.getNumberOfSuspectedHangingQueriesBeingChecked()+")");
+							memoryUsedPrevious = memoryUsed;
+						}
+					}
+				} catch( Throwable e ) {
+					logger.logWarning(GDBMessages.NODE_MEMORYMXBEAM_ERROR, "Unable to access/process MemoryMXBean for monitoring used memory (ignored): " + e);
+					memoryUsedPrevious = -1;
 				}
 				
 //				printSystemStats();
@@ -1072,7 +1079,7 @@ public class GaianNode {
 					queryActivityInLastPeriod = GaianTable.getQueryActivity();
 					int numCancelled = GaianTable.checkAndActOnTimeouts();
 					if ( 0 < numCancelled ) logger.logThreadInfo("Number of queries cancelled by timeouts: " + numCancelled);
-					computeThreadInfoAndNodeCPUInPeriod();
+					computeCPUsForThreadsAndNodeInPeriod();
 				}
 				
 //				Thread.sleep( WATCHDOG_POLL_TIMEOUT );
@@ -1158,7 +1165,8 @@ public class GaianNode {
 			}
 		} catch ( InterruptedException e ) {
 			
-			shutdownRequestReason = THREADNAME_WATCHDOG + " was explicitly interrupted: " + e;
+			shutdownRequestReason = THREADNAME_WATCHDOG + " was explicitly interrupted: " + e
+									+ (null==shutdownRequestReason?"":", linked reason: " + shutdownRequestReason);
 			watchdogThread = null;
 			exitCode = 0;
 			
@@ -1179,8 +1187,12 @@ public class GaianNode {
 	}
     
     // Dynamic classloader code (yet to be tested) - To add a Jar at runtime, use: myCL.addURL( file.toURI().toURL() )
-    private DynamicClassLoader gdbCL = new DynamicClassLoader( (URLClassLoader) ClassLoader.getSystemClassLoader() );
-    private class DynamicClassLoader extends URLClassLoader {
+    private DynamicClassLoader gdbCL = null;
+    private DynamicClassLoader getGdbCL() {
+		return null != gdbCL ? gdbCL : (gdbCL = new DynamicClassLoader( (URLClassLoader) ClassLoader.getSystemClassLoader() ));
+	}
+
+	private class DynamicClassLoader extends URLClassLoader {
 	    public DynamicClassLoader(URLClassLoader cl) { super(cl.getURLs()); }
 	    @Override public void addURL(URL url) { super.addURL(url); }
     }
@@ -1213,7 +1225,7 @@ public class GaianNode {
 			logger.logInfo("Auto-expanding classpath and loading JDBC drivers from newly found user libs: " + jarURLs);
 			
 			// Expand the system class-loader, so classes other than JDBC drivers can also be loaded dynamically
-			for ( URL url : jarURLs ) gdbCL.addURL(url);
+			for ( URL url : jarURLs ) getGdbCL().addURL(url);
 //			final URLClassLoader cl = new URLClassLoader((URL[]) fileURLs.toArray(new URL[0]));
 			int numFiles = 0, numDriverClasses = 0, numDrivers = 0;
 			List<Class<?>> loadedClasses = new ArrayList<Class<?>>();
@@ -1229,7 +1241,7 @@ public class GaianNode {
 					numDriverClasses++;
 					final String className = zipEntryName.substring(0, zipEntryName.length()-6).replace('/','.').replace('\\','.');
 					
-					try { loadedClasses.add( Class.forName(className, false, gdbCL) ); } // just load the class for now
+					try { loadedClasses.add( Class.forName(className, false, getGdbCL()) ); } // just load the class for now
 					catch ( Throwable e ) { logger.logDetail("Unable to load class: " + className + ", cause: " + e); } // ignore/skip
 				}
 //			Collections.sort( loadedClasses, // sort classes by length of their fully qualified names.. to register most likely required ones first 
@@ -1257,8 +1269,12 @@ public class GaianNode {
     }
     
 	static Class<?> getClassUsingGaianClassLoader(final String className) throws Exception {
-		try { return Class.forName(className); }
-		catch ( ClassNotFoundException e ) { return Class.forName(className, true, gdbNodeSingleton.gdbCL); }
+		// Android Studio has an issue with converting URLClassLoader to Dalvik - so don't attempt to use URLCLassLoader (used by getGdbCL()) for Lite nodes.
+		if ( isLite() ) return Class.forName(className);
+		else {
+			try { return Class.forName(className); }
+			catch ( ClassNotFoundException e ) { return Class.forName(className, true, gdbNodeSingleton.getGdbCL()); }
+		}
 	}
 	
 	private static final String ENV_VARIABLE_HOLDING_SERVICE_HANDLE_INFO_IN_BLUEMIX = "VCAP_SERVICES";
@@ -1354,8 +1370,8 @@ public class GaianNode {
 	private static int nodeCPUInLastPeriod = 0;
 	public static int getNodeCPUInLastPeriod() { return nodeCPUInLastPeriod; }
 
-	private static final List<String> jvmThreadsInfo = new ArrayList<String>();
-	public static List<String> getJvmThreadsInfo() { synchronized( jvmThreadsInfo ) { return jvmThreadsInfo; } }
+	public static final String THREADINFO_COLNAMES =
+		"ID, GRP, NAME, PRIORITY, STATE, CPU, CPUSYS, ISSUSPENDED, ISINNATIVE, BLOCKCOUNT, BLOCKTIME, WAITCOUNT, WAITTIME";
 	
 //	private static int dsCpuInLastPeriod = 0;
 //	public static int getDsCpuInLastPeriod() { return dsCpuInLastPeriod; }
@@ -1366,11 +1382,18 @@ public class GaianNode {
 		try { threadMXBean = ManagementFactory.getThreadMXBean(); }
 		catch( Throwable e ) { logger.logWarning(GDBMessages.NODE_THREADMXBEAM_ERROR, "Unable to get threadMXBean - will not be able to compute CPU utilisation (ignored): " + e); }
 	}
-	
-	private static final Map<Long, Long> previousCPUTimes = new HashMap<Long, Long>(), previousUserCPUTimes = new HashMap<Long, Long>();
+
+	// Limit total number of threads that we hold time values for - this caused memory leak with Tivoli APM product in August 2015.
+	private static final Map<Long, Long> previousCPUTimes 		= new CachedHashMap<Long, Long>(10000);
+	private static final Map<Long, Long> previousUserCPUTimes 	= new CachedHashMap<Long, Long>(10000);
+
+	private static final Map<Long, Short> threadsCPU			= new CachedHashMap<Long, Short>(10000); // percentage values
+	private static final Map<Long, Short> threadsUserCPU		= new CachedHashMap<Long, Short>(10000); // percentage values
+
 	private static long lastSampleTime = System.currentTimeMillis();
 	
-	private static void computeThreadInfoAndNodeCPUInPeriod() {
+
+	private static void computeCPUsForThreadsAndNodeInPeriod() {
 		
 		try {
 			long totalCpuTimeInPeriod = 0;
@@ -1384,66 +1407,46 @@ public class GaianNode {
 			Thread[] threads = new Thread[ parentThreadGroup.activeCount()+100 ];
 			final int numThreads = parentThreadGroup.enumerate(threads);
 			
-//			System.out.println("\n*** Updated Threads Information ***");
+			Set<Long> currentThreadIDs = new HashSet<Long>();
+			for ( Thread t : threads ) if ( null != t ) currentThreadIDs.add( t.getId() );
+
+			// Clean up HashMaps - removing entries for old threads
+			previousCPUTimes.keySet().retainAll( currentThreadIDs );
+			previousUserCPUTimes.keySet().retainAll( currentThreadIDs );
+			threadsCPU.keySet().retainAll( currentThreadIDs );
+			threadsUserCPU.keySet().retainAll( currentThreadIDs );
+
+			currentThreadIDs.clear();
+
+//			System.out.println("\n*** Updated Threads CPU Information ***");
 //			System.out.println("Num threads/size of array holding them: " + numThreads + '/' + threads.length);
 //			long ts = System.currentTimeMillis();
 			
-			synchronized( jvmThreadsInfo ) {
-			
-				jvmThreadsInfo.clear();
+			for ( int i=0; i<numThreads; i++ ) {
+				final Thread t = threads[i];
+				if ( null == t ) continue;
+				final long tid = t.getId();
 
-				for ( int i=0; i<numThreads; i++ ) {
-					Thread t = threads[i];
-					if ( null == t ) continue;
-					final long tid = t.getId();
-					final ThreadGroup tGroup = t.getThreadGroup();
-					final String tGroupName = null == tGroup ? null : tGroup.getName();
-					final String tInfoNull = "cast (null as boolean) ISSUSPENDED, cast (null as boolean) ISINNATIVE, cast (null as int) BLOCKCOUNT, "
-										   + "cast (null as int) BLOCKTIME, cast (null as int) WAITCOUNT, cast (null as int) WAITTIME";
-					
-					if ( null == threadMXBean ) {
-						jvmThreadsInfo.add( tid + " ID,'" + tGroupName + "' GRP,'" + t.getName() + "' NAME,"
-								+ t.getPriority() + " PRIORITY,'" + t.getState() + "' STATE,"
-								+ "cast (null as int) CPU, cast (null as int) CPUSYS, " + tInfoNull
-								// Add Locks, Block+Wait count/time, Lock monitors/synchronizers ?
-						);
-						continue;
-					}
-
-					ThreadInfo tInfo = threadMXBean.getThreadInfo(tid); // not supported by some gnu versions of java
-	
-					// Compute %cpu values, given that cpuTime is in nanos and timeInterval is in millis
-					// Note the ratio of millis to nanos is 1 million, so to obtain a percentage value we divide by 10000
-					int cpuPercent = -1, cpuUsrPercent = -1;
-					final long cpuTime = null == threadMXBean ? -1 : threadMXBean.getThreadCpuTime(tid);
-					if ( -1 != cpuTime ) {
-						long cpuTimePrevious = previousCPUTimes.containsKey(tid) ? previousCPUTimes.get(tid) : 0;
-						cpuPercent = (int) ( (cpuTime-cpuTimePrevious) / (timeInterval*10000*numProcs) );
-						previousCPUTimes.put(tid, cpuTime);
-						totalCpuTimeInPeriod += cpuTime - cpuTimePrevious;
-//			        	if ( -1 == tInfo.getThreadName().indexOf(GaianResult.DS_EXECUTOR_THREAD_PREFIX) ) sumother += cpuTime - cpuTimePrevious;
-//			        	else sumds += cpuTime - cpuTimePrevious;
-					}
-					final long cpuUsrTime = null == threadMXBean ? -1 : threadMXBean.getThreadUserTime(tid);
-					if ( -1 != cpuUsrTime ) {
-						long cpuUsrTimePrevious = previousUserCPUTimes.containsKey(tid) ? previousUserCPUTimes.get(tid) : 0;
-						cpuUsrPercent = (int) ( (cpuUsrTime-cpuUsrTimePrevious) / (timeInterval*10000*numProcs) );
-						previousUserCPUTimes.put(tid, cpuUsrTime);
-					}
-
-					String tInfoString = 
-					tid + " ID,'" + tGroupName + "' GRP,'" + t.getName() + "' NAME," + t.getPriority() + " PRIORITY,'" + t.getState() + "' STATE,"
-					+ cpuPercent + " CPU," + (cpuPercent - cpuUsrPercent) + " CPUSYS,"
-					+ ( null == tInfo ? tInfoNull :
-						tInfo.isSuspended() + " ISSUSPENDED," + tInfo.isInNative() + " ISINNATIVE,"
-						+ tInfo.getBlockedCount() + " BLOCKCOUNT," + tInfo.getBlockedTime() + " BLOCKTIME,"
-						+ tInfo.getWaitedCount() + " WAITCOUNT," + tInfo.getWaitedTime() + " WAITTIME"
-						// Add Locks, Block+Wait count/time, Lock monitors/synchronizers ?
-					);
-					
-					jvmThreadsInfo.add( tInfoString );
+				// Compute %cpu values, given that cpuTime is in nanos and timeInterval is in millis
+				// Note the ratio of millis to nanos is 1 million, so to obtain a percentage value we divide by 10000
+//				int cpuPercent = -1, cpuUsrPercent = -1;
+				final long cpuTime = null == threadMXBean ? -1 : threadMXBean.getThreadCpuTime(tid);
+				if ( -1 != cpuTime ) {
+					long cpuTimePrevious = previousCPUTimes.containsKey(tid) ? previousCPUTimes.get(tid) : 0;
+					threadsCPU.put( tid, (short) ( (cpuTime-cpuTimePrevious) / (timeInterval*10000*numProcs) ) );
+					previousCPUTimes.put(tid, cpuTime);
+					totalCpuTimeInPeriod += cpuTime - cpuTimePrevious;
+//		        	if ( -1 == tInfo.getThreadName().indexOf(GaianResult.DS_EXECUTOR_THREAD_PREFIX) ) sumother += cpuTime - cpuTimePrevious;
+//		        	else sumds += cpuTime - cpuTimePrevious;
+				}
+				final long cpuUsrTime = null == threadMXBean ? -1 : threadMXBean.getThreadUserTime(tid);
+				if ( -1 != cpuUsrTime ) {
+					long cpuUsrTimePrevious = previousUserCPUTimes.containsKey(tid) ? previousUserCPUTimes.get(tid) : 0;
+					threadsUserCPU.put( tid, (short) ( (cpuUsrTime-cpuUsrTimePrevious) / (timeInterval*10000*numProcs) ) );
+					previousUserCPUTimes.put(tid, cpuUsrTime);
 				}
 			}
+
 //			System.out.println("Num threads checked: " + numThreads + ", time taken (ms): " + (System.currentTimeMillis() - ts));
 	        
 			// Compute a % value, given that totalCpuTimeInPeriod is in nanos and timeInterval is in millis
@@ -1459,6 +1462,69 @@ public class GaianNode {
 		}
 	}
 	
+
+	public static List<String> getJvmThreadsInfo() {
+
+		final List<String> jvmThreadsInfo = new ArrayList<String>();
+
+		try {
+			Thread[] threads = new Thread[ parentThreadGroup.activeCount()+100 ];
+			final int numThreads = parentThreadGroup.enumerate(threads);
+
+//			System.out.println("\n*** Getting Threads Information ***");
+//			System.out.println("Num threads/size of array holding them: " + numThreads + '/' + threads.length);
+//			long ts = System.currentTimeMillis();
+
+			for ( int i=0; i<numThreads; i++ ) {
+				final Thread t = threads[i];
+				if ( null == t ) continue;
+				final long tid = t.getId();
+				final ThreadGroup tGroup = t.getThreadGroup();
+				final String tGroupName = null == tGroup ? null : Util.escapeSingleQuotes( tGroup.getName() );
+				final String tInfoNull = "cast (null as boolean), cast (null as boolean), cast (null as int), "
+									   + "cast (null as int), cast (null as int), cast (null as int)";
+				final String tName = Util.escapeSingleQuotes( t.getName() );
+				final int tPriority = t.getPriority();
+				final String tState = Util.escapeSingleQuotes( t.getState().toString() );
+
+				// Columns are:
+				// ID, GRP, NAME, PRIORITY, STATE, CPU, CPUSYS, ISSUSPENDED, ISINNATIVE, BLOCKCOUNT, BLOCKTIME, WAITCOUNT, WAITTIME
+				if ( null == threadMXBean ) {
+					jvmThreadsInfo.add( tid + ",'" + tGroupName + "','" + tName + "'," + tPriority + ",'" + tState + "',"
+							+ "cast (null as int), cast (null as int)," + tInfoNull
+							// Add Locks, Block+Wait count/time, Lock monitors/synchronizers ?
+					);
+					continue;
+				}
+
+				ThreadInfo tInfo = threadMXBean.getThreadInfo(tid); // not supported by some gnu versions of java
+
+				short cpuPercent = threadsCPU.containsKey(tid) ? threadsCPU.get(tid) : 0;
+				short cpuUsrPercent = threadsUserCPU.containsKey(tid) ? threadsUserCPU.get(tid) : 0;
+
+				// Columns are:
+				// ID, GRP, NAME, PRIORITY, STATE, CPU, CPUSYS, ISSUSPENDED, ISINNATIVE, BLOCKCOUNT, BLOCKTIME, WAITCOUNT, WAITTIME
+				String tInfoString =
+					tid + ",'" + tGroupName + "','" + tName + "'," + tPriority + ",'" + tState + "',"
+					+ cpuPercent + "," + (cpuPercent - cpuUsrPercent) + ","
+					+ ( null == tInfo ? tInfoNull :
+						tInfo.isSuspended() + "," + tInfo.isInNative() + ","
+						+ tInfo.getBlockedCount() + "," + tInfo.getBlockedTime() + ","
+						+ tInfo.getWaitedCount() + "," + tInfo.getWaitedTime()
+						// Add Locks, Block+Wait count/time, Lock monitors/synchronizers ?
+					  );
+
+				jvmThreadsInfo.add( tInfoString );
+			}
+//			System.out.println("Num threads checked: " + numThreads + ", time taken (ms): " + (System.currentTimeMillis() - ts));
+
+		} catch ( Exception e ) {
+			logger.logWarning(GDBMessages.NODE_CPU_COMPUTE_ERROR, "Unable to compute thread info or node CPU: " + Util.getStackTraceDigest(e));
+		}
+
+		return jvmThreadsInfo;
+	}
+
 //	private static void printSystemStats() {
 //		OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
 //		ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();

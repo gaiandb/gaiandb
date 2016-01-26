@@ -7,6 +7,9 @@
 
 package com.ibm.gaiandb.plugins.wpml.schema;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * The context of the query for policies to base their decisions on
  * 
@@ -22,29 +25,34 @@ public class QueryContext {
 	
 	String logicalTable = null;
 	String forwardingNode = null;
+	List<String> forwardingPath = null;
+	List<String> accessClustersAtOriginNode = null;
 	String requestor = null;
 	String affiliation = null;
 	String securityClearance = null;
 	
 	public QueryContext() {
-		this("", "", "", "", "");
+		this("", "", "", "", "", null, null);
 	}
 	
 	public String toString() {
-		return "Logical Table: " + check(logicalTable) + ", user: " + check(requestor) + 
-		", affiliation: " + check(affiliation) + ", clearance: " + check(securityClearance);
+		return "Logical Table: " + check(logicalTable) + ", user: " + check(requestor)
+				+ ", affiliation: " + check(affiliation) + ", clearance: " + check(securityClearance)
+				+ ", forwardingPath: " + check(forwardingPath) + ", accessClustersAtOriginNode: " + check(accessClustersAtOriginNode);
 	}
+
+	private String check( String a ) { return null == a || 0 == a.length() ? "<undefined>" : a; }
+	private String check( List<String> a ) { return null == a || 0 == a.size() ? "<undefined>" : a.toString(); }
 	
-	private String check( String a ) {
-		return null == a || 0 == a.length() ? "<undefined>" : a;
-	}
-	
-	public QueryContext(String user, String affiliation, String securityClearance, String logicalTable, String forwardingNode) {
+	public QueryContext(String user, String affiliation, String securityClearance, String logicalTable, String forwardingNode,
+			List<String> forwardingPath, List<String> accessClustersAtOriginNode) {
 		this.requestor = user;
 		this.affiliation = affiliation;
 		this.securityClearance = securityClearance;
 		this.logicalTable = logicalTable;
 		this.forwardingNode = forwardingNode;
+		this.forwardingPath = forwardingPath;
+		this.accessClustersAtOriginNode = accessClustersAtOriginNode;
 	}
 	
 //	public QueryContext(String user) {
@@ -75,14 +83,6 @@ public class QueryContext {
 		this.securityClearance = securityClearance;
 	}
 
-	public String getForwardingNode() {
-		return forwardingNode;
-	}
-
-	public void setForwardingNode(String forwardingNode) {
-		this.forwardingNode = forwardingNode;
-	}
-
 	public String getLogicalTable() {
 		return logicalTable;
 	}
@@ -91,4 +91,27 @@ public class QueryContext {
 		this.logicalTable = logicalTable;
 	}
 
+	public String getForwardingNode() {
+		return forwardingNode;
+	}
+
+	public void setForwardingNode(String forwardingNode) {
+		this.forwardingNode = forwardingNode;
+	}
+
+	public List<String> getForwardingPath() {
+		return forwardingPath;
+	}
+
+	public void setForwardingPath(List<String> forwardingPath) {
+		this.forwardingPath = forwardingPath;
+	}
+
+	public List<String> getAccessClustersAtOriginNode() {
+		return accessClustersAtOriginNode;
+	}
+
+	public void setAccessClustersAtOriginNode(List<String> accessClustersAtOriginNode) {
+		this.accessClustersAtOriginNode = accessClustersAtOriginNode;
+	}
 }

@@ -208,7 +208,7 @@ public class GaianDBProcedureUtils extends GaianDBConfig {
 //		return getResultSetFromQueryAgainstDefaultConnection( sb.toString() );
 //	}
 	
-	static byte[] readAndZipFileBytes( File file ) throws Exception {	
+	public static byte[] readAndZipFileBytes( File file ) throws Exception {
 		try {
 			if ( file.isDirectory() )
 				throw new Exception("File is a directory");
@@ -222,7 +222,7 @@ public class GaianDBProcedureUtils extends GaianDBConfig {
 		catch (Exception e) { throw new Exception("Cannot read/zip bytes from '" + file.getName() + "': " + e); }
 	}
 	
-	static void writeToFileAfterUnzip( File file, byte[] zippedBytes ) throws Exception {
+	public static void writeToFileAfterUnzip( File file, byte[] zippedBytes ) throws Exception {
 		
 		try {
 			ByteArrayInputStream is = new ByteArrayInputStream(zippedBytes);

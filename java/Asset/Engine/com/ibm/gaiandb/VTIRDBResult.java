@@ -375,7 +375,8 @@ public class VTIRDBResult extends VTIWrapper {
 				if ( isGaianNode || isLocalDerbyDataSource ) {
 				
 					sql += " -- "+GaianTable.GDB_HASH+"="+arguments.get(GaianTable.QRY_HASH); // there should *always* be a QRY_HASH
-					if ( null != credentials ) sql += " "+SecurityManager.CREDENTIALS_LABEL+"="+credentials;
+					// Note GDB_CREDENTIALS is read via a positional parameter if isGaianNode is true (i.e. for propagated queries - see also GaianTable.java near line 985)
+					if ( false == isGaianNode && null != credentials ) sql += " "+SecurityManager.CREDENTIALS_LABEL+"="+credentials;
 					if ( arguments.containsKey(GaianTable.QRY_WID) ) sql += " "+GaianTable.GDB_WID+"="+arguments.get(GaianTable.QRY_WID);
 					if ( null != timeout ) sql += " "+GaianTable.GDB_TIMEOUT+"="+timeout;
 				}
@@ -879,7 +880,7 @@ public class VTIRDBResult extends VTIWrapper {
 		
 		Statement s = null;
 
-		logger.logThreadInfo("Checking Statement for cleanup: " + (s = ((GaianChildRSWrapper) rows).getStatementForCleanup()));
+		logger.logThreadInfo("Checking Statement for cleanup"); // + (s = ((GaianChildRSWrapper) rows).getStatementForCleanup()));
 
 		// Statement will be null if an update count was derived on a callable statement.
 		try { if ( null == ( s = ((GaianChildRSWrapper) rows).getStatementForCleanup() ) ) return; }

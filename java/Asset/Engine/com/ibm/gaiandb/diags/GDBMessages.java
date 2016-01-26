@@ -1956,6 +1956,24 @@ public class GDBMessages {
 	 **/
 	public final static String UTILITY_RIPPLE_EXTRACT_ERROR = "UTILITY_RIPPLE_EXTRACT_ERROR";
 
+	/**
+	 * <p>
+	 * <b>Error:</b> An exception occurred while loading Memory info through ManagementFactory.getMemoryMXBean()/.getMemoryPoolMXBeans()
+	 * <br/><br/>
+	 * <b>Reason:</b> GaianDB could not access/process some Memory management libraries - possibly if these are not included in the JRE.
+	 * <br/><br/>
+	 * <b>Action:</b> Check the Java platform and whether it is linked to a full JRE. Check the associated exception in the GaianDB log.
+	 * <p>
+	 * Related Links:
+	 * <ul>
+	 * <li><a href="../../../../../Readme.html">Readme</a>
+	 * <li><a href="../../../../../Readme.html#contents359">FAQ &
+	 * Troubleshooting</a>
+	 * </ul>
+	 *
+	 **/
+	public final static String UTILITY_MEMORYMXBEAM_ERROR = "UTILITY_MEMORYMXBEAM_ERROR";
+
 	// gaiandb/GaianNode.java
 	/**
 	 * <p>
@@ -3990,11 +4008,11 @@ public class GDBMessages {
 	// gaiandb/GaianDBConfigProcedures.java
 	/**
 	 * <p>
-	 * <b>Error:</b> File not found
+	 * <b>Error:</b> File not found (will be created).
 	 * <br/><br/>
-	 * <b>Reason:</b> GaianDB was unable to find the file specified as data source.
+	 * <b>Reason:</b> GaianDB was unable to find the file specified as data source, it will be created.
 	 * <br/><br/>
-	 * <b>Action:</b> Check the path of the data file. Also check associated exception in the GaianDB log.
+	 * <b>Action:</b> Check the associated exception in the GaianDB log.
 	 * <p>
 	 * Related links:
 	 * <ul>
@@ -4457,6 +4475,23 @@ public class GDBMessages {
 	 * </ul>
 	 **/
 	public static final String NODE_THREADMXBEAM_ERROR = "NODE_THREADMXBEAM_ERROR";
+
+	/**
+	 * <p>
+	 * <b>Error:</b> An exception occurred while querying Memory info through ManagementFactory.getMemoryMXBean()/.getMemoryPoolMXBeans()
+	 * <br/><br/>
+	 * <b>Reason:</b> GaianDB could not access/process some Memory management libraries - possibly if these are not included in the JRE.
+	 * <br/><br/>
+	 * <b>Action:</b> Check the Java platform and whether it is linked to a full JRE. Check the associated exception in the GaianDB log.
+	 * <p>
+	 * Related links:
+	 * <ul>
+	 * <li><a href="../../../../../Readme.html">Readme</a></li>
+	 * <li><a href="../../../../../Readme.html#contents359">FAQ &
+	 * Troubleshooting</a></li>
+	 * </ul>
+	 **/
+	public static final String NODE_MEMORYMXBEAM_ERROR = "NODE_MEMORYMXBEAM_ERROR";
 
 	/**
 	 * <p>

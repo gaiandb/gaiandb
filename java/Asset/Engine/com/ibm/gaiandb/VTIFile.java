@@ -49,15 +49,8 @@ public class VTIFile extends VTIWrapper {
 		logger.logInfo( nodeDefName + " Building new VTIWrapper File based on: " + fileID );
 		
 		this.filePathID = fileID;
-		final String primaryFileInstancePath = getPrimaryFileInstancePath();
-		this.fileHandle = new File( primaryFileInstancePath ); // can only run this once fileID has been set
-		if ( false == fileHandle.exists() ) logger.logWarning(GDBMessages.CONFIG_DS_FILE_NOT_FOUND, "Data file not found: " + primaryFileInstancePath);
-		fileHandle.createNewFile(); // only creates the file if it doesnt already exist => DRV 08/10/2014: THIS SHOULD NOT BE HERE... (SINCE 2008!)
-		
-		// TODO: Equivalent case with VTIRDBResult works (VTIFile should do the same), i.e:
-		// If rdbms table does not exist then Gaian raises a warning. Later if the table is created, Gaian will resolve and query it on a subsequent query.
-		// Currently if the file does not exist, then FileImport fails to load and will not subsequently work even if the file appears in the expected location.
-		
+		this.fileHandle = new File( getPrimaryFileInstancePath() ); // can only run this once fileID has been set
+		fileHandle.createNewFile(); // only creates the file if it doesnt already exist
 		fileLastModified = 0;
 		
 //		sourceHandles = DataSourcesManager.getSourceHandlesStackPool( filePath, false );

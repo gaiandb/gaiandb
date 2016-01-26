@@ -1163,8 +1163,8 @@ public class GaianDBConfig {
 	
 	private static final List<String> permittedSuffixes = Arrays.asList( "", "_0", "_1", "_P", "_X", "_XF" );	
 	private static final Map<String, String> ltViewTailOptions = new HashMap<String, String>() {{
-		put( "", "''"); put( "_0", "'maxDepth=0'"); put( "_1", "'maxDepth=1'");
-		put( "_P", "'with_provenance'"); put( "_X", "'explain'"); put( "_XF", "'explain in graph.dot'");
+		put( "", ", ''"); put( "_0", ", 'maxDepth=0'"); put( "_1", ", 'maxDepth=1'");
+		put( "_P", ", 'with_provenance'"); put( "_X", ", 'explain'"); put( "_XF", ", 'explain in graph.dot'");
 	}};
 //	private static final String[] ltViewTailOptions	= { ", ''", ", 'maxDepth=0'", ", 'maxDepth=1'", ", 'with_provenance'", ", 'explain'", ", 'explain in graph.dot'" };
 	
@@ -1989,7 +1989,7 @@ public class GaianDBConfig {
     	
     	if ( /*null == driver ||*/ null == url || null == usr || null == pwd ) { // driver can be null
     		if ( null == driver && null == url && null == usr && null == pwd )
-    			if ( exceptionOnEmptyDef ) throw new Exception("Connection Not Defined in Config");
+    			if ( exceptionOnEmptyDef ) throw new Exception("Connection Not Defined in Config: " + connectionKey);
     			else return null;
     		
     		String p = isIndirectDef ? connectionProperty : connectionKey;

@@ -508,6 +508,7 @@ public class SQLRunner {
 	    	        	}
 	    	        	
 	    	        	sql = resolveStatementToNextDelimiter( stdin, sqlbuf, isDelimiterSet );
+	    	        	if ( 1 > sql.length() ) { sqlbuf.setLength(0); continue; }
 	            	}
     	        	
     	            while (true) {
@@ -545,14 +546,15 @@ public class SQLRunner {
 	    	    			
 	    	    			boolean isSQLSyntaxException = e instanceof SQLSyntaxErrorException;
 
-	    					printStream.println( "\nChained Exception 1: "+e ); int i=1;
+	    					printStream.println( "\nChained Exception 1: "+(e instanceof NullPointerException ? Util.getStackTraceDigest(e) : e) ); int i=1;
 	    	    			Throwable cause = e;
 	    	    			while (null!=(cause=cause.getCause())) {
 	    	    				++i;
 	    	    				isSQLSyntaxException = isSQLSyntaxException || cause instanceof SQLSyntaxErrorException;
 	    	    				if (!messages.contains(cause.getMessage())) {
 	    	    					messages.add(cause.getMessage());
-	    	    					printStream.println( "Chained Exception " + i + ": " + cause );
+	    	    					printStream.println( "Chained Exception " + i + ": "
+	    	    							+ (cause instanceof NullPointerException ? Util.getStackTraceDigest(cause) : cause) );
 	    	    					continue;
 	    	    				}
 	    	    				printStream.println( "..." );
@@ -595,7 +597,7 @@ public class SQLRunner {
     	            sql = "";
     	        }
     		} else {
-    			// batch mode (non-interractive) - 1 or more queries were passed in directly
+    			// batch mode (non-interactive) - 1 or more queries were passed in directly
     			instanceConn = getConnection();
         		/*stmt = c.createStatement();*/
         		for (int i=0; i<argsRemaining; i++)
@@ -605,7 +607,7 @@ public class SQLRunner {
 		} catch (Exception e) {
 			// Don't print a stack digest to queryDerby.bat - this is unreadable to users - Also it breaks test: logger.Test_setltForExcelException
 			// Also an exception here often won't carry the server side exception info..
-			printInfo("Caught Exception: " + e.getMessage());
+			printInfo("Caught Exception: " + Util.getStackTraceDigest(e));
 			if ( exitOnFailure )
 				System.exit(1);
 			else
@@ -646,6 +648,13 @@ public class SQLRunner {
 	 */
 	private String resolveStatementToNextDelimiter( BufferedReader br, StringBuilder sqlbuf, boolean useDelimiter ) {
 		
+//		printInfo("resolveStatementToNextDelimiter: sqlbuf: " + sqlbuf + ", useDelimiter: " + useDelimiter
+//				+ ", delimiterChar: '" + delimiterChar + "', isDelimiterSet: " + isDelimiterSet
+//				+ ", isDefaultBackwardCompatibilityMode: " + isDefaultBackwardCompatibilityMode);
+
+		// Boolean to designate whether the whole sqlbuf is a SQL comment. Start with true if the first line starts with "--"
+		boolean isOnlyComments = 1 < sqlbuf.length() && '-' == sqlbuf.charAt(0) && '-' == sqlbuf.charAt(1);
+
 		// Read multiple lines of SQL until we have a full statement to return - then also remove the statememt from sqlbuf.
 		try {
 			String nxtLine = null;
@@ -662,7 +671,7 @@ public class SQLRunner {
     				
     				int numElmts = parsedSQLs.length;
             		if ( 1 < numElmts ) {
-           			// We have a new delimited statement to return
+            			// We have a new delimited statement to return
             			String sqlStmt = parsedSQLs[0], nxtStmtStart = parsedSQLs[1];
     					// Delete the newly found SQL statement from the buffer...
             			if ( 1 > nxtStmtStart.length() || '#' == nxtStmtStart.charAt(0) ) sqlbuf.setLength(0);
@@ -670,7 +679,7 @@ public class SQLRunner {
             			
 //            			printInfo("Next SQL = " + sqlStmt );
 //            			printInfo("Remaining sqlbuf = " + sqlbuf );
-    					return sqlStmt;
+    					return isOnlyComments ? "" : sqlStmt;
     				}
     			} else if ( false == isDefaultBackwardCompatibilityMode ) break; // reached end of line - cannot be escaped with '\'
     			
@@ -706,14 +715,20 @@ public class SQLRunner {
     			}
     			
     			if ( null == nxtLine ) break; // no more lines in this statement
-				sqlbuf.append( (isNewLineEscaped?"":"\n") + nxtLine ); // don't trim() this... (might be inside a string value)
+
+    			if ( true == isOnlyComments ) {
+    				final String nlTrimmed = nxtLine.trim();
+    				isOnlyComments = 1 < nlTrimmed.length() && '-' == nlTrimmed.charAt(0) && '-' == nlTrimmed.charAt(1);
+    			}
+
+    			sqlbuf.append( (isNewLineEscaped?"":"\n") + nxtLine ); // don't trim() this... (might be inside a string value)
 			}
 		} catch ( Exception e ) { System.err.println("Unexpected exception while reading SQL lines: " + Util.getStackTraceDigest(e)); }
 		
 		// Query is delimited by a new line, or the BufferedReader is exhausted - return what's left
 		String sqlStmt = sqlbuf.toString();
 		sqlbuf.setLength(0);
-		return sqlStmt;
+		return isOnlyComments ? "" : sqlStmt;
 	}
 	
     public String processSQLs( String sqlOrArgsOrFile ) throws Exception {
@@ -763,13 +778,15 @@ public class SQLRunner {
 		
     	while ( null != (buf = bufferedReader.readLine()) ) {
     		
-    		StringBuilder sql = new StringBuilder( buf.replaceFirst("^["+delimiterChar+"\\s]*", "") ); // remove leading spaces and delimiters
+    		StringBuilder sqlbuf = new StringBuilder( buf.replaceFirst("^["+delimiterChar+"\\s]*", "") ); // remove leading spaces and delimiters
         	
-        	while ( 0 < sql.length() && '#' != sql.charAt(0) ) {
-	    		executeSQLRepeat( nextSQLStatement.append(
-	    				// Use delimiter ';' by default for batch or script processing (i.e. when -td or -t where not specified)
-	    				resolveStatementToNextDelimiter( bufferedReader, sql, isDelimiterSet || isDefaultBackwardCompatibilityMode ) ) );
-	    		nextSQLStatement.setLength( batchPrefixLen );
+        	while ( 0 < sqlbuf.length() && '#' != sqlbuf.charAt(0) ) {
+				// Use delimiter ';' by default for batch or script processing (i.e. when -td or -t where not specified)
+        		final String sql = resolveStatementToNextDelimiter( bufferedReader, sqlbuf, isDelimiterSet || isDefaultBackwardCompatibilityMode );
+        		if ( 0 < sql.length() ) {
+        			executeSQLRepeat( nextSQLStatement.append( sql ) );
+        			nextSQLStatement.setLength( batchPrefixLen );
+        		}
         	}
     	}
     	

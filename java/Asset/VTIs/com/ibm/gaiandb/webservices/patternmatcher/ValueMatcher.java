@@ -8,6 +8,7 @@ package com.ibm.gaiandb.webservices.patternmatcher;
 
 import java.util.ArrayList;
 
+import com.ibm.gaiandb.Logger;
 import com.ibm.gaiandb.webservices.scanner.Tag;
 
 /**
@@ -39,6 +40,8 @@ public class ValueMatcher extends TagMatcher {
 	// --------------------------------------------------------------------------- Static
 	// -------------------------------------------------------------------------- Dynamic
 	
+	private static final Logger logger = new Logger( "ValueMatcher", 50 );
+
 	/** 
 	 * True if the matcher has read all the right tags and can read the value. 
 	 * False otherwise.
@@ -88,13 +91,16 @@ public class ValueMatcher extends TagMatcher {
 			TagPattern tagMeantToBeMatched = this.patternToMatch.get(this.currentDepth);
 	
 			// passes in the next level
-			this.currentDepth++;	
+			this.currentDepth++;
 			
 			// Checks if the current tag matches with the one from the pattern
 			if (tagMeantToBeMatched.isMatching(openingTag)) {
 				
+				logger.logDetail("Matched tag: " + openingTag
+						+ ", depth: " + this.currentDepth + ", patternDepth: " + this.patternToMatch.size());
+
 				// Checks if all the pattern has been fully matched
-				if (this.currentDepth == (this.patternToMatch.size())){					
+				if (this.currentDepth == (this.patternToMatch.size())){
 					// All the pattern is matched, the next read value can be considered 
 					// as a value to read
 					this.canReadValue  = true;
@@ -143,6 +149,8 @@ public class ValueMatcher extends TagMatcher {
 		else {
 			Tag closingTag = new Tag(closingTagName, Tag.END);
 			
+			logger.logDetail("Reached depth of patternToMatch. Extracting Tag Value: " + closingTag.toString());
+
 			if (this.canReadValue) {
 				this.valueToRead.append(closingTag.toString());
 			}

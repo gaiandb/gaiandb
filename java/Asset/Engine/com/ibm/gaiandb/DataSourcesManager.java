@@ -100,7 +100,7 @@ public class DataSourcesManager {
 	private static final ConcurrentMap<String, VTIWrapper[]> dsArrays = new ConcurrentHashMap<String, VTIWrapper[]>();
 	
 	// Internally used mapping of: source handle descriptor -> pool of physical handles to the source
-	// e.g. connectionPropertiesString "driver url usr pwd" -> JDBC Connection pool
+	// e.g. connectionPropertiesString "driver'url'usr'pwd" -> JDBC Connection pool
 	// or:  File name -> FileImport vti pool
 	// Note all vtis share the pools, picking handles out and replacing them when appropriate.
 	private static final ConcurrentMap<String, Stack<Object>> sourceHandlesPools = new ConcurrentHashMap<String, Stack<Object>>();
@@ -329,13 +329,10 @@ public class DataSourcesManager {
 //			logger.logInfo("LTDEF for " + lt + ": " +
 //					getLogicalTableRSMD(lt).getColumnsDefinitionExcludingHiddenOnesAndConstantValues() );
 		
-		int numLoadedLTs = loadedLTs.size();
-		StringBuilder loadedTablesCSV = null;
-		
-		if ( 0 < numLoadedLTs ) {
+		if ( 0 < loadedLTs.size() ) {
 			Set<String> upToDateViews = new HashSet<String>();
 			
-			loadedTablesCSV = new StringBuilder();
+			StringBuilder loadedTablesCSV = new StringBuilder();
 			for ( String lt : loadedLTs ) loadedTablesCSV.append(",'" + lt + '\'');
 			
 			loadedTablesCSV.deleteCharAt(0);
@@ -368,7 +365,6 @@ public class DataSourcesManager {
 				if ( null == vdef) vdefs.put(vname, vdef = new StringBuilder( coldef ));
 				else vdef.append(", " + coldef);
 			}
-			rs.close();
 			for ( String lt : loadedLTs) {
 				StringBuilder vdefsb = vdefs.get(lt);
 				if ( null != vdefsb ) {
@@ -393,56 +389,33 @@ public class DataSourcesManager {
 				isUsingTableFunctions = GaianDBConfig.isManageViewsWithTableFunctions();
 				oldLogicalTableViewNames = upToDateViews;
 			}
-		}
-		
-		// Use constant strings to tightly couple the code that creates the view with the code that looks for stale ones.
-		// We also need to double up the quotes and substitute tags <LT>, <SCHEMA>, <LTARGS> and <RELOAD_VERSION_ALIAS>
-		final String sqlViewFragmentForVTI = TEMPLATE_FRAGMENT_FOR_LTVIEW_BASED_ON_VTI.replace("'", "''")
-			.replace("<LT>", "'||tablename||'").replace("<SCHEMA>", "GAIANDB").replace("<LTV>", "'||tablename||'");
-
-		final String sqlViewFragmentForTF = TEMPLATE_FRAGMENT_FOR_LTVIEW_BASED_ON_TABLE_FUNCTION.replace("'", "''").replace("<LTARGS>", "''''")
-			.replace("<LT>", "'||tablename||'").replace("<RELOAD_VERSION_ALIAS>", "'||tablename||'"); // the alias always starts with the table name
-		
-		final String sqlToFindStaleViews =  "select tablename from sys.systables st, sys.sysschemas ss, sys.sysviews sv"
-			+ " where st.tableid = sv.tableid and st.schemaid=ss.schemaid and tabletype='V' and schemaname='GAIANDB'"
-			+ " and ( viewdefinition like '" + sqlViewFragmentForVTI + "%' or viewdefinition like '%" + sqlViewFragmentForTF + "%' )"
-			+ ( 1 > numLoadedLTs ? "" : " and tablename not in ( " + loadedTablesCSV + " )" );
-		
-		// Example:
-//		select tablename from sys.systables st, sys.sysschemas ss, sys.sysviews sv 
-//		where st.tableid = sv.tableid and st.schemaid=ss.schemaid and tabletype='V' and schemaname='GAIANDB' 
-//		and ( viewdefinition like 'create view GAIANDB.'||tablename||' as select * from new com.ibm.db2j.GaianTable('''||tablename||''', %' 
-//		or viewdefinition like '% from TABLE('||tablename||'_('''||tablename||''', '''', null, null)) '||tablename||'%' ) 
-//		and tablename not in ( 'GDB_LTNULL','LTADDTS','ORCLGAIANTEST2','MRBIKES','DERBY_TABLES','LTBAAH','SALES','GDB_LTLOG','STOCK','CUSTOMERS','MYLT','LTADDTS2','PIPEFILES','DB2TABLESL64','LTBAAAH','LT0','LTADDTS3' )
-		
-		logger.logInfo("Searching for stale views status with: " + sqlToFindStaleViews);
-		rs = stmt.executeQuery(sqlToFindStaleViews);
-		List<String> staleViews = new ArrayList<String>();
-		while ( rs.next() ) staleViews.add( rs.getString(1) );
-		rs.close();
-		
-		logger.logInfo("Stale views: " + staleViews);
 			
-		// TODO: The 2 lines below cause 69 failures: In ICAREST vtis, stress tests and Test_workedExamplesThree and TestPermissionsSetting
-		for ( String v : staleViews )
-			dropManagedViews("GAIANDB", v, stmt, null);
+//			for ( String vname : DataSourcesManager.getLogicalTableNamesLoaded() ) {
+//				try {
+//					logger.logAlways("Getting vmd for: " + vname);
+//					GaianResultSetMetaData vmd = new GaianResultSetMetaData(
+//							conn.createStatement().executeQuery("select * from "+vname+" where 0=1").getMetaData(), "");
+////					GaianResultSetMetaData vmd = new GaianResultSetMetaData(
+////						conn.prepareStatement("select * from "+vname+" where 0=1").getMetaData(), "");
+//					System.out.println("vname: " + vname);
+//					System.out.println("ltdef: " + DataSourcesManager.getLogicalTableRSMD(vname).getColumnsDefinitionExcludingHiddenOnesAndConstantValues() );
+//					System.out.println(" vdef: " + vmd.getColumnsDefinitionExcludingHiddenOnesAndConstantValues());
+//
+//					if ( vmd.getColumnsDefinitionExcludingHiddenOnesAndConstantValues().
+//							equals( DataSourcesManager.getLogicalTableRSMD(vname).getColumnsDefinitionExcludingHiddenOnesAndConstantValues() ) )
+//					{
+//						System.out.println("LT VIEW IS UP TO DATE: " + vname);
+//						continue;
+//					}
+//				} catch ( Exception e ) { System.out.println("EXCEPTION WHILST CHECKING LTVIEW: " + vname + ": " + e); }
+//
+//				System.out.println("LT VIEW IS NOT UP TO DATE: " + vname);
+//			}
+//
+//			showStartupTime( 0, "VIEW RSMDS LOOKUP" );
 		}
 
-	// We use the following constant strings to tightly couple the code that creates the view with the code that looks for stale ones.
-	
-	private static final String TEMPLATE_FOR_LTVIEW_BASED_ON_VTI =
-		"create view <SCHEMA>.<LTV> as select * from new com.ibm.db2j.GaianTable('<LT>', <LTARGS>) <RELOAD_VERSION_ALIAS>";
-	private static final String TEMPLATE_FOR_LTVIEW_BASED_ON_TABLE_FUNCTION = 
-		"create view <SCHEMA>.<LTV> as select <LTCOLS> from TABLE(<LT>_('<LT>', <LTARGS>, null, null)) <RELOAD_VERSION_ALIAS>";
-	
-	// Below are template fragments used to search for stale views...
-	
-	private static final String TEMPLATE_FRAGMENT_FOR_LTVIEW_BASED_ON_VTI =
-		TEMPLATE_FOR_LTVIEW_BASED_ON_VTI.substring(0, TEMPLATE_FOR_LTVIEW_BASED_ON_VTI.indexOf("<LTARGS>"));
-	
-	private static final String TEMPLATE_FRAGMENT_FOR_LTVIEW_BASED_ON_TABLE_FUNCTION =
-		TEMPLATE_FOR_LTVIEW_BASED_ON_TABLE_FUNCTION.substring( TEMPLATE_FOR_LTVIEW_BASED_ON_TABLE_FUNCTION.indexOf("<LTCOLS>") + "<LTCOLS>".length() );
-
+	}
 
 	private static void dropManagedViews( final String gdbSchema, final String lt, final Statement stmt,
 			final String usrdbToDropSynonymsFor ) throws SQLException {
@@ -476,10 +449,7 @@ public class DataSourcesManager {
 
 		logger.logInfo("Creating "+viewSuffixes.size()+ ( isUsingTableFunctions ? " table functions and" : "" )
 				+ " views for logical table: " + lt + ", reload iteration alias: " + alias);
-		
-		// We use 2 table function names:
-		// The first has no suffix and is a simple convenience function for users - it only takes the LT name itself as argument.
-		// The second has suffix '_'. This is the fully qualified table function with all possible logical table arguments - used by Gaian to implement all it's managed views.
+
 		String[] tfNames = isUsingTableFunctions ? new String [] { lt, lt + '_' } : null;
 		String[] viewColumnsLists = null;
 		
@@ -534,15 +504,10 @@ public class DataSourcesManager {
 			String tableArgs = GaianDBConfig.getLogicalTableTailOptionsForViewSuffix(viewSuffix); //tailOpts.next();
 			String viewCols = isUsingTableFunctions ? viewColsIt.next() : null;
 			
-//			private static final String TEMPLATE_FOR_LTVIEW_BASED_ON_VTI =
-//				"create view <SCHEMA>.<LTV> as select * from new com.ibm.db2j.GaianTable('<LT>', <LTARGS>) <RELOAD_VERSION_ALIAS>";
-//			private static final String TEMPLATE_FOR_LTVIEW_BASED_ON_TABLE_FUNCTION = 
-//				"create view <SCHEMA>.<LTV> as select <LTCOLS> from TABLE(<LT>_('<LT>', <LTARGS>, null, null)) <RELOAD_VERSION_ALIAS>";
-			
-			final String sql = ( isUsingTableFunctions ? TEMPLATE_FOR_LTVIEW_BASED_ON_TABLE_FUNCTION.replace("<LTCOLS>", viewCols) : TEMPLATE_FOR_LTVIEW_BASED_ON_VTI )
-				.replace("<SCHEMA>", gdbSchema).replace("<LTV>", symbol).replace("<LT>", lt).replace("<LTARGS>", tableArgs).replace("<RELOAD_VERSION_ALIAS>", alias);
-			logger.logDetail("Creating LT view with sql: " + sql);
-			stmt.execute( sql );
+			stmt.execute("create view " + gdbSchema + "." + symbol +
+					( isUsingTableFunctions ?
+					( " as select "+viewCols+" from TABLE(" + tfNames[1] + "('"+lt+"'" + tableArgs + ", null, null)) " + alias ) :
+					( " as select * from new com.ibm.db2j.GaianTable('" + lt + "'" + tableArgs + ") " + alias) ) );
 		
 			// Ensure managed views are public to all users - privacy should be managed at the data source level...
 			if ( isDerbySchemaPrivacyEnabled )
@@ -920,6 +885,8 @@ public class DataSourcesManager {
 	
 	private static boolean isValidAndActiveSourceHandle( String sourceID ) {
 		
+		if ( -1 < sourceID.indexOf("jdbc:neo4j://") ) return true;
+
 		Stack<Object> pool = sourceHandlesPools.get( sourceID );
 				
 		if ( pool.empty() ) return true; // Empty pool is fine... we'll try to prime it later
@@ -1491,7 +1458,7 @@ public class DataSourcesManager {
 			
 			// Try to cover as many possible RDBMS provider SQL keywords as possible - so we have capability to pass through as many statements as possible
 			boolean isSelectExpression = first7chars.equals("select ") || first7chars.startsWith("with ");
-			boolean isStoredProcedureCall = first7chars.startsWith("call ") || first7chars.startsWith("exec");
+			boolean isStoredProcedureCall = first7chars.startsWith("call ") || first7chars.startsWith("exec") || -1 < cdetails.indexOf("jdbc:neo4j");
 			boolean isOtherStatementReturningAResultSet = first7chars.startsWith("values") || first7chars.equals("xquery ");
 			
 //			if ( first7chars.startsWith("drop ") || "create ".equals(first7chars) || 
@@ -1514,28 +1481,33 @@ public class DataSourcesManager {
 											
 						boolean isProcedureMightReturnResultSet = true; // assume we *HAVE* to execute the procedure locally to derive meta-data.
 						
-						int i1 = sqlQuery.indexOf(' '), i2 = sqlQuery.indexOf('(');
+						if ( -1 < cdetails.indexOf("jdbc:neo4j") )
+							isProcedureMightReturnResultSet = -1 < sqlQuery.toLowerCase().indexOf(" return ");
+						else {
 						
-						if ( 0 < i1 && i1 < i2 ) {
-							String procName = sqlQuery.substring(i1, i2).trim().toUpperCase();
-							short sdef = -1;
-							if ( -1 == cdetails.indexOf("jdbc:derby") ) {
-								// Note that DatabaseMetaData is an unreliable (often incomplete) object
-								// For RDBMS such as DB2 and Oracle, we should have the procedures information, but not some of the smaller ones (e.g. Derby)
-								DatabaseMetaData dmd = c.getMetaData();
-								ResultSet procsRS = dmd.getProcedures(null, null, procName);
-								if ( !procsRS.next() ) logger.logInfo("No procedure found with name: " + procName);
-								else sdef = procsRS.getShort("PROCEDURE_TYPE");
-								procsRS.close();
-								String rdef = sdef == DatabaseMetaData.procedureNoResult ? "NO RESULT"
-										: sdef == DatabaseMetaData.procedureReturnsResult ? "RETURNS RESULT"
-										: sdef == DatabaseMetaData.procedureResultUnknown ? "RESULT UNKNOWN" : "UNMAPPED";
-								logger.logImportant("Derived Return Capability for back-end DB Procedure: " + procName + 
-										", return capability: " + sdef + " = " + rdef);
-								isProcedureMightReturnResultSet = sdef != DatabaseMetaData.procedureNoResult;
+							int i1 = sqlQuery.indexOf(' '), i2 = sqlQuery.indexOf('(');
+
+							if ( 0 < i1 && i1 < i2 ) {
+								String procName = sqlQuery.substring(i1, i2).trim().toUpperCase();
+								short sdef = -1;
+								if ( -1 == cdetails.indexOf("jdbc:derby") ) {
+									// Note that DatabaseMetaData is an unreliable (often incomplete) object
+									// For RDBMS such as DB2 and Oracle, we should have the procedures information, but not some of the smaller ones (e.g. Derby)
+									DatabaseMetaData dmd = c.getMetaData();
+									ResultSet procsRS = dmd.getProcedures(null, null, procName);
+									if ( !procsRS.next() ) logger.logInfo("No procedure found with name: " + procName);
+									else sdef = procsRS.getShort("PROCEDURE_TYPE");
+									procsRS.close();
+									String rdef = sdef == DatabaseMetaData.procedureNoResult ? "NO RESULT"
+											: sdef == DatabaseMetaData.procedureReturnsResult ? "RETURNS RESULT"
+											: sdef == DatabaseMetaData.procedureResultUnknown ? "RESULT UNKNOWN" : "UNMAPPED";
+									logger.logImportant("Derived Return Capability for back-end DB Procedure: " + procName +
+											", return capability: " + sdef + " = " + rdef);
+									isProcedureMightReturnResultSet = sdef != DatabaseMetaData.procedureNoResult;
+								}
+								else
+									isProcedureMightReturnResultSet = GaianNode.isProcedureMightReturnResultSet(procName);
 							}
-							else
-								isProcedureMightReturnResultSet = GaianNode.isProcedureMightReturnResultSet(procName);
 						}
 						
 						if ( false == isProcedureMightReturnResultSet ) {
