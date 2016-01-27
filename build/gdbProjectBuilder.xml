@@ -25,7 +25,7 @@ Primary use cases:
 	<property name="Version-release" value="2.1" />
 	
 	<!-- Change this "modification" number more freely - use the suffix 'd' between "release builds" so that anyone that uses this code will know it is not as stable. -->
-	<property name="Version-release-modification" value="${Version-release}.6d" />
+	<property name="Version-release-modification" value="${Version-release}.7" />
 
 	<!-- Time-bomb format is dd/mm/yyyy, e.g. 01/04/2015 -->
 	<tstamp><format property="TODAY_PLUS_365_DAYS" pattern="dd/MM/yyyy" timezone="UTC" offset="365" unit="day"/></tstamp>
@@ -50,6 +50,7 @@ Primary use cases:
 	<!-- Referenced libraries - change these locations when Derby or POI levels are updated -->
 	<property name="libDir" value="${homeDir}/lib" />
 	<property name="libDerby" value="${libDir}/derby-ibm-ossc-10.8" />
+	<!--<property name="libDerby" value="${libDir}/derby-apache-10.11.1.1" />-->
 	<property name="libPoi" value="${libDir}/poi-3.8" />
 	
 	<tstamp>
@@ -84,6 +85,7 @@ Primary use cases:
 	<property name="zipproject" value="${distribution_name}_PROJECT_V${Version-release-modification}_${timestamp}.zip" />
 	<property name="zipjavadoc" value="${distribution_name}_javadoc.zip" />
 	
+	<!--
 	<taskdef resource="tasks.properties">
 	  <classpath>
 	    <pathelement location="${libDir}/cobertura/cobertura.jar"/>
@@ -91,6 +93,29 @@ Primary use cases:
     	<pathelement location="${libDir}/cobertura/lib/asm-tree-3.0.jar"/>
     	<pathelement location="${libDir}/cobertura/lib/jakarta-oro-2.0.8.jar"/>
     	<pathelement location="${libDir}/cobertura/lib/log4j-1.2.9.jar"/>
+	  </classpath>
+	</taskdef>
+	-->
+
+	<taskdef resource="tasks.properties">
+	  <classpath>
+	    <pathelement location="${libDir}/cobertura-2.1.1/cobertura-2.1.1.jar"/>
+	  	<pathelement location="${libDir}/cobertura-2.1.1/lib/asm-5.0.1.jar"/>
+	  	<pathelement location="${libDir}/cobertura-2.1.1/lib/asm-analysis-5.0.1.jar"/>
+	  	<pathelement location="${libDir}/cobertura-2.1.1/lib/asm-commons-5.0.1.jar"/>
+	  	<pathelement location="${libDir}/cobertura-2.1.1/lib/asm-tree-5.0.1.jar"/>
+	  	<pathelement location="${libDir}/cobertura-2.1.1/lib/asm-util-5.0.1.jar"/>
+	  	<pathelement location="${libDir}/cobertura-2.1.1/lib/commons-lang3-3.3.2.jar"/>
+	  	<pathelement location="${libDir}/cobertura-2.1.1/lib/hamcrest-core-1.3.jar"/>
+	  	<pathelement location="${libDir}/cobertura-2.1.1/lib/jaxen-1.1.4.jar"/>
+	  	<pathelement location="${libDir}/cobertura-2.1.1/lib/jetty-6.1.14.jar"/>
+	  	<pathelement location="${libDir}/cobertura-2.1.1/lib/jetty-util-6.1.14.jar"/>
+	  	<pathelement location="${libDir}/cobertura-2.1.1/lib/junit-4.11.jar"/>
+	  	<pathelement location="${libDir}/cobertura-2.1.1/lib/logback-classic-1.0.13.jar"/>
+	  	<pathelement location="${libDir}/cobertura-2.1.1/lib/logback-core-1.0.13.jar"/>
+	  	<pathelement location="${libDir}/cobertura-2.1.1/lib/oro-2.0.8.jar"/>
+	  	<pathelement location="${libDir}/cobertura-2.1.1/lib/servlet-api-2.5-6.1.14.jar"/>
+	  	<pathelement location="${libDir}/cobertura-2.1.1/lib/slf4j-api-1.7.5.jar"/>
 	  </classpath>
 	</taskdef>
 	
@@ -390,6 +415,9 @@ Primary use cases:
 	
 	<target name="testsprepare" depends="testscleanup">
 
+		<!-- DRV 09/09/2015 - temporarily disabled Cobertura after upgrade to V-2.1.1 breaks -->
+		<!-- Upgrade of Java from V6->V7 caused Cobertura-1.9.4.1 instrumentation issue, hence upgrade to 2.1.1, which itself now appears not to be backwards compatible as it cannot resolve classpath classes (should just have to specify them differently in cobertura ant tasks) -->
+		<!--
 		<delete dir="${buildDir}/cobertura" />
 		
 		<mkdir dir="${buildDir}/cobertura" />
@@ -399,6 +427,7 @@ Primary use cases:
 		        <include name="${gaiantoolsjar}" />
 		    </fileset>
 		</cobertura-instrument>
+		-->
 
 	</target>
 	
@@ -461,19 +490,12 @@ Primary use cases:
 		<!-- Note cobertura flushes it's data to cobertura.ser when the node's JVM exits..., i.e. after testscleanup (which now also waits for process completion) -->
 
 		<!-- <cobertura-merge> <fileset dir="${buildDir}/cobertura"> <include name="cobertura*.ser" /> </fileset> </cobertura-merge> -->
+
+		<!-- DRV 09/09/2015 - temporarily disabled Cobertura after upgrade to V-2.1.1 breaks -->
+		<!--
 		<cobertura-report format="html" datafile="${buildDir}/cobertura/cobertura.ser" destdir="${buildDir}/cobertura" srcdir="${gaianAssetSrcDir}" />
-
-		<!-- Delete this block if above works... 
-			<fileset dir="${gaianSrcDir}/Engine" includes="**/*.java" />
-			<fileset dir="${gaianSrcDir}/VTIs" includes="**/*.java" />
-			<fileset dir="${gaianSrcDir}/ClientTools" includes="**/*.java" />
-			<fileset dir="${gaianSrcDir}/Connectors" includes="**/*.java" />
-			<fileset dir="${gaianSrcDir}/UDPDriver" includes="**/*.java" />
-			<fileset dir="${gaianSrcDir}/SVA-Security" includes="**/*.java" />
-		</cobertura-report>
-		-->
-
 		<zip destfile="${buildDir}/cobertura.zip" basedir="${buildDir}/cobertura"/>
+		-->
 		
 	</target>
 	
