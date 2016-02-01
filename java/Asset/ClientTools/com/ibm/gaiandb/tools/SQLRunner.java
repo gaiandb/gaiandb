@@ -339,8 +339,8 @@ public class SQLRunner {
 						if ( port != mPort ) {
 							mPort = port;
 							
-							// If this is a DerbySQLRunner (i.e. default gaiandb db) and th database name hasnt been set or was set to
-							// a gaiandb<port> database name, then implicitely set the db name aswell.
+							// If this is a DerbySQLRunner (i.e. default gaiandb db) and th database name hasn't been set or was set to
+							// a gaiandb<port> database name, then implicitly set the db name as well.
 							if ( GaianDBConfig.GAIANDB_NAME.equals(DEFAULT_DATABASE) && 
 									( null == mDatabase || mDatabase.startsWith(DEFAULT_DATABASE) ) )
 								mDatabase = DEFAULT_DATABASE + ( DEFAULT_PORT == mPort ? "" : mPort );
@@ -348,6 +348,7 @@ public class SQLRunner {
 							url = null; // triggers this SQLRunner instance to re-connect
 						}
 					}
+					else if ( "-url".equals( arg ) ) { url = val; }
 					else if ( "-usr".equals( arg ) ) { mUsr = val; url = null; }
 					else if ( "-pwd".equals( arg ) ) { mPwd = val; url = null; }
 					else if ( "-h".equals( arg ) ) { standalone=false; mHost = val; url = null; }
@@ -367,7 +368,7 @@ public class SQLRunner {
 	}
 	
 	private void ensureConnectionPropertiesAreNowSet() {
-		if ( -1 != mPort ) {
+		if ( -1 < mPort ) {
 			if ( null == mDatabase )
 				mDatabase = DEFAULT_DATABASE + mPort;
 		} else
@@ -607,7 +608,7 @@ public class SQLRunner {
 		} catch (Exception e) {
 			// Don't print a stack digest to queryDerby.bat - this is unreadable to users - Also it breaks test: logger.Test_setltForExcelException
 			// Also an exception here often won't carry the server side exception info..
-			printInfo("Caught Exception: " + Util.getStackTraceDigest(e));
+			printInfo("Caught Exception: " + e.getMessage()); //Util.getStackTraceDigest(e));
 			if ( exitOnFailure )
 				System.exit(1);
 			else

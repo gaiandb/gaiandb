@@ -66,7 +66,8 @@ public class SQLOracleRunner extends SQLRunner {
     	Connection c = null;
     	
     	loadDriver( driver );
-    	url = "jdbc:" + DBMS + ":thin:@" + mHost + ":" + mPort + "/" + mDatabase;
+//    	url = "jdbc:" + DBMS + ":thin:@" + mHost + ":" + mPort + "/" + mDatabase;
+    	if ( null == url ) url = "jdbc:" + DBMS + ":thin:@//" + mHost + (0 < mPort ? ":" + mPort : "") + "/" + mDatabase;
     	
 		System.out.println("\nConnecting to " + DBMS + " using url: " + url + "\n");
 		c = DriverManager.getConnection( url, mUsr, mPwd );
