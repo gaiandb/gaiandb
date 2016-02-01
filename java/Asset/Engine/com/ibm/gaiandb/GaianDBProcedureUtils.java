@@ -208,7 +208,7 @@ public class GaianDBProcedureUtils extends GaianDBConfig {
 //		return getResultSetFromQueryAgainstDefaultConnection( sb.toString() );
 //	}
 	
-	public static byte[] readAndZipFileBytes( File file ) throws Exception {
+	public static byte[] readAndZipFileBytes( File file ) throws Exception {	
 		try {
 			if ( file.isDirectory() )
 				throw new Exception("File is a directory");

@@ -176,8 +176,8 @@ public class VTIRDBResult extends VTIWrapper {
 		
 		logger.logThreadInfo(nodeDefName + " Entered VTIDBResult.execute");
 		
-		// Use jdbc source handles to start with
-		Stack<Object> sourceHandles = DataSourcesManager.getSourceHandlesPool( connectionDetails );
+		// Stack of objects that to access the back end data source.
+		Stack<Object> sourceHandles = null;
 		
 		if ( isInMemRows ) {
 			// InMemRows is set: DEAL WITH IN MEMORY ROWS CASE:
@@ -225,7 +225,8 @@ public class VTIRDBResult extends VTIWrapper {
 		// For the Physical table directly: so that appropriate casts can be done when the logical types don't match.
 		// For the InMemorRows: so that column mappings can be made against the physical cols.
 		
-		Connection c = null;
+		sourceHandles = DataSourcesManager.getSourceHandlesPool( connectionDetails ); // Use jdbc source handles
+		Connection conn = null;
 		Statement pstmt = null;
 		
 		try {
@@ -304,8 +305,8 @@ public class VTIRDBResult extends VTIWrapper {
 					logger.logThreadInfo("Existing colTypes: " + Util.intArrayAsString(pColTypes));
 					
 					if ( null == pColTypes && !isGaianNode ) { // && !isSubQuery ) { // NOTE! sub-queries need mappings for inner query resolved, e.g. select * from ( select * from abc ) t
-						c = getConnection( sourceHandles );
-//						if ( null == c && 0 != reenablementTime ) {
+						conn = getConnection( sourceHandles );
+//						if ( null == conn && 0 != reenablementTime ) {
 //							logger.logThreadInfo( nodeDefName + " JDBC Connection is not available (yet) - returning null for this data source" );
 //							return null; // No connection as connection is not available (yet or not at all)
 //						}
@@ -314,7 +315,7 @@ public class VTIRDBResult extends VTIWrapper {
 							tableExpression.substring(0, shorthandTableXprWhereClauseIndex);
 						
 						// crucial synchronous initialisation step:
-						pColTypes = safeExecNodeState.getPhysicalColTypes(c, bracketedSubQueryOrRawTableNameWithOptionalWhereClause);
+						pColTypes = safeExecNodeState.getPhysicalColTypes(conn, bracketedSubQueryOrRawTableNameWithOptionalWhereClause);
 					}
 					
 					final String[] pColNames = safeExecNodeState.getColNames();
@@ -381,18 +382,18 @@ public class VTIRDBResult extends VTIWrapper {
 					if ( null != timeout ) sql += " "+GaianTable.GDB_TIMEOUT+"="+timeout;
 				}
 				
-				if ( null == c ) c = getConnection( sourceHandles );
-//				if ( null == c && 0 != reenablementTime ) {
+				if ( null == conn ) conn = getConnection( sourceHandles );
+//				if ( null == conn && 0 != reenablementTime ) {
 //					logger.logThreadInfo( nodeDefName + " JDBC Connection is not available (yet) - returning null for data source" );
 //					return null; // No connection as connection is not available (yet or not at all)
 //				}
 				
 				// Keep track of ordered active  connections in order to find any potential hanging ones later on..
 				// The hanging one will be the oldest.
-				activeConnections.push( c );
-				logger.logThreadInfo(nodeDefName + " Active connection added: " + c);
+				activeConnections.push( conn );
+				logger.logThreadInfo(nodeDefName + " Active connection added: " + conn);
 				
-				Map<String, PreparedStatement> preparedStatements = preparedStatementsOfConnections.get( c );
+				Map<String, PreparedStatement> preparedStatements = preparedStatementsOfConnections.get( conn );
 				if ( null == preparedStatements ) {
 					// No prepared statements for this connection at all yet! -
 					// Create a CachedHashMap for them which starts closing them if it gets too big...
@@ -408,8 +409,13 @@ public class VTIRDBResult extends VTIWrapper {
 							return isSizeSurpassed;
 						};
 					};
-					preparedStatementsOfConnections.put( c, preparedStatements );
+					preparedStatementsOfConnections.put( conn, preparedStatements );
 				}
+				
+				// NOTE: Unresolved issue:
+				// DROP statements cannot run concurrently with any other statement. This throws a SQLException.
+				// The fundamental problem is that Derby closes its resources lazily. We see that through lazy calls to GaianTable.close().
+				// This comes up as an intermittent test failure with Test_workedExamplesTwo.java
 				
 				pstmt = preparedStatements.get(sql);
 				boolean isPrepared = null != pstmt;
@@ -420,11 +426,11 @@ public class VTIRDBResult extends VTIWrapper {
 					// Preparing complex sub-queries having nested joins requires derby to cache sub-result "conglomerates".
 					// This is seemingly not implemented by derby for vtis (yet) - as we hit "conglomerate does not exist" errors.
 					// Therefore we don't prepare sub-queries... we just execute them explicitly each time.
-					pstmt = c.createStatement();
+					pstmt = conn.createStatement();
 				else if ( !isPrepared ) {
 			    	String prefix = Logger.sdf.format(new Date(System.currentTimeMillis())) + " ---------------> PREPARING against " + nodeDefName + ": ";
 					logger.logThreadImportant( nodeDefName + " PREPARING:\n\n" + prefix + sql + "\n" );
-					pstmt = c.prepareStatement(sql);
+					pstmt = conn.prepareStatement(sql);
 					preparedStatements.put(sql, ((PreparedStatement) pstmt));
 				}
 				
@@ -471,6 +477,7 @@ public class VTIRDBResult extends VTIWrapper {
 					resultSet = pstmt.getResultSet();
 					
 					if ( null == resultSet ) {
+
 						// isSubQuery must also be true.. because we only run CRUD or CALLs in sub-queries
 						updateCount = pstmt.getUpdateCount();
 						logger.logThreadInfo("Closing pstmt and Recycling JDBC Connection early because result is an Update Count");
@@ -478,15 +485,15 @@ public class VTIRDBResult extends VTIWrapper {
 						// This must be a sub-query (as CRUD and CALLs only occur in them) - so pstmt will not be cached - so close it now to free client+server resources
 						try { pstmt.close(); } catch ( SQLException e ) {}
 						
-						if ( false == recycleSourceHandleToPool( c ) )
-							try { c.close(); } catch ( SQLException e ) {} // pool is probably maxed out - close resource.
+						if ( false == recycleSourceHandleToPool( conn ) )
+							try { conn.close(); } catch ( SQLException e ) {} // pool is probably maxed out - close resource.
 					}
 				}
 				
 				// Record the parent connection for recycling (later), because the result is based off a separate connection spawned in the procedure...
 				if ( isSubqCall ) {
 					// this MUST NOT be recycled now... because a wrapping GaianQuery may re-use the connection before we've fetched rows.. this causes a locking condition..
-					parentCalledProcedureConnection = c;
+					parentCalledProcedureConnection = conn;
 					logger.logThreadInfo("Recorded parent Connection for executed nested stored procedure - to be recycled later");
 				}
 			}
@@ -540,9 +547,9 @@ public class VTIRDBResult extends VTIWrapper {
 
 				// Changed condition below... If the connection is null this may just be because we cant obtain one quickly enough -
 				// Don't drop the entire gaian connection as a result of this.
-//				if ( null == c || c.isClosed() ) lostConnection();
+//				if ( null == conn || conn.isClosed() ) lostConnection();
 				
-				if ( null == c ) {
+				if ( null == conn ) {
 					// We can't obtain a connection fast enough - disable this rdbms node temporarily to avoid continuous re-tries
 					if ( isGaianNode ) {
 						String cid = nodeDefName.substring( nodeDefName.lastIndexOf('_') + 1 );
@@ -561,14 +568,14 @@ public class VTIRDBResult extends VTIWrapper {
 					temporarilyDisable();
 					
 				} else {
-//					if ( null != c ) {
-					if ( c.isClosed() ) lostConnection();
+//					if ( null != conn ) {
+					if ( conn.isClosed() ) lostConnection();
 					else {
 						// Connection is still active and Statement is ok - recycle it and return null
-						if ( false == recycleSourceHandleToPool( c ) ) {
+						if ( false == recycleSourceHandleToPool( conn ) ) {
 							// We didn't recycle this connection (due to pool being maxed out), so close it - 
 							// Ignore exceptions (e.g. if the connection reference has already gone)
-							try { c.close(); }
+							try { conn.close(); }
 							catch ( SQLException e1 ) {}
 						}
 					}
@@ -598,10 +605,10 @@ public class VTIRDBResult extends VTIWrapper {
 						Util.getStackTraceDigest(e) + (null==iex?"":" Root cause: "+iex) );
 				
 				// Connection is still active and pstmt must be closed (as it failed) - recycle connection and return null
-				if ( false == recycleSourceHandleToPool( c ) ) {
+				if ( false == recycleSourceHandleToPool( conn ) ) {
 					// We didn't recycle this connection (due to pool being maxed out), so close it - 
 					// Ignore exceptions (e.g. if the connection reference has already gone)
-					try { c.close(); }
+					try { conn.close(); }
 					catch ( SQLException e1 ) {}
 				}
 				
@@ -609,8 +616,8 @@ public class VTIRDBResult extends VTIWrapper {
 			}
 		} finally {
 			if ( !isInMemRows && null != pstmt ) {
-				activeConnections.remove( c ); // note we can't pop in case of concurrent threads!!
-				logger.logThreadInfo(nodeDefName + " Active connection removed: " + c);
+				activeConnections.remove( conn ); // note we can't pop in case of concurrent threads!!
+				logger.logThreadInfo(nodeDefName + " Active connection removed: " + conn);
 			}
 		}
 	}
@@ -897,11 +904,14 @@ public class VTIRDBResult extends VTIWrapper {
 		logger.logThreadInfo("Recycling JDBC Connection associated with ResultSet");
 		
 		// If this VTIRDBResult is a sub-query, then it's statements will not be cached - so clear this one now to clear down client+server resources
-		if ( isSubQuery ) try { s.close(); } catch ( SQLException e ) {}
+		if ( isSubQuery )
+			try { s.close(); logger.logThreadInfo("Closed sub-query statement (because they are not reused)"); }
+			catch ( SQLException e ) { logger.logThreadInfo("Unable to close() sub-query statement (ignored), cause: " + e); }
 		if ( false == recycleSourceHandleToPool( c ) )
 			// We didn't recycle this connection (due to pool being maxed out), so close it - 
 			// Ignore exceptions (e.g. if the connection reference has already gone)			
-			try { c.close(); } catch ( SQLException e ) {}
+			try { c.close(); logger.logThreadInfo("Closed connection (could not recycle as connection pool was full"); }
+			catch ( SQLException e ) { logger.logThreadInfo("Unable to close() connection after finding pool was maxed out (ignored), cause: " + e); }
 	}
 		
 

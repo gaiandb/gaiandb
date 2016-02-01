@@ -1042,14 +1042,14 @@ public class GaianNode {
 					if ( -1 < memoryUsedPrevious ) {
 						double memoryUsed = GaianDBUtilityProcedures.jMemory();
 						if ( Math.abs( memoryUsed - memoryUsedPrevious ) > 10000000 ) {
-							logger.logAlways("Used Heap Memory changed by >10MB. jMemory (MB): " + (memoryUsed/1000000) +
-									" (= " + GaianDBUtilityProcedures.jMemoryPercent() +
-									"%, jMemoryMax (MB): " + (double)GaianDBUtilityProcedures.jMemoryMax()/1000000 + ")" +
+							logger.logAlways("Used Heap Memory changed by >10MB. jMemory (MB): " + (memoryUsed/1000000) + 
+									" (= " + GaianDBUtilityProcedures.jMemoryPercent() + 
+									"%, jMemoryMax (MB): " + (double)GaianDBUtilityProcedures.jMemoryMax()/1000000 + ")" + 
 									". jMemoryNonHeap (MB): " + (double)GaianDBUtilityProcedures.jMemoryNonHeap()/1000000 +
 									" - (suspected hanging queries being checked: "+DatabaseConnectionsChecker.getNumberOfSuspectedHangingQueriesBeingChecked()+")");
 							memoryUsedPrevious = memoryUsed;
-						}
-					}
+						}	
+					}	
 				} catch( Throwable e ) {
 					logger.logWarning(GDBMessages.NODE_MEMORYMXBEAM_ERROR, "Unable to access/process MemoryMXBean for monitoring used memory (ignored): " + e);
 					memoryUsedPrevious = -1;
@@ -1369,7 +1369,7 @@ public class GaianNode {
 	
 	private static int nodeCPUInLastPeriod = 0;
 	public static int getNodeCPUInLastPeriod() { return nodeCPUInLastPeriod; }
-
+	
 	public static final String THREADINFO_COLNAMES =
 		"ID, GRP, NAME, PRIORITY, STATE, CPU, CPUSYS, ISSUSPENDED, ISINNATIVE, BLOCKCOUNT, BLOCKTIME, WAITCOUNT, WAITTIME";
 	
@@ -1383,13 +1383,13 @@ public class GaianNode {
 		catch( Throwable e ) { logger.logWarning(GDBMessages.NODE_THREADMXBEAM_ERROR, "Unable to get threadMXBean - will not be able to compute CPU utilisation (ignored): " + e); }
 	}
 
-	// Limit total number of threads that we hold time values for - this caused memory leak with Tivoli APM product in August 2015.
+	// Limit total number of threads that we hold time values for - this caused memory leak with Tivoli APM product in August 2015. 
 	private static final Map<Long, Long> previousCPUTimes 		= new CachedHashMap<Long, Long>(10000);
 	private static final Map<Long, Long> previousUserCPUTimes 	= new CachedHashMap<Long, Long>(10000);
-
+	
 	private static final Map<Long, Short> threadsCPU			= new CachedHashMap<Long, Short>(10000); // percentage values
 	private static final Map<Long, Short> threadsUserCPU		= new CachedHashMap<Long, Short>(10000); // percentage values
-
+	
 	private static long lastSampleTime = System.currentTimeMillis();
 	
 
@@ -1415,9 +1415,9 @@ public class GaianNode {
 			previousUserCPUTimes.keySet().retainAll( currentThreadIDs );
 			threadsCPU.keySet().retainAll( currentThreadIDs );
 			threadsUserCPU.keySet().retainAll( currentThreadIDs );
-
+			
 			currentThreadIDs.clear();
-
+			
 //			System.out.println("\n*** Updated Threads CPU Information ***");
 //			System.out.println("Num threads/size of array holding them: " + numThreads + '/' + threads.length);
 //			long ts = System.currentTimeMillis();
@@ -1446,7 +1446,7 @@ public class GaianNode {
 					previousUserCPUTimes.put(tid, cpuUsrTime);
 				}
 			}
-
+			
 //			System.out.println("Num threads checked: " + numThreads + ", time taken (ms): " + (System.currentTimeMillis() - ts));
 	        
 			// Compute a % value, given that totalCpuTimeInPeriod is in nanos and timeInterval is in millis
@@ -1462,19 +1462,19 @@ public class GaianNode {
 		}
 	}
 	
-
+	
 	public static List<String> getJvmThreadsInfo() {
 
 		final List<String> jvmThreadsInfo = new ArrayList<String>();
-
+		
 		try {
 			Thread[] threads = new Thread[ parentThreadGroup.activeCount()+100 ];
 			final int numThreads = parentThreadGroup.enumerate(threads);
-
+			
 //			System.out.println("\n*** Getting Threads Information ***");
 //			System.out.println("Num threads/size of array holding them: " + numThreads + '/' + threads.length);
 //			long ts = System.currentTimeMillis();
-
+			
 			for ( int i=0; i<numThreads; i++ ) {
 				final Thread t = threads[i];
 				if ( null == t ) continue;
@@ -1486,7 +1486,7 @@ public class GaianNode {
 				final String tName = Util.escapeSingleQuotes( t.getName() );
 				final int tPriority = t.getPriority();
 				final String tState = Util.escapeSingleQuotes( t.getState().toString() );
-
+				
 				// Columns are:
 				// ID, GRP, NAME, PRIORITY, STATE, CPU, CPUSYS, ISSUSPENDED, ISINNATIVE, BLOCKCOUNT, BLOCKTIME, WAITCOUNT, WAITTIME
 				if ( null == threadMXBean ) {
@@ -1501,10 +1501,10 @@ public class GaianNode {
 
 				short cpuPercent = threadsCPU.containsKey(tid) ? threadsCPU.get(tid) : 0;
 				short cpuUsrPercent = threadsUserCPU.containsKey(tid) ? threadsUserCPU.get(tid) : 0;
-
+				
 				// Columns are:
 				// ID, GRP, NAME, PRIORITY, STATE, CPU, CPUSYS, ISSUSPENDED, ISINNATIVE, BLOCKCOUNT, BLOCKTIME, WAITCOUNT, WAITTIME
-				String tInfoString =
+				String tInfoString = 
 					tid + ",'" + tGroupName + "','" + tName + "'," + tPriority + ",'" + tState + "',"
 					+ cpuPercent + "," + (cpuPercent - cpuUsrPercent) + ","
 					+ ( null == tInfo ? tInfoNull :
@@ -1513,18 +1513,18 @@ public class GaianNode {
 						+ tInfo.getWaitedCount() + "," + tInfo.getWaitedTime()
 						// Add Locks, Block+Wait count/time, Lock monitors/synchronizers ?
 					  );
-
+				
 				jvmThreadsInfo.add( tInfoString );
 			}
 //			System.out.println("Num threads checked: " + numThreads + ", time taken (ms): " + (System.currentTimeMillis() - ts));
-
+			
 		} catch ( Exception e ) {
 			logger.logWarning(GDBMessages.NODE_CPU_COMPUTE_ERROR, "Unable to compute thread info or node CPU: " + Util.getStackTraceDigest(e));
 		}
-
+		
 		return jvmThreadsInfo;
 	}
-
+	
 //	private static void printSystemStats() {
 //		OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
 //		ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();

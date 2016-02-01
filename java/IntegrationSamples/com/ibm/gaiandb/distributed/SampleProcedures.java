@@ -17,25 +17,25 @@ import com.ibm.gaiandb.tools.SQLRunner;
 public class SampleProcedures extends GaianDBProcedureUtils {
 
 	private static final Logger logger = new Logger( "SampleProcedure", 30 );
-
+	
 //	static final String PROCEDURE_SQL = ""
 //	+ "!DROP PROCEDURE RUNSQL;!CREATE PROCEDURE RUNSQL(sql_expression "+Util.XSTR+", rdbmsConnectionID "+Util.XSTR+")"
-//	+ " PARAMETER STYLE JAVA LANGUAGE JAVA MODIFIES SQL DATA DYNAMIC RESULT SETS 1 EXTERNAL NAME 'com.ibm.gaiandb.GaianDBUtilityProcedures.runSQL'"
+//	+ " PARAMETER STYLE JAVA LANGUAGE JAVA MODIFIES SQL DATA DYNAMIC RESULT SETS 1 EXTERNAL NAME 'com.ibm.gaiandb.GaianDBUtilityProcedures.runSQL'"	
 //	;
-
+	
 	public static void runSQL( String sqlOrFile, String cid, ResultSet[] rs ) throws Exception {
 
 		Connection c = null;
 		try {
 			if ( null == sqlOrFile || 1 > (sqlOrFile = sqlOrFile.trim()).length() ) return;
 			if ( null != cid ) { cid = cid.trim(); if ( 1 > cid.length() || "LOCALDERBY".equals(cid) ) cid = null; }
-
+			
 			final String gdbWorkspace = GaianNode.getWorkspaceDir();
 			final String fPath = null == gdbWorkspace || Util.isAbsolutePath(sqlOrFile) ? sqlOrFile : gdbWorkspace+"/"+sqlOrFile;
-
+			
 			if ( 1 == Util.splitByTrimmedDelimiterNonNestedInCurvedBracketsOrQuotes(sqlOrFile, ';').length
 					&& false == new File(fPath).exists() ) {
-
+				
 				// Single SQL Statement
 				if ( null==cid ) {
 					Statement stmt = getDefaultDerbyConnection().createStatement();
@@ -47,23 +47,23 @@ public class SampleProcedures extends GaianDBProcedureUtils {
 						"select * from new com.ibm.db2j.GaianQuery('"+Util.escapeSingleQuotes(sqlOrFile)+"','','SOURCELIST="+Util.escapeSingleQuotes(cid)+"') GQ");
 //					DataSourcesManager.clearSubQueryMetaData(sqlOrFile, cid+"falsefalse");
 				}
-
+				
 			} else { // SQL script, or multiple SQL statements
-
+				
 				if ( null == cid ) c = getDefaultDerbyConnection();
 				else {
 					String connectionDetails = GaianDBConfig.getRDBConnectionDetailsAsString(cid);
 					c = GaianDBConfig.getNewDBConnector( GaianDBConfig.getConnectionTokens(connectionDetails) ).getConnection();
 //					c =	DataSourcesManager.getPooledJDBCConnection(connectionDetails, DataSourcesManager.getSourceHandlesPool(connectionDetails));
 				}
-
+				
 				SQLRunner sqlr = new SQLRunner(c); // Use SQLRunner to process a script file or a list of statements - then return summary
 				sqlr.processSQLs( "-quiet" );
 				sqlr.processSQLs( "-t" ); // explicitly use semi-colon as delimiter
 				String summaryInfo = sqlr.processSQLs( sqlOrFile );
 				rs[0] = getResultSetFromQueryAgainstDefaultConnection("SELECT " + summaryInfo + " FROM SYSIBM.SYSDUMMY1");
 			}
-
+			
 		} catch ( Throwable e ) {
 			String msg = Util.getGaiandbInvocationTargetException(e);
 			msg = null == msg ? Util.getStackTraceDigest(e) /*e.toString()*/ : msg.substring(msg.indexOf(GaianTable.IEX_PREFIX)+GaianTable.IEX_PREFIX.length()).trim();

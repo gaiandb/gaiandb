@@ -400,7 +400,7 @@ public class DataSourcesManager {
 //					System.out.println("vname: " + vname);
 //					System.out.println("ltdef: " + DataSourcesManager.getLogicalTableRSMD(vname).getColumnsDefinitionExcludingHiddenOnesAndConstantValues() );
 //					System.out.println(" vdef: " + vmd.getColumnsDefinitionExcludingHiddenOnesAndConstantValues());
-//
+//					
 //					if ( vmd.getColumnsDefinitionExcludingHiddenOnesAndConstantValues().
 //							equals( DataSourcesManager.getLogicalTableRSMD(vname).getColumnsDefinitionExcludingHiddenOnesAndConstantValues() ) )
 //					{
@@ -411,7 +411,7 @@ public class DataSourcesManager {
 //
 //				System.out.println("LT VIEW IS NOT UP TO DATE: " + vname);
 //			}
-//
+//			
 //			showStartupTime( 0, "VIEW RSMDS LOOKUP" );
 		}
 
@@ -449,7 +449,7 @@ public class DataSourcesManager {
 
 		logger.logInfo("Creating "+viewSuffixes.size()+ ( isUsingTableFunctions ? " table functions and" : "" )
 				+ " views for logical table: " + lt + ", reload iteration alias: " + alias);
-
+		
 		String[] tfNames = isUsingTableFunctions ? new String [] { lt, lt + '_' } : null;
 		String[] viewColumnsLists = null;
 		
@@ -886,7 +886,7 @@ public class DataSourcesManager {
 	private static boolean isValidAndActiveSourceHandle( String sourceID ) {
 		
 		if ( -1 < sourceID.indexOf("jdbc:neo4j://") ) return true;
-
+		
 		Stack<Object> pool = sourceHandlesPools.get( sourceID );
 				
 		if ( pool.empty() ) return true; // Empty pool is fine... we'll try to prime it later
@@ -1486,7 +1486,7 @@ public class DataSourcesManager {
 						else {
 						
 							int i1 = sqlQuery.indexOf(' '), i2 = sqlQuery.indexOf('(');
-
+							
 							if ( 0 < i1 && i1 < i2 ) {
 								String procName = sqlQuery.substring(i1, i2).trim().toUpperCase();
 								short sdef = -1;
@@ -1501,7 +1501,7 @@ public class DataSourcesManager {
 									String rdef = sdef == DatabaseMetaData.procedureNoResult ? "NO RESULT"
 											: sdef == DatabaseMetaData.procedureReturnsResult ? "RETURNS RESULT"
 											: sdef == DatabaseMetaData.procedureResultUnknown ? "RESULT UNKNOWN" : "UNMAPPED";
-									logger.logImportant("Derived Return Capability for back-end DB Procedure: " + procName +
+									logger.logImportant("Derived Return Capability for back-end DB Procedure: " + procName + 
 											", return capability: " + sdef + " = " + rdef);
 									isProcedureMightReturnResultSet = sdef != DatabaseMetaData.procedureNoResult;
 								}

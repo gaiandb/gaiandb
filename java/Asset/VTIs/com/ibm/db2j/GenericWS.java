@@ -135,7 +135,7 @@ public class GenericWS extends AbstractVTI {
 	 * Property to read in gaian_config.properties. It defines the prefix of
 	 * the column property definition. The name of the full property (for the 
 	 * column having the index '2' in the VTI, will be: 
-	 * <b>C2</b>. The indexes of the columns start at 1.
+	 * <b>C2</b>. The indexes of the columns start at 1. 
 	 * <p>
 	 * Property name: 'genericWs.CX', X being an integer.
 	 */
@@ -146,7 +146,7 @@ public class GenericWS extends AbstractVTI {
 	 * Property to read in gaian_config.properties. It defines the suffix of
 	 * the column property definition. The name of the full property (for the 
 	 * column having the index '2' in the VTI, will be: 
-	 * <b>C2.XML_LOCATE_EXPRESSION</b>. The indexes of the columns start at 1.
+	 * <b>C2.XML_LOCATE_EXPRESSION</b>. The indexes of the columns start at 1. 
 	 * <p>
 	 * Property name: 'genericWs.C#.XML_LOCATE_EXPRESSION', # being an integer.
 	 */
@@ -320,7 +320,7 @@ public class GenericWS extends AbstractVTI {
 	 * Each String[] represents a line which is going to be inserted in the VTI. 
 	 * The arrayLit represent all the set to be inserted.
 	 */
-	private ArrayBlockingQueue<String[]> recordsQ =
+	private ArrayBlockingQueue<String[]> recordsQ = 
 							new ArrayBlockingQueue<String[]>(RECORD_CAPACITY);
 	
 	/** The number of records received when sending the request. */
@@ -489,7 +489,7 @@ public class GenericWS extends AbstractVTI {
 		InputStream is = this.getData();
 		
 		logger.logInfo("Starting data scan");
-
+		
 		if (is != null){
 			this.startScan(is);
 		}
@@ -537,7 +537,7 @@ public class GenericWS extends AbstractVTI {
 		try {
 			
 			logger.logDetail("Getting nextRow()");
-
+			
 			boolean isFilledDvd = false;
 			
 			// Fill the DVD with the last record until the record passes the qualifiers

@@ -272,7 +272,10 @@ public class GaianChildRSWrapper implements GaianChildVTI {
 //	}
 
 	public void close() throws SQLException {
-		if ( null != resultSet ) resultSet.close();
+		if ( null != resultSet ) {
+			resultSet.close();
+//			logger.logThreadInfo("ResultSet object closure: " + resultSet);
+		}
 		// resultSet is not necessarily Scrollable - do not reset rowIndex.
 	}
 

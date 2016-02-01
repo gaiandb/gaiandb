@@ -639,12 +639,12 @@ public class GaianTable extends AbstractVTI implements VTICosting, IQualifyable,
 				
 				if ( !isMaxDepthArgSet ) maxPropagation = GaianDBConfig.getMaxPropagation();
 				isLogPerfOn = GaianDBConfig.isLogPerformanceOn();
-
+				
 				if ( false == isMetaDataLookupOnly ) {
 	    			sqlQueryFilter = GaianDBConfig.getSQLQueryFilter();
 	    			sqlResultFilter = GaianDBConfig.getSQLResultFilter();
 				}
-
+    			
 //				if ( false == isMetaDataLookupOnly ) {
 //					System.out.println("Provisioning new policy objects");
 //					// Note they may exist already on a first repetition of a query - however they should be reset to null after a close().

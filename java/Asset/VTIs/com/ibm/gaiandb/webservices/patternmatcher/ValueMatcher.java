@@ -41,7 +41,7 @@ public class ValueMatcher extends TagMatcher {
 	// -------------------------------------------------------------------------- Dynamic
 	
 	private static final Logger logger = new Logger( "ValueMatcher", 50 );
-
+	
 	/** 
 	 * True if the matcher has read all the right tags and can read the value. 
 	 * False otherwise.
@@ -98,7 +98,7 @@ public class ValueMatcher extends TagMatcher {
 				
 				logger.logDetail("Matched tag: " + openingTag
 						+ ", depth: " + this.currentDepth + ", patternDepth: " + this.patternToMatch.size());
-
+				
 				// Checks if all the pattern has been fully matched
 				if (this.currentDepth == (this.patternToMatch.size())){
 					// All the pattern is matched, the next read value can be considered 
@@ -150,7 +150,7 @@ public class ValueMatcher extends TagMatcher {
 			Tag closingTag = new Tag(closingTagName, Tag.END);
 			
 			logger.logDetail("Reached depth of patternToMatch. Extracting Tag Value: " + closingTag.toString());
-
+			
 			if (this.canReadValue) {
 				this.valueToRead.append(closingTag.toString());
 			}

@@ -348,9 +348,10 @@ public class GaianResult {
 				}
 				
 				// Do not propagate the query to this gaian node if it sent it to us previously.
-				if ( gaianStatementNode.wasQueryAlreadyReceivedFrom( GaianDBConfig.getGaianNodeID(dsWrapper.getNodeDefName()) ) )
+				if ( gaianStatementNode.wasQueryAlreadyReceivedFrom( GaianDBConfig.getGaianNodeID(dsWrapper.getNodeDefName()) ) ) {
+					logger.logThreadInfo( "Query was already received from this node, so no need to send it there" );
 					result = null;
-				else {
+				} else {
 				
 					logger.logThreadInfo( "About to execute dataSource query" );
 					// A branch (Gaian) node currently has to return an RDB Result, as it connects to another Derby

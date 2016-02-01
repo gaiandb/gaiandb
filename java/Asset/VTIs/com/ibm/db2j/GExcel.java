@@ -117,7 +117,7 @@ public class GExcel extends VTI60 implements VTICosting, IFastPath, GaianChildVT
 				initialize( splitArgs[0], splitArgs[1], splitArgs[2], splitArgs[3], Boolean.parseBoolean( splitArgs[4] ) );
 			}
 			else {
-				throw new SQLException( "This number of parameter is not supported." );		
+				throw new SQLException( "Unsupported number of parameters for GExcel() invocation: " + splitArgs.length);		
 			}
 			
 		} catch ( Exception e ) {

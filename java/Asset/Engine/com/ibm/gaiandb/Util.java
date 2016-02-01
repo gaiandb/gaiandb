@@ -1177,21 +1177,21 @@ public class Util {
 			
 		return matchingFilePaths;
 	}
-
+	
 	public static int runSystemCommand( final String[] sysCommand ) throws IOException {
-
+		
 //		System.out.println("Running system command: " + Arrays.asList(sysCommand));
-
-		Process process = new ProcessBuilder().inheritIO().command( sysCommand ).start();
+		
+		Process process = new ProcessBuilder().inheritIO().command( sysCommand ).start();		
 		try { return process.waitFor(); } catch (InterruptedException e) { e.printStackTrace(); }
 
 		return -1;
 	}
-
+	
 	public static int runSystemCommand( final String[] sysCommand, final Object synchObject ) throws IOException {
-
+		
 		if ( null == synchObject ) return runSystemCommand( sysCommand );
 		else synchronized ( synchObject ) { return runSystemCommand( sysCommand ); }
 	}
-
+	
 }

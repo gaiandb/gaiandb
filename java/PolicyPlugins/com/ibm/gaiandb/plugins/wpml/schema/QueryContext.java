@@ -7,7 +7,6 @@
 
 package com.ibm.gaiandb.plugins.wpml.schema;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**

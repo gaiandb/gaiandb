@@ -1970,10 +1970,10 @@ public class GDBMessages {
 	 * <li><a href="../../../../../Readme.html#contents359">FAQ &
 	 * Troubleshooting</a>
 	 * </ul>
-	 *
+	 * 
 	 **/
 	public final static String UTILITY_MEMORYMXBEAM_ERROR = "UTILITY_MEMORYMXBEAM_ERROR";
-
+	
 	// gaiandb/GaianNode.java
 	/**
 	 * <p>
@@ -4492,7 +4492,7 @@ public class GDBMessages {
 	 * </ul>
 	 **/
 	public static final String NODE_MEMORYMXBEAM_ERROR = "NODE_MEMORYMXBEAM_ERROR";
-
+	
 	/**
 	 * <p>
 	 * <b>Error:</b> Unable to compute node CPU.
