@@ -528,8 +528,9 @@ Primary use cases:
 					<exclude name="vti/TestICARESTCaching.java" /> <!-- suspect: ICAREST cache table is not deleted after use of it -->
 					<exclude name="vti/TestICARESTCacheTruncation.java" /> <!-- causes hang in ICAREST: suspect: ICAREST cache table is not deleted after use of it -->
 					<exclude name="tivoli/TestLargeNumberOfDS4LT.java"/> <!-- suspect: ??? - hangs on build server - should take 18s -->
-
-					<include name="security/TestSSL.java" />
+					
+					<!-- <include name="security/TestSSL.java" /> -->
+					<include name="types/TestOracleTypes.java" />
 					
 					<!--
 					<include name="api/Test*.java" />
