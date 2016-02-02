@@ -43,7 +43,7 @@ Primary use cases:
 	
 	<!-- Need a new non-production license for every new RELEASE (not for modification/fix increments) -->
 	<condition property="licenseDir"
-		value="license/Non-Production/V${Version-release}" else="license/Non-Production/V${Version-release}-trial-365-days">
+		value="LICENSE/Non-Production/V${Version-release}" else="LICENSE/Non-Production/V${Version-release}-trial-365-days">
 		<equals arg1="${GDB_TIMEBOMB}" arg2="-1" />
 	</condition>
 	
