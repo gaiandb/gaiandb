@@ -449,6 +449,7 @@ public class GaianNodeSeeker implements Runnable {
 		if ( interfacesHaveChanged ) {
 			// refresh memberships for default multicast group
 			leaveMulticastGroupPerInterface( receivingSkt, DEFAULT_MULTICAST_GROUP_ADDRESS );
+			if ( "ALL".equals(miProperty) ) { multicastInterfaces.clear(); multicastInterfaces.addAll( newNetworkInterfaceAddresses ); }
 			joinMulticastGroupPerInterface( receivingSkt, DEFAULT_MULTICAST_GROUP_ADDRESS );
 		}
 		return interfacesHaveChanged;

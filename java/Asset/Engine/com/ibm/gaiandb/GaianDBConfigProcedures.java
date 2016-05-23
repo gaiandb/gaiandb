@@ -997,8 +997,31 @@ public class GaianDBConfigProcedures extends GaianDBProcedureUtils {
 		rs[0].getStatement().getConnection().close();
 	}
 	
+	/**
+	 * Retrieves a config property from GaianDB.
+	 * Note:
+	 * If the 1st character of the propertyKey passed in is an '=' sign then this character is removed to constitute the key
+	 * and then if this shortened key property is not set to a value in GaianDB, then this function will attempt to retrieve the default
+	 * value for this property - which should be the "active" value of the property. 
+	 * 
+	 * @param propertyKey: Any GaianDB config property. This may be preceded by an '=' sign to resolve a default value in case it was not set.
+	 * @return
+	 * @throws Exception
+	 */
 	public static String getConfigProperty( String propertyKey ) throws Exception {
-		return GaianDBConfig.getCrossOverProperty(propertyKey);
+		boolean isResolve = null != propertyKey && 0 < propertyKey.length() && '=' == propertyKey.charAt(0);
+		if ( isResolve ) propertyKey = propertyKey.substring(1);
+		
+		String result = GaianDBConfig.getCrossOverProperty( propertyKey );
+		if ( !isResolve || null != result ) return result;
+		
+		// result is null and we want to resolve a default value
+		for ( String[] propMap : getAllDefaultProperties() )
+			if ( propMap[0].equals( propertyKey ) ) {
+				result = propMap[1];
+				return '<' == result.charAt(0) ? null : result;
+			}
+		return null;
 	}
 	
 	public static byte[] getPublicKey() throws Exception {

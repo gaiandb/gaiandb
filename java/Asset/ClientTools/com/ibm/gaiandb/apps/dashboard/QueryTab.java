@@ -384,7 +384,7 @@ public class QueryTab extends Tab {
 		
 		JPanel reIteratePanel = new JPanel(new GridBagLayout());
 		reIterateBox = new JTextField();
-		reIterateBox.setDocument(Field.getValidatedDocument(("[1-9][0-9]*")));
+		reIterateBox.setDocument(Field.getValidatedDocument("[1-9][0-9]*"));
 		reIterateBox.setText("1");
 		reIterateBox.setBorder(BorderFactory.createEtchedBorder());
 		reIteratePanel.add(new JLabel("x "), c2);

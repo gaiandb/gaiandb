@@ -99,6 +99,8 @@ public class Dashboard extends JFrame {
 	/** The set of window tabs. */
 	private Tab[] tabs;
 
+	private JTabbedPane tabbedPane = new JTabbedPane();
+	boolean isTopologyGraphAvailable = false;
 
 	/**
 	 * A thread pool that handles talking to tabs, so we're not constantly
@@ -197,7 +199,6 @@ public class Dashboard extends JFrame {
 		// Set up the tabs.
 		// Each one has its own class for code management purposes.
 		
-		boolean isTopologyGraphAvailable = false;
 		try { getClass().getClassLoader().loadClass(TopologyGraph.class.getName()); isTopologyGraphAvailable = true;}
 		catch ( Throwable e ) { System.out.println("Could not load TopologyGraph (TopologyTab will not appear): " + e); }
 		tabs = isTopologyGraphAvailable ?
@@ -236,10 +237,9 @@ public class Dashboard extends JFrame {
 					"SQL Queries"
 				};
 
-		JTabbedPane tabbedPane = new JTabbedPane();
-		for (int i = 0; i < tabs.length; i++) {
+		for (int i = 0; i < tabs.length; i++)
 			tabbedPane.addTab(tabNames[i], tabs[i]);
-		}
+		
 		add(tabbedPane);
 
 		// We need to notify the tabs when they're being activated/deactivated.
@@ -265,7 +265,7 @@ public class Dashboard extends JFrame {
 				}
 			}
 		});
-
+		
 		pack();
 		((ConnectionTab)tabs[0]).submit.requestFocusInWindow();
 
@@ -313,9 +313,8 @@ public class Dashboard extends JFrame {
 			Statement statement = conn.createStatement();
 			statement.setQueryTimeout(Dashboard.QUERY_TIMEOUT);
 			ResultSet resultSet = statement.executeQuery(LOCAL_NODE_SQL);
-			if (resultSet.next()) {
+			if (resultSet.next())
 				localNodeID = resultSet.getString("LOCAL_NODE");
-			}
 		}
 		catch (SQLException e) {
 			LOGGER.warning(e.getMessage());
@@ -331,6 +330,11 @@ public class Dashboard extends JFrame {
 					tab.connected(conn);
 				}
 			});
+		}
+		
+		if ( isTopologyGraphAvailable && 0 == tabbedPane.getSelectedIndex() ) {
+			try { Thread.sleep(500); } catch (InterruptedException e) {}
+			tabbedPane.setSelectedIndex(1);
 		}
 		
 		return true;
