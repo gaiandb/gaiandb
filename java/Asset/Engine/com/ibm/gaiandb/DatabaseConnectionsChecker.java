@@ -21,6 +21,45 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.ibm.gaiandb.diags.GDBMessages;
 
+/**
+ * This class runs a set of threads to check the health of JDBC connections against peer GaianDB nodes and to take corrective action when 
+ * required - in particular when a connection is hanging.
+ * 
+ * The outer class and its 2 inner classes are all Runnable.
+ * The outer class implements a perpetual watch-dog thread (not to be confused with the GaianDB main watch-dog) which manages the other inner-class threads.
+ * The inner class threads are used to test individual JDBC connections:
+ * 		- ConnectionMaintainer inner class: Uses a short-lived SQL procedure on a JDBC connection established against a discovered peer GaianDB node - 
+ * 											to establish/maintain a "two-way connection" with it.
+ *  	- ConnectionTester inner class: 	Uses a simple SQL query "values 1" to poll a peer GaianDB node against which an in-progress query is suspected 
+ *  										to be hanging. The poll is run on a separate JDBC connection.
+ *  
+ *  NOTE: As said above - ConnectionTester only currently tests long-running queries against peer GaianDB nodes.
+ *  Faulty leaf JDBC source are only currently semi-handled by DataSourcesManager.cleanAndPreloadDataSources()/isValidAndActiveSourceHandle(). - i.e. hanging ones are not.
+ *  
+ *  The outer class periodically wakes up - based on configurable parameter: GAIAN_CONNECTIONS_CHECKER_HEARTBEAT_MS - and then checks the status for each
+ *  inner class threads it kicked off.
+ *  If an inner class thread fails to respond successfully within the GAIAN_CONNECTIONS_CHECKER_HEARTBEAT_MS delay, then the Gaian connection is 
+ *  dropped - i.e. All JDBC connections to the peer node are closed and associated GaianDB data-sources are removed.
+ *  See VTIRDBResult.lostConnection() -> GaianNodeSeeker.lostDiscoveredConnection() -> DataSourcesManager.unloadAllDataSourcesAndClearConnectionPoolForGaianConnection().
+ *  
+ * The outer class thread only dies when GaianNode.isRunning() is no longer true.
+ * 
+ * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * Change history comments:
+ * 
+ * 12/04/2016 - Removed use of redundant "initialConnectionTimeout" in ConnectionMaintainer inner class.
+ * 				User property GAIAN_CONNECTIONS_CHECKER_HEARTBEAT_MS should be tuned to be sufficiently large to account for initial connection establishment.
+ * 
+ * TODO:
+ * ??/??/???? - Add use of java thread pools - rather than starting a new thread for each connection maintenance/testing attempt.
+ * ??/??/???? - Re-factor monitoring code for outcome of ConnectionTester into one-off thread runs of the outer class - to ensure that hanging queries are rooted out
+ * 				as fast as possible after GAIAN_CONNECTIONS_CHECKER_HEARTBEAT_MS has elapsed - rather than waiting for a previous iteration to complete.
+ *  
+ * ...
+ * 
+ * @author drvyvyan
+ */
+
 public class DatabaseConnectionsChecker implements Runnable {
 
 //	private final static String connectionMaintainerFunction = "maintainConnection";
@@ -53,9 +92,6 @@ public class DatabaseConnectionsChecker implements Runnable {
 	
 	private static final String TESTER_NAME = "ConnectionTester";
 	private static final String MAINTAINER_NAME = "ConnectionMaintainer";
-	
-//	 Max response time accepted for a low-cost query
-//	private static final int LONGEST_EXPECTED_RESPONSE_TIME_FOR_CHEAP_QUERY_MS = 4000;
 
 	private static final DatabaseConnectionsChecker dcc = new DatabaseConnectionsChecker();
 	private static Thread connectionsCheckerThread = null;
@@ -79,13 +115,13 @@ public class DatabaseConnectionsChecker implements Runnable {
 	private static final Hashtable<VTIWrapper, ConnectionTester> testers = new Hashtable<VTIWrapper, ConnectionTester>();
 	private static final Hashtable<String, ConnectionMaintainer> maintainers = new Hashtable<String, ConnectionMaintainer>();
 	
-	private static int connectionsCheckerHeartbeat;
+	private static int connectionsCheckerHeartbeat = GaianDBConfig.getConnectionsCheckerHeartbeat();
 	
 	public static void maintainTwoWayConnection( String connID ) {
 		
 		synchronized ( maintainedConnections ) {
 			maintainedConnections.add( connID );
-			dcc.kickOffMaintainerThread( connID, connectionsCheckerHeartbeat );
+			dcc.kickOffMaintainerThread( connID );
 		}
 	}
 
@@ -133,21 +169,18 @@ public class DatabaseConnectionsChecker implements Runnable {
 	 * @param gaianConnectionID
 	 */
 	private void kickOffMaintainerThread( String gaianConnectionID ) {
-		kickOffMaintainerThread( gaianConnectionID, connectionsCheckerHeartbeat );
-	}
-	private void kickOffMaintainerThread( String gaianConnectionID, int connectionTimeout ) {
 		
 		ConnectionMaintainer cm = (ConnectionMaintainer) maintainers.get(gaianConnectionID);
 		if ( null == cm ) {
-			cm = new ConnectionMaintainer( gaianConnectionID, connectionTimeout );
+			cm = new ConnectionMaintainer( gaianConnectionID );
 			maintainers.put( gaianConnectionID, cm );
 		} else
 			cm.reinitialise();
 
-		if ( !cm.isInitialConnectionAttemptInProgress() )
+//		if ( !cm.isInitialConnectionAttemptInProgress() )
 			new Thread( cm, MAINTAINER_NAME + " for " + gaianConnectionID ).start();
 	}
-		
+	
     public void run() {
     	
     	try {
@@ -164,7 +197,8 @@ public class DatabaseConnectionsChecker implements Runnable {
     			connectionsCheckerHeartbeat = GaianDBConfig.getConnectionsCheckerHeartbeat();
     			
     			// Clear temporary sets for next iteration (should already be done... just being defensive)
-    			latestDataSourcesBeingChecked.clear();	
+    			latestDataSourcesBeingChecked.clear();
+    			hangingDataSources.clear();
     			latestExecutingDataSourceSets.clear();
     			latestMaintainedConnections.clear();
     			
@@ -217,7 +251,12 @@ public class DatabaseConnectionsChecker implements Runnable {
 //    			logger.logDetail( "Maintained connections: " + latestMaintainedConnections.size() + 
 //    					", DataSources being checked: " + latestDataSourcesBeingChecked.size());
     						
-    			try { Thread.sleep( connectionsCheckerHeartbeat ); } catch (InterruptedException e) { if ( !GaianNode.isRunning() ) break; }
+    			try { Thread.sleep( connectionsCheckerHeartbeat ); }
+    			catch (InterruptedException e) {
+    				if ( !GaianNode.isRunning() ) break;
+    				// restart the loop if interrupted while running, with no other suspected hanging connections being tested.
+    				else if ( latestDataSourcesBeingChecked.isEmpty() && latestExecutingDataSourceSets.isEmpty() ) continue;
+    			}
     			
     			for (VTIWrapper dataSource : latestDataSourcesBeingChecked) {
     				
@@ -260,7 +299,7 @@ public class DatabaseConnectionsChecker implements Runnable {
     	
     	//					executingDataSources.notify(); // wake up fetcher thread to tell it about its cancelled hanging executors
     						
-    						// Some of the hanging vtis were in this set of executing vtis.. so notify the GaianResult using 
+    						// Some of the hanging vtis were in this set of executing vtis.. so notify the GaianResult using
     						// a Poison Pill: An empty result with the number hanging vtis that have been rooted out of this set.
     						logger.logInfo( "Rooted out " + (sizeBeforeRootOut - executingDataSources.size()) + " hanging data sources for query" );
     						if ( 0 == executingDataSources.size() ) {
@@ -283,7 +322,7 @@ public class DatabaseConnectionsChecker implements Runnable {
     			for (String gc : latestMaintainedConnections) {
     				ConnectionMaintainer cm = maintainers.get(gc);
     				
-    				if ( false == cm.isInitialConnectionAttemptInProgress() && false == cm.isTwoWayConnected() ) {
+    				if ( /*false == cm.isInitialConnectionAttemptInProgress() &&*/ false == cm.isTwoWayConnected() ) {
     					logger.logInfo("Maintenance fct call failed for outbound connection " + gc + " to discovered node, dropping it");
     					
     					// This synchronized block encapsulates both stmts in case an "add node" tries to come in in-between the two.
@@ -372,20 +411,16 @@ public class DatabaseConnectionsChecker implements Runnable {
 		
 		private final String gc;
 		private boolean isTwoWayConnected = false;
-		private int connectionTimeout = 0;
+		
+		// Previously used to skip verification of this connection allow more time for a first maintenance call - because the establishment of a first connection to the peer node is time-consuming.
+//		private int connectionTimeout = 0;
 		
 		private boolean isFirstMaintenanceCall = true;
 		private String errmsg = null;
 		
-//		public ConnectionMaintainer( String gc ) {
-//			this.gc = gc;
-//			this.connectionTimeout = connectionsCheckerHeartbeat;
-//		}
-		
-		public ConnectionMaintainer( String gc, int initialConnectionTimeout ) {
+		public ConnectionMaintainer( String gc ) { // , int initialConnectionTimeout ) {
 			this.gc = gc;
-			this.connectionTimeout = initialConnectionTimeout;
-			
+//			this.connectionTimeout = connectionsCheckerHeartbeat;
 		}
 		
 		public void reinitialise() {
@@ -400,9 +435,9 @@ public class DatabaseConnectionsChecker implements Runnable {
 			return null != errmsg && -1 != errmsg.indexOf( GaianNodeSeeker.VALID_CONNECTION_BUT_INVALID_MAINTENANCE_DIRECTION );
 		}
 		
-		public boolean isInitialConnectionAttemptInProgress() {
-			return connectionTimeout != connectionsCheckerHeartbeat;
-		}
+//		public boolean isInitialConnectionAttemptInProgress() {
+//			return connectionTimeout != connectionsCheckerHeartbeat;
+//		}
 		
 		public void run() {
 			
@@ -429,12 +464,12 @@ public class DatabaseConnectionsChecker implements Runnable {
 	//			logger.logInfo("Checking database connection for: " + gc);
 				try {
 //					System.out.println("!!!!!!!!!!   Getting connection for " + connectionProperties);
-					c = DataSourcesManager.getPooledJDBCConnection( connectionProperties, pool, connectionTimeout );
+					c = DataSourcesManager.getPooledJDBCConnection( connectionProperties, pool, connectionsCheckerHeartbeat ); // connectionTimeout );
 //					System.out.println("!!!!!!!!!!   GOTTTTTTTTTTTTT connection for " + connectionProperties);
 					final String sslMode = GaianDBConfig.getSSLMode();
 					sql = "values " + connectionMaintainerFunction + "('" + GaianDBConfig.getGaianNodeID() + "', '" +
 						GaianDBConfig.getGaianNodeUser() + "', '" +
-						Util.escapeSingleQuotes( GaianDBConfig.getGaianNodePasswordScrambled() ) + "', '" + 
+						Util.escapeSingleQuotes( GaianDBConfig.getGaianNodePasswordScrambled() ) + "', '" +
 						(isFirstMaintenanceCall?"INIT,":"") + (null==sslMode?"":SSLMODE_TAG+sslMode+',') +
 						DISTANCE2SERVER_TAG + distanceToServerNode + "')";
 //					System.out.println("Maintenance check SQL: " + sql);
@@ -450,7 +485,7 @@ public class DatabaseConnectionsChecker implements Runnable {
 					rs.close();
 				}
 				catch (SQLException e) { errmsg = "SQLException caught: " + e.toString(); }
-				finally { connectionTimeout = connectionsCheckerHeartbeat; }
+//				finally { connectionTimeout = connectionsCheckerHeartbeat; }
 			}
 			
 			if ( isTwoWayConnected )

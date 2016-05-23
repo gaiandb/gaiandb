@@ -824,7 +824,8 @@ public class DataSourcesManager {
 		
 		synchronized( sourceHandlesPools ) {
 		
-			// First close and clean up data sources that are not referenced anymore, along with any associated in-mem rows objects as well...
+			// Loop through all source pools, cleaning up data sources that are not referenced anymore (incl asociated in-mem rows objects),
+			// and JDBC pools where connections don't appear to be valid - for those that are used for a peer GaianDB connection, drop the entire thing.
 			Iterator<String> i = sourceHandlesPools.keySet().iterator();
 			while ( i.hasNext() ) {
 				String sourceID = (String) i.next();
@@ -962,7 +963,7 @@ public class DataSourcesManager {
 
 				} else {
 					while ( !pool.empty() )
-						try { ((GaianChildVTI) pool.pop()).close(); }
+						try { GaianChildVTI vti = (GaianChildVTI) pool.pop(); if ( null != vti ) vti.close(); }
 						catch (Exception e) { logger.logException( GDBMessages.ENGINE_CHILD_CLOSE_ERROR, "Unable to close GaianChildVTI, cause: ", e); }
 					pool.clear(); // overridden by RecallingStack, clears all extra references to Connections in HashSet
 				}
