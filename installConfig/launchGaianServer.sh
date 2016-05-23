@@ -23,6 +23,9 @@ args=$*
 
 echo Launching Server...
 
+# For Unix, when double-clicking on this script, we want the home+workspace dirs to be the install location (NOT the user's home folder!):
+[[ `dirname $0`!="$PWD" ]] && [[ -z "$GDBH" ]] && export GDBH=`dirname $0` && [[ -z "$GAIAN_WORKSPACE" ]] && export GAIAN_WORKSPACE=$GDBH
+
 [[ -z "$GDBH" ]] && export GDBH=.
 GDBL=$GDBH/lib
 

@@ -9,6 +9,9 @@
 
 # Note to users: You can specify [-h GaianNodeHost] [-p GaianNodePort] to send this sample query to any Gaian Node
 
+# For Unix, when double-clicking on this script, we want the home+workspace dirs to be the install location (NOT the user's home folder!):
+[[ `dirname $0`!="$PWD" ]] && [[ -z "$GDBH" ]] && export GDBH=`dirname $0` && [[ -z "$GAIAN_WORKSPACE" ]] && export GAIAN_WORKSPACE=$GDBH
+
 [[ -z $GDBH ]] && export GDBH=.
 
 # This is a simple query against logical table: 'LT0', with provenance columns, therefore accessing the 'LT0_P' view.
