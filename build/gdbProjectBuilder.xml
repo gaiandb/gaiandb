@@ -25,7 +25,7 @@ Primary use cases:
 	<property name="Version-release" value="2.1" />
 	
 	<!-- Change this "modification" number more freely - use the suffix 'd' between "release builds" so that anyone that uses this code will know it is not as stable. -->
-	<property name="Version-release-modification" value="${Version-release}.7" />
+	<property name="Version-release-modification" value="${Version-release}.8" />
 
 	<!-- Time-bomb format is dd/mm/yyyy, e.g. 01/04/2015 -->
 	<tstamp><format property="TODAY_PLUS_365_DAYS" pattern="dd/MM/yyyy" timezone="UTC" offset="365" unit="day"/></tstamp>

@@ -1,0 +1,65 @@
+V2.1.8
+	1214: Build Gaian - New Gaian-2.1.8 build	Vyvyan, D (David)	23-May-2016 18:10:38
+	2010: Double-clickable shell scripts - Fixed unix shell scripts to run in their existing location rather than the user's home folder when double clicked on	Vyvyan, D (David)	23-May-2016 18:10:38
+	2009: Add peer discovery config to TopologyTab - New discovery fields/buttons + load/update code. Also direct switch from ConnectionTab to TopologyTab on connection. Also listnet() support for multiple IPs per interface and NULL broadcast IPs	Vyvyan, D (David)	23-May-2016 18:10:38
+	2011: Peer discovery fails after a network interface is lost - Refresh multicastInterfaces when network interfaces change	Vyvyan, D (David)	23-May-2016 18:10:38
+	2012: Excessive query delay after VM host of peer node is paused - Removed redundant "initialConnectionTimeout" from ConnectionMaintainer inner class	Vyvyan, D (David)	23-May-2016 18:10:38
+	1938: Procedure for file-deployment and execution on file - Added path info of an exported LOB in printed resultSet	Vyvyan, D (David)	23-May-2016 18:10:38
+	1940: WPML Policy on file-retrieving queries - Fixed filterRow() to discard rows where blob result was set to NULL by policy + fixed filterRowsBatch() to actually update rows if required. Also ensure QueryContext() unset fields are NULL.	Vyvyan, D (David)	23-May-2016 18:10:38
+	1940: WPML Policy on file-retrieving queries - Auto-initialise policy classes when registered in gaiandb_config.properties (no longer wait for a first query to do so)	Vyvyan, D (David)	21-Mar-2016 18:14:34
+	1938: Procedure for file-deployment and execution on file - Added METADATA info to FHE_DECRYPT() SQL function - and passed originatorNodeID through it	Vyvyan, D (David)	09-Mar-2016 16:47:18
+	1940: WPML Policy on file-retrieving queries - Added localAffiliation property to queryContext; Fixed null result cases; Fixed connection closure NPE; Refactord policy watchdog ObjectArray to avoid race conditions; Added todos for 'declare-capability' and apply 'Allow' policy when sending outer query	Vyvyan, D (David)	27-Feb-2016 00:19:59
+	1940: WPML Policy on file-retrieving queries - Changed webDemoEvents messages to the new UI spec to support a variable number of nodes and ability to query from any of them	Vyvyan, D (David)	26-Feb-2016 16:45:05
+	1938: Procedure for file-deployment and execution on file - New SQLRunner CLP capability to export a LOB result from a data record to a file whose name is based on a previous column value	Vyvyan, D (David)	26-Feb-2016 16:45:05
+	1938: Procedure for file-deployment and execution on file - Procedure FHE_SEARCH_ALL for retrieval at client end + FHE_DECRYPT; Also re-introduced functions JZIP and JUNZIP as Derby V10.7.1.1 onwards allows LOBs as args of procedures/functions	Vyvyan, D (David)	26-Feb-2016 16:45:05
+
+V2.1.7
+	1938: Procedure for file-deployment and execution on file - Added post-processing operation (e.g. decryption of returned result)	Vyvyan, D (David)	02-Feb-2016 00:36:57
+	1214: Build Gaian - New build version 2.1.7 + Gaian in bluemix small updates to docs + small test fixes + SQLOracleRunner capability to specify a url, or ommit the port number (when running locally)	Vyvyan, D (David)	02-Feb-2016 00:36:57
+	1964: Use of threadMXBean.getThreadInfo() in GaianNode watchdog shows high CPU - Stop gathering thread info every second as this is CPU intensive. Only gather thread CPU values.	Vyvyan, D (David)	02-Feb-2016 00:36:57
+	1940: WPML Policy on file-retrieving queries - Updates to WPML policy plugin for query access control + Only instantiate policy plugin objects in query execution phase (not meta-data lookup)	Vyvyan, D (David)	02-Feb-2016 00:36:57
+	1453: General code cleanup having minimal impact - Re-instated EPL header comments in 1 source file (had been lost after suspending other changesets)	D. Vyvyan	11-Dec-2015 20:05:05
+	1453: General code cleanup having minimal impact - Re-instated EPL header comments in 3 source files (had been lost after suspending other changesets)	D. Vyvyan	11-Dec-2015 19:50:14
+	1214: Build Gaian - Build for V2.1.7; with: inclusion+updates to UDP/Lite drivers; NEO4J support; Policy framework bug fixes; WPML policy for file-retrieval; CLP fix to tolerate SQL comments alone	D. Vyvyan	11-Dec-2015 15:04:28
+	1940: WPML Policy on file-retrieving queries - Choose clear-text or encrypted image feature vector based on requestor ID	D. Vyvyan	11-Dec-2015 15:04:28
+	1687: Policy framework issues - Removed GDB_CREDENTIALS from SQL hint when query is propagated. Also wrapped value for table argument "origClusters" in brackets as it is CSV	D. Vyvyan	11-Dec-2015 15:04:28
+	1942: NEO4J is not accessible via its JDBC driver - Treat NEO4J queries as stored procedure calls; and disabled periodic validation of NEO4J connections	D. Vyvyan	11-Dec-2015 15:04:28
+	1946: Gaian CLP raises exception for query consisting entirely of SQL comment lines - Treat queries consisting entirely of SQL comments as no-ops	D. Vyvyan	11-Dec-2015 15:04:28
+	1941: Gaian-lite V2+ startup failures on Android - Included UDP driver and GaianLite in build. Disabled dynamic class-loading. Tolerate absence of URLClassLoader (for dynamic class-loading) and MemoryMXBean (for memory monitoring)	D. Vyvyan	11-Dec-2015 14:20:41
+	1938: Procedure for file-deployment and execution on file - Added isEncrypted flag to file-retrieving call-back and used ACCESS_CLUSTERS value as credentials	D. Vyvyan	11-Dec-2015 14:06:54
+	1939: Generic function for efficient file deployment and operation on it - Updates for FHE_SEARCH, DEPLOYFILE and XRIPPLE	D. Vyvyan	25-Sep-2015 16:36:44
+
+V2.1.6
+	1214: Build Gaian - V2.1.6 + Added logging to identify who issued a GaianNode.stop()	D. Vyvyan	25-Sep-2015 16:36:44
+	1214: Build Gaian - Disabled Cobertura in gdbProjectBuilderForBuildServer.xml as well	D. Vyvyan	10-Sep-2015 12:42:38
+	1934: Memory Leak in GaianNode static HashMap<Long,Long> - Limited size of 2 HashMaps used for measuring CPU times; Also actively clear old entries in these every second	D. Vyvyan	10-Sep-2015 11:52:20
+	1908: Gaian in Bluemix - Updates to Gaian in Bluemix demo : Updated war and zip files with latest code incl mongo connector	D. Vyvyan	09-Sep-2015 18:02:50
+	1214: Build Gaian - New Gaian V2.1.6 dev build + New build server password in test.properties + added jars for postgresql-9.4 + upgrade to cobertura-2.1.1 (but disabled from build process for now)	D. Vyvyan	09-Sep-2015 18:01:55
+	1214: Build Gaian - New jars/build with Apache Derby 10.11	D. Vyvyan	09-Sep-2015 18:01:55
+	1214: Build Gaian - Refactored IntegrationSamples packages to give them context	D. Vyvyan	09-Sep-2015 11:49:54
+	1932: Update Copyright header text license to EPL - Added missing copyright stmts; Removed redundant comments; Changed all copyright headers except in Simulators; Cleaned webservices package unused imports and added Pair.java dependency	D. Vyvyan	09-Sep-2015 11:48:08
+	1936: Dynamic class-loading fails with conflicting JDBC drivers - Disabled dynamic class loading (due to incorrect driver choice by DriverManager..) + Added checks for NPE in regular Thread info gathering code for CPU etc	D. Vyvyan	09-Sep-2015 11:34:28
+	1320: S: Getting started information & introduction to GaianDB - Added latest GaianDB Industries.ppt and ETS-Flyer-Gaian.pdf	D. Vyvyan	23-Jul-2015 03:25:52
+	1214: Build Gaian - New build for baseline release 2.1.5 - including small fix for jmemorypercent() calculation to exclude non-heap memory pools	D. Vyvyan	19-Feb-2015 16:04:32
+	1931: Many GaianQuery CRUD sub-queries eventually result in DB2 SQLCODE=-805 SQLERRMC="NULLID.SYSLH203" - Close sub-query statements immediately after use as they are not cached - Also added logging for success of sub-query preparation	D. Vyvyan	11-Feb-2015 20:23:12
+	1929: Allow obfuscated password for user gaiandb - New GaianAuthenticator custom derby authenticator now allows for Gaian password to be obfuscated as it is read from gaiandb_config.properties	D. Vyvyan	11-Feb-2015 20:23:12
+
+V2.1.5
+	1214: Build Gaian - New V2.1.5 build - incl fix on connections pool leak with GaianQuery on CRUDs or SPs + Closure of sub-query stmts + new GaianAuthenticator	D. Vyvyan	11-Feb-2015 20:23:12
+	1453: General code cleanup having minimal impact - Reduced log level to Info only for failures to authenticate with a Policy plugin	D. Vyvyan	11-Feb-2015 20:23:12
+	1927: Connection Pool leak with GaianQuery() on CRUD or SP SQL - Cache RSMD of GaianQuery() if it holds SP retained results + recycle connection early for GaianQuery on CRUD + refactored max poolsize validation to Stack.push() method + New TestPassThroughQueries.java	D. Vyvyan	11-Feb-2015 19:41:49
+	1908: Gaian in Bluemix - Added bluemix demo material for Gaian, Information Access Hub and Node Red	D. Vyvyan	19-Jan-2015 16:47:36
+	1214: Build Gaian - New version 2.1.5d; Updated JARs + Project tweaks: commented sample DB2 data source in gaiandb_config.properties, changed ZipMips builder config	D. Vyvyan	19-Jan-2015 16:47:36
+	1926: Hive JDBC data-source access failure - Added HIVE client pre-reqs; Also guarded against non-implemented JDBC method Connection.isClosed(); Also skip double-quoting of identifiers for HIVE (not supported by JDBC driver and is case-insensitive anyway)	D. Vyvyan	19-Jan-2015 16:42:38
+	1926: Hive JDBC data-source access failure - Fully populate and use Gaian classloader instead of system one for dynamic loading of vtis/policy/jdbc drivers. Only register as jdbc drivers classes whose name ends with  "*Driver.class"	D. Vyvyan	19-Jan-2015 16:33:51
+	1896: Build+Packaging for MIPS VTI extensions - Added copyright to MongoVTI and dependent classes. Also trimmed down MongoMessages.java to only include Mongo messages	D. Vyvyan	19-Jan-2015 16:32:09
+	1925: New procedures to extract meta-data from JDBC endpoint - New GetMetaDataJDBC() extracts catalog/schema/table types from db metadata; and GetTablesJDBC() retrieves tables matching cat/schem/tabtype constraints; Also optimised ADDQUERY() to avoid preparing queries that have no positional parms.	D. Vyvyan	19-Jan-2015 16:30:54
+	1198: Improve Documentation - Added key benefits of Gaian to user docs	D. Vyvyan	19-Jan-2015 16:30:17
+	1922: Javascript HTML5 failure with GaianServlet File Upload POST - Allow file uploads to target subfolders under GaianWorksapce; Also changed argument name to "fileUploads[]" to comply with HTML5; Also return "{}" for empty result so client can parse it as JSON	D. Vyvyan	19-Jan-2015 16:29:44
+	1923: Query failures with DS table expression referencing FileImport - Explicitly reinitialise FileImport result (scrolling back to start) when it is re-executed - necessary when called outside scope of Logical Table invocation	D. Vyvyan	05-Dec-2014 16:05:19
+	1214: Build Gaian - Changed expired password for user 'gaian' - updated test.properties with new password 4utumnr3d	D. Vyvyan	04-Dec-2014 12:35:57
+	1214: Build Gaian - Added list of new features/items in Readme.html + fixed/removed version suffix "-espotel*". Re-build	D. Vyvyan	07-Nov-2014 16:46:14
+	1214: Build Gaian - Fixed licenseDir location for building GaianApp.war. Re-build	D. Vyvyan	06-Nov-2014 17:07:46
+	1214: Build Gaian - Added "-trial-365-days" suffix to license folder in trial build + Re-build	D. Vyvyan	06-Nov-2014 15:06:16
+	1921: Inform Policy with table names of columns in pass-through sub-query - Added GaianResultSetMetaData.getTableName() and getSchemaName()	D. Vyvyan	06-Nov-2014 14:39:33
+
