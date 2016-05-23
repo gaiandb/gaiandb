@@ -475,16 +475,31 @@ public class Util {
 			
 			while ( en.hasMoreElements() ) {
 				NetworkInterface ni = en.nextElement();
-								
+				
 				if (GaianNode.isJavaVersion6OrMore) {
 					for ( InterfaceAddress ifa : ni.getInterfaceAddresses() ) {
 						String ip = stripToSlash( ifa.getAddress().toString() );
 						if ( isIPv4(ip) ) {
+							
+							Integer npl = new Integer( ifa.getNetworkPrefixLength() );
+							InetAddress bcastAddress = ifa.getBroadcast();
+							String bcast = null == bcastAddress ? null : stripToSlash( bcastAddress.toString() );
+							
+//							// Do some checking -> corrected: don't remove broadcast IPs whose prefix doesn't match the IP prefix - these can still be valid.
+//							if ( null != bcast && 8 <= npl && false == ip.substring(0, ip.indexOf('.')).equals( bcast.substring(0,  bcast.indexOf('.')) ) ) {
+//								logger.logInfo("Detected invalid broadcast entry in Java net info (doesn't match ip prefix - setting broadcast to null). IP: " +  ip
+//										+ ", Broadcast: " + bcast + ", netPrefixLength: " + npl);
+//								bcast = null;
+//							}
+
+							interfaceIDs.add( ni.getName() );			// repeat interface props for different IPs on it.
+							interfaceInfos.add( ni.getDisplayName() );	// repeat interface props for different IPs on it.
+
 							ipv4s.add(ip);
-							InetAddress bcast = ifa.getBroadcast();
-							broadcasts.add( null == bcast ? null : stripToSlash( bcast.toString() ) );
-							netPrefixLengths.add( new Integer(ifa.getNetworkPrefixLength()) );
-							break;
+							broadcasts.add( bcast );
+							netPrefixLengths.add( npl );
+							
+//							System.out.println("New ni ip: " + ni.getName() + " -> " + ip + " -> " + bcast + "->" + ifa.getNetworkPrefixLength());
 						}
 					}
 				} else {
@@ -492,17 +507,19 @@ public class Util {
 					while( ias.hasMoreElements() ) {
 						String ip = stripToSlash( ias.nextElement().toString() );
 						if ( isIPv4(ip) ) {
+							
+							interfaceIDs.add( ni.getName() );			// repeat interface props for different IPs on it.
+							interfaceInfos.add( ni.getDisplayName() );	// repeat interface props for different IPs on it.
+							
 							ipv4s.add(ip);
 							broadcasts.add( null );
 							netPrefixLengths.add( null );
-							break;
 						}
 					}
 				}
-				
-				interfaceIDs.add( ni.getName() );
-				interfaceInfos.add( ni.getDisplayName() );
 			}
+			
+//			System.out.println("Built NetInfo() with numelmts: " + ipv4s.size());
 		}
 		
 		List<String> getAllBroadcastIPs() {
@@ -514,7 +531,9 @@ public class Util {
 		
 		public Object[] getInfoForClosestMatchingIP( String ip ) throws Exception {
 			int i = 0;
-			String address = Util.getStringWithLongestMatchingPrefix( null==ip || 0==ip.length() ? GaianNodeSeeker.getDefaultLocalIP() : ip, new HashSet<String>( ipv4s ) );
+			String address = Util.getStringWithLongestMatchingPrefix( 
+					null==ip || 0==ip.length() ? GaianNodeSeeker.getDefaultLocalIP() : ip,
+					new HashSet<String>( ipv4s ) );
 			for ( int k=0; k<ipv4s.size(); k++ )
 				if ( ipv4s.get(k).equals(address) )
 					{ i = k; break; }
@@ -535,9 +554,12 @@ public class Util {
 			if ( 1 > ipv4s.size() ) return null;
 			List<String> rows = new ArrayList<String>();
 			for ( int i=0; i<ipv4s.size(); i++ )
-				if ( null == ipPrefix || ipv4s.get(i).startsWith(ipPrefix) )
+				if ( null == ipPrefix || ipv4s.get(i).startsWith(ipPrefix) ) {
+					String bcastXpr = broadcasts.get(i);
+					bcastXpr = null == bcastXpr ? "CAST(NULL AS " + TSTR + ")" : "'" + bcastXpr + "'";
 					rows.add("'"+hostname+"' hostname,'"+interfaceIDs.get(i)+"' interface,'"+interfaceInfos.get(i)+"' description,'"
-								+ipv4s.get(i)+"' ipv4,'"+broadcasts.get(i)+"' broadcast,"+netPrefixLengths.get(i)+" NetPrefixLength");
+								+ipv4s.get(i)+"' ipv4,"+bcastXpr+" broadcast,CAST("+netPrefixLengths.get(i)+" as INT) NetPrefixLength");
+				}
 			return rows;
 		}
 	}
@@ -1178,20 +1200,20 @@ public class Util {
 		return matchingFilePaths;
 	}
 	
-	public static int runSystemCommand( final String[] sysCommand ) throws IOException {
+	public static int runSystemCommand( final String[] sysCommand, boolean isPrintLog ) throws IOException {
 		
-//		System.out.println("Running system command: " + Arrays.asList(sysCommand));
+		if ( isPrintLog ) System.out.println("Running system command: " + Arrays.asList(sysCommand));
 		
-		Process process = new ProcessBuilder().inheritIO().command( sysCommand ).start();		
+		Process process = (isPrintLog ? new ProcessBuilder().inheritIO() : new ProcessBuilder() ).command( sysCommand ).start();		
 		try { return process.waitFor(); } catch (InterruptedException e) { e.printStackTrace(); }
 
 		return -1;
 	}
 	
-	public static int runSystemCommand( final String[] sysCommand, final Object synchObject ) throws IOException {
+	public static int runSystemCommand( final String[] sysCommand, final Object synchObject, boolean isPrintLog ) throws IOException {
 		
-		if ( null == synchObject ) return runSystemCommand( sysCommand );
-		else synchronized ( synchObject ) { return runSystemCommand( sysCommand ); }
+		if ( null == synchObject ) return runSystemCommand( sysCommand, isPrintLog );
+		else synchronized ( synchObject ) { return runSystemCommand( sysCommand, isPrintLog ); }
 	}
 	
 }

@@ -85,7 +85,7 @@ public class GaianNode {
 	private static long[] t1 = { -1, -1 };
 
 	// DO NOT CHANGE THIS CONSTANT (without also changing it in the build script)
-	static final String GDB_VERSION = "2.1.7"; // This constant is referenced and updated by build script: gdbProjectBuilder.xml
+	static final String GDB_VERSION = "2.1.8"; // This constant is referenced and updated by build script: gdbProjectBuilder.xml
 	static final String GDB_TIMEBOMB = "-1"; // format is "dd/mm/yyyy" when enabled: This constant is referenced and updated by build script: gdbProjectBuilder.xml
 	
 	// Possible modes:
@@ -990,11 +990,12 @@ public class GaianNode {
 //		MetricMonitor metricMonitor = MetricMonitor.getInstance(conn);
 //		metricMonitor.addJVMMonitors();
 		
-		try { getClass().getClassLoader().loadClass(MQTTMessageStorer.class.getName()); isMessageStorerAvailable = true;}
+		// Test whether MQTTMessageStorer can be used and started - i.e. if wmqtt.jar was placed somewhere under the lib folder
+		try { getClass().getClassLoader().loadClass(MQTTMessageStorer.class.getName()); isMessageStorerAvailable = true; }
 		catch ( Throwable e ) { logger.logInfo("Could not load MessageStorer (install wmqtt.jar from IBM Microbroker): " + e); }
 	}
     
-	private static final PrintStream BIT_BUCKET = new PrintStream(new OutputStream() {@Override public void write(int b) {} });
+	private static final PrintStream BIT_BUCKET = new PrintStream(new OutputStream() { @Override public void write(int b) {} });
 	
 	private static Thread watchdogThread = null;
 	
@@ -1048,9 +1049,9 @@ public class GaianNode {
 									". jMemoryNonHeap (MB): " + (double)GaianDBUtilityProcedures.jMemoryNonHeap()/1000000 +
 									" - (suspected hanging queries being checked: "+DatabaseConnectionsChecker.getNumberOfSuspectedHangingQueriesBeingChecked()+")");
 							memoryUsedPrevious = memoryUsed;
-						}	
-					}	
-				} catch( Throwable e ) {
+						}
+					}
+				} catch ( Throwable e ) {
 					logger.logWarning(GDBMessages.NODE_MEMORYMXBEAM_ERROR, "Unable to access/process MemoryMXBean for monitoring used memory (ignored): " + e);
 					memoryUsedPrevious = -1;
 				}
@@ -1073,6 +1074,10 @@ public class GaianNode {
 				try { DataSourcesManager.checkUpdateLogicalTableViewsOnAllDBs(); }
 				catch ( Exception e ) { logger.logWarning(GDBMessages.NODE_LT_VIEW_UPDATE_ERROR, "Failed to update some logical table views (ignored): " + e); }
 
+				// Initialise newly defined policy classes
+				// NOTE: static code in an old class should clean itself down if/when it detects it is no longer set to be the SQL_RESULT_FILTER class.
+				GaianDBConfig.initialisePolicyClasses();
+				
 				for ( int i=0; i<THROUGHPUT_PERIODS_PER_WATCHDOG_PERIOD; i++ ) {
 					Thread.sleep( THROUGHPUT_SAMPLING_PERIOD );
 					dataThroughputInLastPeriod = GaianTable.getDataThroughput();

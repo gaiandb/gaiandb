@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -49,6 +50,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import javax.management.Notification;
 import javax.management.NotificationEmitter;
@@ -257,13 +260,13 @@ public class GaianDBUtilityProcedures extends GaianDBProcedureUtils {
 	+ " EXTERNAL NAME 'com.ibm.gaiandb.GaianDBUtilityProcedures.jSleep'"
 	
 	// THESE DONT WORK AS BLOB/CLOB CAN'T BE PASSED IN AS ARGUMENTS TO STORED FUNCTIONS/PROCEDURES - COULD CHANGE TO VARCHAR BUT LESS WORTHWHILE...
-//	+ ";" // Scalar function for zipping a blob
-//	+ "!DROP FUNCTION JZIP;!CREATE FUNCTION JZIP(DATA BLOB(2G)) RETURNS BLOB(2G) PARAMETER STYLE JAVA LANGUAGE JAVA NO SQL"
-//	+ " EXTERNAL NAME 'com.ibm.gaiandb.GaianDBUtilityProcedures.jzip'"
-//
-//	+ ";" // Scalar function for unzipping a blob
-//	+ "!DROP FUNCTION JUNZIP;!CREATE FUNCTION JUNZIP(DATA BLOB(2G)) RETURNS BLOB(2G) PARAMETER STYLE JAVA LANGUAGE JAVA NO SQL"
-//	+ " EXTERNAL NAME 'com.ibm.gaiandb.GaianDBUtilityProcedures.junzip'"
+	+ ";" // Scalar function for zipping a blob
+	+ "!DROP FUNCTION JZIP;!CREATE FUNCTION JZIP(DATA BLOB(2G)) RETURNS BLOB(2G) PARAMETER STYLE JAVA LANGUAGE JAVA NO SQL"
+	+ " EXTERNAL NAME 'com.ibm.gaiandb.GaianDBUtilityProcedures.jzip'"
+
+	+ ";" // Scalar function for unzipping a blob
+	+ "!DROP FUNCTION JUNZIP;!CREATE FUNCTION JUNZIP(DATA BLOB(2G)) RETURNS BLOB(2G) PARAMETER STYLE JAVA LANGUAGE JAVA NO SQL"
+	+ " EXTERNAL NAME 'com.ibm.gaiandb.GaianDBUtilityProcedures.junzip'"
 	
 //	+ ";" // Get node's underlying OS platform name
 //	+ "!DROP FUNCTION JOS;!CREATE FUNCTION JOS() RETURNS "+XSTR
@@ -316,6 +319,13 @@ public class GaianDBUtilityProcedures extends GaianDBProcedureUtils {
 //	+ " PARAMETER STYLE JAVA LANGUAGE JAVA READS SQL DATA DYNAMIC RESULT SETS 1"
 //	+ " EXTERNAL NAME 'com.ibm.gaiandb.GaianDBUtilityProcedures.deploySearchFHE'"
 //	+ ";"
+
+	+ "!DROP PROCEDURE FHE_SEARCH_ALL;!CREATE PROCEDURE FHE_SEARCH_ALL(BYTES_URI "+Util.XSTR+")"
+	+ " PARAMETER STYLE JAVA LANGUAGE JAVA READS SQL DATA DYNAMIC RESULT SETS 1 EXTERNAL NAME 'com.ibm.gaiandb.GaianDBUtilityProcedures.fheSearchAll'"
+	+ ";" // Scalar function to decrypt an FHE result
+	+ "!DROP FUNCTION FHE_DECRYPT;!CREATE FUNCTION FHE_DECRYPT(DATA BLOB(2G), METADATA "+Util.XSTR+") RETURNS BLOB(2G) PARAMETER STYLE JAVA LANGUAGE JAVA NO SQL"
+	+ " EXTERNAL NAME 'com.ibm.gaiandb.GaianDBUtilityProcedures.fheDecrypt'"
+	+ ";"
 	+ "!DROP FUNCTION FHE_SEARCH;!CREATE FUNCTION FHE_SEARCH(BYTES_URI "+Util.XSTR+") RETURNS BLOB(2G)"
 	+ " PARAMETER STYLE JAVA LANGUAGE JAVA READS SQL DATA EXTERNAL NAME 'com.ibm.gaiandb.GaianDBUtilityProcedures.fheSearch'"
 	
@@ -331,6 +341,68 @@ public class GaianDBUtilityProcedures extends GaianDBProcedureUtils {
 //		
 //	}
 	
+	
+	// Need a procedure to receive multiple search results on the client
+	public static void fheSearchAll( String filePath, ResultSet[] rs ) throws Exception {
+		
+		try {
+			int idx = filePath.lastIndexOf('/');
+			String fileName = 0 > idx ? filePath : filePath.substring( idx+1 );
+			if ( 0 > idx ) filePath = System.getenv("FHE_WORKSPACE") + "/suspects/" + fileName;
+			
+			final int dashIdx = getAccessClusters().trim().indexOf('-');
+			String affiliation = -1 < dashIdx ? getAccessClusters().trim().substring(0, dashIdx) : "None";
+			if ( affiliation.equals("KISH") ) affiliation = "Kish";
+			
+			setFirstResultSetFromQueryAgainstDefaultConnection( rs,
+					"select '" + fileName + ".' || "+ gdb_node + " || '.jpg' result_filename, "
+				+	"FHE_DECRYPT(res, gdb_node) result_data from new com.ibm.db2j.GaianQuery('select FHE_SEARCH(''"
+				+	GaianDBConfig.getGaianNodeID()+" "+new File(filePath).getCanonicalPath()+"'') res from sysibm.sysdummy1', 'with_provenance') GQ" // ,maxDepth=1
+				+   " where gdb_node != '" + GaianDBConfig.getGaianNodeID() + "' -- GDB_CREDENTIALS=" + affiliation, "" );
+			
+		} catch ( Exception e ) { e.printStackTrace(); }
+		
+		// Query below can't work because the inner-query "select 0 isEncrypted..." is going to Derby (not Gaian) so we can't change the isEncrypted value.
+//		return getResultSetFromQueryAgainstDefaultConnection(
+//					"select '" + fileName + ".' || "+ gdb_node + " || '.jpg' result_filename, "
+//				+	"CASE WHEN isEncrypted > 0 THEN FHE_DECRYPT(res) ELSE res END result_data"
+//				+	" from new com.ibm.db2j.GaianQuery('select 0 isEncrypted, FHE_SEARCH(''"
+//				+	GaianDBConfig.getGaianNodeID()+" "+new File(filePath).getCanonicalPath()+"'') res from sysibm.sysdummy1', 'with_provenance') GQ"
+//				+   " where gdb_node != '" + GaianDBConfig.getGaianNodeID() + "' -- GDB_CREDENTIALS=" + affiliation );
+	}
+	
+	// Need a decryption function to decrypt results on the fly in SQL without having to re-create a new ResultSet ourselves
+	public static Blob fheDecrypt( Blob data, String metaData ) throws Exception {
+		
+		if ( null == data ) return null; // nothing to do
+		
+		final String fileName = "suspect." + System.currentTimeMillis() + "." + System.nanoTime() + ".fhe.ctxt"; // alice2.sh requires extn to be .ctxt
+		File file = new File(fileName);
+		
+		Util.copyBinaryData( data.getBinaryStream(), new FileOutputStream(file) );
+		
+		if ( 100000 > file.length() ) { // TODO: Need a better way to determine whether data is encrypted - e.g. using header bytes..
+			// assume data is not encrypted - i.e. the node returning this data was trusted
+			file.delete();
+			return data;
+		}
+		
+		Util.runSystemCommand( new String[] { DIR_FHE_SCRIPTS + "/alice2.sh", "-e", GaianDBConfig.getGaianNodeID(), "-f", metaData, file.getPath(), fileName + ".jpg" }, true );
+		
+		file.delete(); // delete input file (encrypted)
+		byte[] bytes = Util.getFileBytes( file = new File(fileName + ".jpg") );
+		file.delete(); // delete output file (decrypted)
+		
+		// Cast to EmbedConnection as we know Derby supports createBlob() regardless of Java version
+		Blob blob = ((EmbedConnection) getDefaultDerbyConnection()).createBlob();
+		blob.setBytes(1, bytes);
+		
+		return blob;
+	}
+	
+	public static final String DIR_FHE_SCRIPTS = System.getenv("FHE_SERVICES") + "/capes/demo";
+	
+	// Need a local search function that just returns a Blob because the is no simple way of creating a result set from scratch that contains Blobs.
 	public static Blob fheSearch( String bytesURI ) throws Exception {
 		
 		// The URI scheme targets a file on a node using syntax: "<NodeID> <FilePath>"
@@ -352,10 +424,15 @@ public class GaianDBUtilityProcedures extends GaianDBProcedureUtils {
 		final String fileNameMinusExtension = 0 > idx ? fileName : fileName.substring(0, idx);
 		
 		File file = new File(fileName);
+
+		final String localNodeID = GaianDBConfig.getGaianNodeID();
 		
 //		System.out.println("idx =  " + idx);
 		
 		if ( isDistributeMode ) { // Distribution mode: propagate deployment query to all nodes in network
+			
+			// DRV 26/02/2016 - THIS CODE PATH IS ONLY USED IF YOU WANT THE RESULT FILES TO APPEAR IN THE WORKSPACE OF THE ENTRY-POINT NODE
+			//					TO MAKE THEM APPEAR IN THE WORKING DIR OF THE CLIENT INSTEAD, USE PROCEDURE FHE_SEARCH_ALL.
 			
 			final int dashIdx = getAccessClusters().trim().indexOf('-');
 			String affiliation = -1 < dashIdx ? getAccessClusters().trim().substring(0, dashIdx) : "None";
@@ -384,13 +461,14 @@ public class GaianDBUtilityProcedures extends GaianDBProcedureUtils {
 				
 				// FHE decrypt
 				if ( isEncrypted ) {
-					Util.runSystemCommand( new String[] { "/home/fhe/FHEservices/capes/demo/alice2.sh", "-e", file.getPath(), fileName + "." + provenanceNode + ".jpg" } );
+					Util.runSystemCommand( new String[] { DIR_FHE_SCRIPTS + "/alice2.sh", 
+							"-e", localNodeID, file.getPath(), fileName + "." + provenanceNode + ".jpg" }, true );
 //					Thread.sleep(4000);
-//					Util.runSystemCommand( new String[] { GenericPolicyPluginForWPML.DIR_POLICY_SCRIPTS + "/webDemoEvent.sh", "31", "", "start" } );
+//					Util.runSystemCommand( new String[] { GenericPolicyPluginForWPML.DIR_WEB_EVENTING + "/webDemoEvent.sh", "31", "", "start" } );
 //					Thread.sleep(2000);
-//					Util.runSystemCommand( new String[] { GenericPolicyPluginForWPML.DIR_POLICY_SCRIPTS + "/webDemoEvent.sh", "32", "", "start" } );
+//					Util.runSystemCommand( new String[] { GenericPolicyPluginForWPML.DIR_WEB_EVENTING + "/webDemoEvent.sh", "32", "", "start" } );
 //					Thread.sleep(2000);
-//					Util.runSystemCommand( new String[] { GenericPolicyPluginForWPML.DIR_POLICY_SCRIPTS + "/webDemoEvent.sh", "33", "", "start" } );
+//					Util.runSystemCommand( new String[] { GenericPolicyPluginForWPML.DIR_WEB_EVENTING + "/webDemoEvent.sh", "33", "", "start" } );
 				}
 			}
 			
@@ -403,7 +481,6 @@ public class GaianDBUtilityProcedures extends GaianDBProcedureUtils {
 		final String cid = GaianDBConfig.getDiscoveredConnectionID( originatorNodeID );
 		
 		boolean isEncrypted = false;
-		String localNodeID = GaianDBConfig.getGaianNodeID();
 		
 		// Only need to load file if we are not on the entry-point node... (which is where the file originates!) 
 		if ( false == originatorNodeID.equals( localNodeID ) ) {
@@ -411,22 +488,24 @@ public class GaianDBUtilityProcedures extends GaianDBProcedureUtils {
 			try {
 				System.out.println("Looked up cid for origin node: " + originatorNodeID + ", as being: " + cid);
 				
-				final String connectionDetails = GaianDBConfig.getRDBConnectionDetailsAsString(cid);
-				c = GaianDBConfig.getNewDBConnector( GaianDBConfig.getConnectionTokens(connectionDetails) ).getConnection();
+//				final String connectionDetails = GaianDBConfig.getRDBConnectionDetailsAsString(cid);
+//				c = GaianDBConfig.getNewDBConnector( GaianDBConfig.getConnectionTokens(connectionDetails) ).getConnection();
 
-//				c = getDefaultDerbyConnection();
+				c = getDefaultDerbyConnection();
 				
 				final int dashIdx = getAccessClusters().trim().indexOf('-');
 				String affiliation = -1 < dashIdx ? getAccessClusters().trim().substring(0, dashIdx) : "None";
 				if ( affiliation.equals("KISH") ) affiliation = "Kish";
 				
+//				GenericPolicyPluginForWPML.webDemoEvent("declaring-capability", ); TODO: <----
+				
 //				ResultSet rs = c.createStatement().executeQuery("select getFileBZ('"+filePath+"') fzbytes from sysibm.sysdummy1");
 				ResultSet rs = c.createStatement().executeQuery(
 						"select * from new com.ibm.db2j.GaianQuery("
-//							+ "'select 0 isEncrypted, getFileBZ(''"+filePath+"'') fzbytes from sysibm.sysdummy1', 'with_provenance') GQ where GDB_NODE = "
-//							+ nodeID + " -- GDB_CREDENTIALS=DRV"
-							+ "'select 0 isEncrypted, getFileBZ(''"+filePath+"'') fzbytes from sysibm.sysdummy1', 'with_provenance, maxDepth=0') GQ"
-							+ " -- GDB_CREDENTIALS=" + affiliation
+							+ "'select 0 isEncrypted, getFileBZ(''"+filePath+"'') fzbytes from sysibm.sysdummy1', 'with_provenance') GQ where GDB_NODE = '" // ,maxDepth=1
+							+ originatorNodeID + "' -- GDB_CREDENTIALS=" + affiliation
+//							+ "'select 0 isEncrypted, getFileBZ(''"+filePath+"'') fzbytes from sysibm.sysdummy1', 'with_provenance, maxDepth=0') GQ"
+//							+ " -- GDB_CREDENTIALS=" + affiliation
 						);
 
 				if ( false == rs.next() ) {
@@ -435,12 +514,15 @@ public class GaianDBUtilityProcedures extends GaianDBProcedureUtils {
 					return null;
 				}
 
-				isEncrypted = 0 < rs.getInt(1); // Trusted/Non-encrypted = 0, Untrusted/Encrypted = 1
+				isEncrypted = 0 < rs.getInt(1); // Trusted/Non-encrypted = 0, Untrusted/Encrypted = 1 (policy plugin would set this value)
 				byte[] bytes = rs.getBytes(2);
 				System.out.println("Received record, isEncrypted? " + isEncrypted 
 						+ ", bytes.length: " + bytes.length + " for file: '" + filePath + "' from node: " + originatorNodeID);
 				
 				if ( isEncrypted ) file = new File( fileName = fileNameMinusExtension + ".ctxt" );
+				
+				// sendingDataObjectForAnalysis - end
+				GenericPolicyPluginForWPML.webDemoEventReceivingData( originatorNodeID, filePath, "query", "end", "" );
 				
 				writeToFileAfterUnzip( file, bytes );
 				System.out.println("Wrote byte[] to local file: " + file.getCanonicalPath() + ", length: " + file.length());
@@ -451,49 +533,45 @@ public class GaianDBUtilityProcedures extends GaianDBProcedureUtils {
 				throw new Exception("Unable to get fhe search result from node: " + originatorNodeID + ": " + Util.getStackTraceDigest(e));
 			}
 			finally {
-				System.out.println("Recycling connection");
-				if ( null != originatorNodeID && null != c ) // Return connection to pool (may get closed immediately if not referenced by a data source or sourcelist)
-					DataSourcesManager.getSourceHandlesPool( GaianDBConfig.getRDBConnectionDetailsAsString(cid) ).push(c);
-//				c.close();
+//				System.out.println("Recycling connection");
+//				if ( null != originatorNodeID && null != c ) // Return connection to pool (may get closed immediately if not referenced by a data source or sourcelist)
+//					DataSourcesManager.getSourceHandlesPool( GaianDBConfig.getRDBConnectionDetailsAsString(cid) ).push(c);
+				if ( null != c ) c.close();
 			}
 		}
 		
-		Thread.sleep(2000); // allow time for UI visualisation of message being sent
+//		Thread.sleep(2000); // allow time for UI visualisation of message being sent
 		
-		if ( -1 < localNodeID.indexOf("6415") ) // Kish node - so usually: isEncrypted = true (unless policy was changed)
-			Util.runSystemCommand( new String[] { GenericPolicyPluginForWPML.DIR_POLICY_SCRIPTS + "/webDemoEvent.sh", "21", "'Comparing using FHE'", "start" }, 
-					GenericPolicyPluginForWPML.WEB_UI_UPDATE_LOCK );
-		else if ( -1 < localNodeID.indexOf("6416") )
-			Util.runSystemCommand( new String[] { GenericPolicyPluginForWPML.DIR_POLICY_SCRIPTS + "/webDemoEvent.sh",  "11", "'Searching Match'", "start" }, 
-					GenericPolicyPluginForWPML.WEB_UI_UPDATE_LOCK );
+		// executingAnalytic - start
+		GenericPolicyPluginForWPML.webDemoEvent("executing-analytic", "{}", "start", "");
 		
 		
 		// IF file is not encrypted => Do standard feature vector comparisons and return image ; otherwise => Do FHE comparisons
 		if ( isEncrypted ) {
-			file = new File( fileNameMinusExtension + ".fhe" ); // fileName + ".fheObliviousResult.ctxt" );
-			Util.runSystemCommand( new String[] { "/home/fhe/FHEservices/capes/demo/bob.sh", fileName, file.getName() } );
+			file = new File( fileNameMinusExtension + ".fheSearchResult.ctxt" ); // best to end with .ctxt (some scripts require this extension)
+			Util.runSystemCommand( new String[] { DIR_FHE_SCRIPTS + "/bob.sh", "-e", localNodeID, fileName, file.getName() }, true );
 //			Thread.sleep(7000);
 		} else {
-			file = new File( fileNameMinusExtension + ".jpg" );
-			Util.runSystemCommand( new String[] { "/home/fhe/FHEservices/capes/demo/plainBob.pl", fileName, file.getName() } );
-			Thread.sleep(8000);
+			file = new File( fileNameMinusExtension + ".plainSearchResult.jpg" );
+			Util.runSystemCommand( new String[] { DIR_FHE_SCRIPTS + "/plainBob.pl", "-e", localNodeID, fileName, file.getName() }, true );
+//			Thread.sleep(8000);
 		}
+
+		// executingAnalytic - end
+		GenericPolicyPluginForWPML.webDemoEvent("executing-analytic", "{}", "end", "");
 		
-		System.out.println("Notifying UI to show result being returned. localNodeID = " + localNodeID);
-		if ( -1 < localNodeID.indexOf("6415") ) // Kish node - so usually: isEncrypted = true (unless policy was changed)
-			Util.runSystemCommand( new String[] { GenericPolicyPluginForWPML.DIR_POLICY_SCRIPTS + "/webDemoEvent.sh", "22", "'Sending Resulting Ciphertext'", "start" }, 
-					GenericPolicyPluginForWPML.WEB_UI_UPDATE_LOCK );
-		else if ( -1 < localNodeID.indexOf("6416") )
-			Util.runSystemCommand( new String[] { GenericPolicyPluginForWPML.DIR_POLICY_SCRIPTS + "/webDemoEvent.sh", "13", "'Sending Image File Match'", "start" }, 
-					GenericPolicyPluginForWPML.WEB_UI_UPDATE_LOCK );
-		
-		byte[] bytes = readAndZipFileBytes( file );
+		byte[] bytes = Util.getFileBytes( file ); // readAndZipFileBytes( file );
 		
 		System.out.println("Returning comparison result file: " + file.getCanonicalPath() + ", as Blob... numBytes: " + bytes.length);
+		
+		file.delete();
 		
 		// Cast to EmbedConnection as we know Derby supports createBlob() regardless of Java version
 		Blob blob = ((EmbedConnection) getDefaultDerbyConnection()).createBlob();
 		blob.setBytes(1, bytes);
+		
+		// returningAnalyticResult - start
+		GenericPolicyPluginForWPML.webDemoEventSendingData( originatorNodeID, "", "result", "start", "" );
 		
 		return blob;
 	}
@@ -1661,38 +1739,39 @@ public class GaianDBUtilityProcedures extends GaianDBProcedureUtils {
 		}
 		return sid;
 	}
-//	public static Blob jzip( Blob data ) throws Exception {
-//		
-//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//		Util.copyBinaryData(data.getBinaryStream(), new GZIPOutputStream(baos));
-//		byte[] bytes = baos.toByteArray();
-//		baos.close(); // other streams are closed
-//
-////		logger.logException("Unable to compress data blob with GZIP (returning null): ", e);
-//		
-//		// Cast to EmbedConnection as we know Derby supports createBlob() regardless of Java version
-//		Blob blob = ((EmbedConnection) getDefaultDerbyConnection()).createBlob();
-//		blob.setBytes(1, bytes);
-//		
-//		return blob;
-//	}
-//	
-//	public static Blob junzip( Blob data ) throws Exception {
-//
-//		InputStream is = data.getBinaryStream();
-//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//		Util.copyBinaryData(new GZIPInputStream(is), baos);
-//		byte[] bytes = baos.toByteArray();
-//		is.close(); // other streams are closed
-//
-////		logger.logException("Unable to uncompress data blob with GUNZIP (returning null): ", e);
-//
-//		// Cast to EmbedConnection as we know Derby supports createBlob() regardless of Java version
-//		Blob blob = ((EmbedConnection) getDefaultDerbyConnection()).createBlob();
-//		blob.setBytes(1, bytes);
-//		
-//		return blob;
-//	}
+	
+	public static Blob jzip( Blob data ) throws Exception {
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		Util.copyBinaryData(data.getBinaryStream(), new GZIPOutputStream(baos));
+		byte[] bytes = baos.toByteArray();
+		baos.close(); // other streams are closed
+
+//		logger.logException("Unable to compress data blob with GZIP (returning null): ", e);
+		
+		// Cast to EmbedConnection as we know Derby supports createBlob() regardless of Java version
+		Blob blob = ((EmbedConnection) getDefaultDerbyConnection()).createBlob();
+		blob.setBytes(1, bytes);
+		
+		return blob;
+	}
+	
+	public static Blob junzip( Blob data ) throws Exception {
+
+		InputStream is = data.getBinaryStream();
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		Util.copyBinaryData(new GZIPInputStream(is), baos);
+		byte[] bytes = baos.toByteArray();
+		is.close(); // other streams are closed
+
+//		logger.logException("Unable to uncompress data blob with GUNZIP (returning null): ", e);
+
+		// Cast to EmbedConnection as we know Derby supports createBlob() regardless of Java version
+		Blob blob = ((EmbedConnection) getDefaultDerbyConnection()).createBlob();
+		blob.setBytes(1, bytes);
+		
+		return blob;
+	}
 	
 	// Syntax is deployFile('<fromPath>[@node]','[<toDir>@]<node1> <node2>..|*') where nodes may be '*' or a node list, e.g. 'node1 node2 node3' 
 	// Currently supported: deployFile('<fromPath>','[<toDir>@]<node1> <node2>..|*')
@@ -1996,12 +2075,8 @@ public class GaianDBUtilityProcedures extends GaianDBProcedureUtils {
 			File file = new File(path);
 			
 			try {
-				if ( file.isDirectory() )
-					throw new Exception("File is a directory");
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				Util.copyBinaryData(new FileInputStream(file), baos);
-				bytes = baos.toByteArray();
-				baos.close(); // other streams are closed
+				if ( file.isDirectory() ) throw new Exception("File is a directory");
+				bytes = Util.getFileBytes( file );
 			}
 			catch (Exception e) { throw new Exception("Cannot read bytes from '" + file.getName() + "': " + e); }
 			

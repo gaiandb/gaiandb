@@ -302,8 +302,7 @@ public class GaianDBConfig {
 	static final String GAIAN_CONNECTIONS_CHECKER_HEARTBEAT_MS = "GAIAN_CONNECTIONS_CHECKER_HEARTBEAT_MS";
 	private static final int DEFAULT_GAIAN_CONNECTIONS_CHECKER_HEARTBEAT_MS = 5000;
 	public static int getConnectionsCheckerHeartbeat() {
-		return getIntPropertyOrDefault(GAIAN_CONNECTIONS_CHECKER_HEARTBEAT_MS, 
-				DEFAULT_GAIAN_CONNECTIONS_CHECKER_HEARTBEAT_MS);
+		return getIntPropertyOrDefault(GAIAN_CONNECTIONS_CHECKER_HEARTBEAT_MS, DEFAULT_GAIAN_CONNECTIONS_CHECKER_HEARTBEAT_MS);
 	}
 	
 	// DriverManager.setLoginTimeout(timeout_ms) cannot be relied on because not all operating systems support setting 
@@ -353,7 +352,7 @@ public class GaianDBConfig {
 	public static String[][] getAllDefaultProperties() {
 		
 		String defaultInterface = "unresolved";
-		try { defaultInterface = InetAddress.getByName(GaianNodeSeeker.getDefaultLocalIP()).toString(); }
+		try { defaultInterface = Util.stripToSlash( InetAddress.getByName(GaianNodeSeeker.getDefaultLocalIP()).toString() ).trim(); }
 		catch ( Exception e ) {}
 		
 		return new String[][] {
@@ -382,7 +381,7 @@ public class GaianDBConfig {
 				{ ACCESS_HOSTS_PERMITTED, "<all node connections permitted>" },
 				{ ACCESS_HOSTS_DENIED, "<no node connections denied>" },
 				{ MIN_DISCOVERED_CONNECTIONS, "0" },
-				{ MULTICAST_INTERFACES, "<default interface only: "+defaultInterface+">" },
+				{ MULTICAST_INTERFACES, defaultInterface }, // default interface only
 				{ DISCOVERY_GATEWAYS, "<no gateways for discovery to other subnets>" },
 				{ DEFINED_GAIAN_CONNECTIONS, "<no hard-wired gaian connections>" },
 				{ MSGBROKER_HOST, "<message storing disabled>" },
@@ -597,7 +596,7 @@ public class GaianDBConfig {
 		if ( doLog ) logger.logInfo("Got property: " + fullProp + " = " + val);
 		return val;
 	}
-		
+	
 //	public static synchronized boolean addNewNode( 
 //			String connectionDetails, String table, String vtiArgs, String options, String[] columnNameMappings) {
 //	}
@@ -606,8 +605,27 @@ public class GaianDBConfig {
 //			String connectionDetails, String[] columnNameMappings) {
 //	}
 	
+	public static String getPolicyClassNameForSQLResultFilter() {
+		return getUserProperty(SQL_RESULT_FILTER);
+	}
+	
+	private static String lastLoadedPolicyClass = null;
+	public static void initialisePolicyClasses() {
+		final String className = getPolicyClassNameForSQLResultFilter();
+		
+		// return if policy is disabled or if it has already been initialized.
+		if ( null == className ) { lastLoadedPolicyClass = null; return; }
+		if ( className.equals(lastLoadedPolicyClass) ) return;
+		
+		System.out.println("Loading policy class: " + className);
+		
+		// GaianDBConfig.class.getClassLoader().loadClass( className ); // not as effective as Class.forName() used below
+		try { Class.forName(className, true, GaianDBConfig.class.getClassLoader() ); lastLoadedPolicyClass = className; }
+		catch ( Exception e ) { logger.logWarning(GDBMessages.CONFIG_SQL_RESULT_FILTER_ERROR, "Cannot initialise class: "+className+", cause: " + e); }
+	}
+	
 	public static SQLResultFilter getSQLResultFilter() {
-		final String className = getUserProperty(SQL_RESULT_FILTER);
+		final String className = getPolicyClassNameForSQLResultFilter();
 		if ( null != className)
 			try { return (SQLResultFilter) GaianNode.getClassUsingGaianClassLoader(className).newInstance(); }
 			catch ( Exception e ) { logger.logWarning(GDBMessages.CONFIG_SQL_RESULT_FILTER_ERROR, "Cannot load class: "+className+", cause: " + e); }

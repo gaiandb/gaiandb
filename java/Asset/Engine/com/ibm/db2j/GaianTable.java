@@ -550,7 +550,7 @@ public class GaianTable extends AbstractVTI implements VTICosting, IQualifyable,
 						if ( null != value ) {
 							// Validate key and extract assigned value
 							String key = parmName.toUpperCase();
-							System.out.println("Getting param for key: " + key);
+							logger.logThreadInfo("Getting param for key: " + key);
 							if ( key.endsWith( VTIBasic.EXEC_ARG_CUSTOM_VTI_ARGS ) ) { queryDetails.put( key, value ); continue; }
 							else if ( key.equalsIgnoreCase( ORIGINATING_CLUSTER_IDS ) )
 								{ queryDetails.put( ORIGINATING_CLUSTER_IDS, 2 > value.length() ? "" : /* remove wrapping brackets => */ value.substring(1, value.length()-1) ); continue; }
@@ -1301,6 +1301,8 @@ public class GaianTable extends AbstractVTI implements VTICosting, IQualifyable,
 				String[] dsInstanceIDs = false == dsWrapper.isPluralized() ? new String[] {null} :
 						((Stack<String>) queryDetails.get(PLURALIZED_INSTANCES_PREFIX_TAG + dsNodeName)).toArray( new String[0] );
 				
+				boolean isAtLeastOneDSInstanceAllowed = false;
+				
 				for ( String dsInstanceID : dsInstanceIDs ) {
 					
 					String dsDescription = dsWrapper.getSourceDescription( dsInstanceID );
@@ -1313,11 +1315,12 @@ public class GaianTable extends AbstractVTI implements VTICosting, IQualifyable,
 						logInfo("Policy excludes data source " + dsNodeName + ": " + dsDescription);
 						continue;
 					}
+					isAtLeastOneDSInstanceAllowed = true;
 					logInfo("Policy data source extraction limit for " + dsNodeName + ": " + dsDescription + ": " +
 							(0>maxRowsToExtract ? "unlimited" : maxRowsToExtract + " rows") );
 					policyOnMaxDataSourceRows.put(dsNodeName + ':' + dsInstanceID, maxRowsToExtract);
 				}
-				prunedResult.add(dsWrapper);
+				if ( isAtLeastOneDSInstanceAllowed ) prunedResult.add(dsWrapper);
 			}
 			dsWrappers = prunedResult.toArray( new VTIWrapper[0] );
 		}

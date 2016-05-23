@@ -208,10 +208,14 @@ public class GaianDBProcedureUtils extends GaianDBConfig {
 //		return getResultSetFromQueryAgainstDefaultConnection( sb.toString() );
 //	}
 	
+	
+//	public static byte[] readFileBytes( File file ) is equivalent to: 		Util.getFileBytes(file);
+//	public static void writeBytesToFile( byte[] bytes, File file ) is just: Util.copyBinaryData(new ByteArrayInputStream(bytes), new FileOutputStream(file));
+	
 	public static byte[] readAndZipFileBytes( File file ) throws Exception {	
 		try {
-			if ( file.isDirectory() )
-				throw new Exception("File is a directory");
+			if ( file.isDirectory() ) throw new Exception("File is a directory");
+			
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			Util.copyBinaryData(new FileInputStream(file), new GZIPOutputStream(baos));
 			byte[] bytes = baos.toByteArray();

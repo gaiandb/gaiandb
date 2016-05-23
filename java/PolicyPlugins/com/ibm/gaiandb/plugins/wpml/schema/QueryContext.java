@@ -30,21 +30,26 @@ public class QueryContext {
 	String affiliation = null;
 	String securityClearance = null;
 	
+	// Local node properties - can be useful in shared policy situations - so that each policy can have a notion of ownership/perspective
+	// e.g. "Allow US assets to send classified data to Kish", rather than just: "Allow Kish to receive classified queries"
+	String localAffiliation = null;
+
 	public QueryContext() {
-		this("", "", "", "", "", null, null);
+		this(null, null, null, null, null, null, null, null);
 	}
 	
 	public String toString() {
 		return "Logical Table: " + check(logicalTable) + ", user: " + check(requestor)
 				+ ", affiliation: " + check(affiliation) + ", clearance: " + check(securityClearance)
-				+ ", forwardingPath: " + check(forwardingPath) + ", accessClustersAtOriginNode: " + check(accessClustersAtOriginNode);
+				+ ", forwardingPath: " + check(forwardingPath) + ", accessClustersAtOriginNode: " + check(accessClustersAtOriginNode)
+				+ ", localAffiliation: " + check(localAffiliation);
 	}
 
 	private String check( String a ) { return null == a || 0 == a.length() ? "<undefined>" : a; }
 	private String check( List<String> a ) { return null == a || 0 == a.size() ? "<undefined>" : a.toString(); }
 	
 	public QueryContext(String user, String affiliation, String securityClearance, String logicalTable, String forwardingNode,
-			List<String> forwardingPath, List<String> accessClustersAtOriginNode) {
+			List<String> forwardingPath, List<String> accessClustersAtOriginNode, String localAffiliation) {
 		this.requestor = user;
 		this.affiliation = affiliation;
 		this.securityClearance = securityClearance;
@@ -52,11 +57,20 @@ public class QueryContext {
 		this.forwardingNode = forwardingNode;
 		this.forwardingPath = forwardingPath;
 		this.accessClustersAtOriginNode = accessClustersAtOriginNode;
+		this.localAffiliation = localAffiliation;
 	}
 	
 //	public QueryContext(String user) {
 //		this(user, "", "", "");
 //	}
+	
+	public String getLocalAffiliation() {
+		return localAffiliation;
+	}
+
+	public void setLocalAffiliation(String localAffiliation) {
+		this.localAffiliation = localAffiliation;
+	}
 	
 	public String getRequestor() {	
 		return (requestor == null ? "" : requestor);

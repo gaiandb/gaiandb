@@ -7,21 +7,20 @@
 
 package com.ibm.gaiandb.plugins.wpml;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.zip.GZIPOutputStream;
 
 import org.apache.derby.iapi.error.StandardException;
 import org.apache.derby.iapi.types.DataValueDescriptor;
 
+import com.ibm.gaiandb.GaianDBConfig;
+import com.ibm.gaiandb.GaianDBProcedureUtils;
+import com.ibm.gaiandb.GaianResultSetMetaData;
 import com.ibm.gaiandb.Logger;
 import com.ibm.gaiandb.Util;
 import com.ibm.gaiandb.plugins.wpml.schema.AccessLogger;
@@ -106,7 +105,6 @@ public class GenericPolicyPluginForWPML extends SQLResultFilterX {
 
 	private static IObjectPEP pep = null;
 	private static Object pepLock = new Object();
-	private static AtomicBoolean isInitialised = new AtomicBoolean(false);
 	
 	/**
 	 * Allocate the object pep. Allow subclasses to override.
@@ -192,19 +190,45 @@ public class GenericPolicyPluginForWPML extends SQLResultFilterX {
 //		return oa;
 //	}
 	
+	// Global policy watch-dog thread: Periodically refresh policy cache + monitor policy status and notify UI with any changes.
+	static {
+//		synchronized( pepLock ) { if ( null != pep ) return; }
+		
+		System.out.println("Starting policy watchdog");
+		
+		new Thread( new Runnable() {
+			public void run() {
+				ArrayList<Object> oa = new ArrayList<Object>();
+				QueryContext qc = new QueryContext();
+				oa.add(qc);
+				
+				AccessLogger al = new AccessLogger();
+				IRow ir = null;
+				try { ir = new Row(new GaianResultSetMetaData(), new int[0]); }
+				catch (Exception e1) { e1.printStackTrace(); }
+				
+				while( GenericPolicyPluginForWPML.class.getName().equals( GaianDBConfig.getPolicyClassNameForSQLResultFilter() ) ) {
+
+					refreshPolicyCache();
+					try { Thread.sleep(2000); } catch (InterruptedException e) {}
+					notifyWebDemoWithStatusOnAffiliationAndPolicyChoices(oa, qc, al, ir);
+					try { Thread.sleep(2000); } catch (InterruptedException e) {}
+					notifyWebDemoWithStatusOnAffiliationAndPolicyChoices(oa, qc, al, ir);
+				}
+			}
+		}, "Policy refresher watch-dog for " + GenericPolicyPluginForWPML.class.getSimpleName()).start();
+	}
+	
+	private static String getLocalAffiliation() {
+		final int dashIdx = GaianDBConfig.getAccessClusters().trim().indexOf('-');
+		String aff = -1 < dashIdx ? GaianDBConfig.getAccessClusters().trim().substring(0, dashIdx) : "None";
+		return aff.equals("KISH") ? "Kish" : aff;
+	}
+	
 	// In future for a more extensible base policy class, pass in the query context type (i.e. the object model)
 	public GenericPolicyPluginForWPML() {
 		queryContext = new QueryContext();
-		
-		if ( isInitialised.compareAndSet(false, true) ) {
-	//		synchronized( pepLock ) { if ( null != pep ) return; }
-			refreshPolicyCache();
-			new Thread( new Runnable() {
-				public void run() {
-					while( true ) { try { Thread.sleep(5000); } catch (InterruptedException e) {} refreshPolicyCache(); }
-				}
-			}, "PEP refresher for " + this.getClass().getSimpleName()).start();
-		}
+		queryContext.setLocalAffiliation( getLocalAffiliation() );
 	}
 	
 	public boolean setForwardingNode( String forwardingNode ) {
@@ -218,7 +242,8 @@ public class GenericPolicyPluginForWPML extends SQLResultFilterX {
 
 	public boolean setUserCredentials(String credentialsStringBlock) {
 		
-		if ( 0 > queryContext.getLogicalTable().toLowerCase().indexOf("getfilebz") )
+		// Only file-retrieving queries are checked to see if requester is allowed.
+		if ( false == queryContext.getLogicalTable().startsWith( IDENTIFYING_PREFIX_FOR_FILE_RETRIEVING_SUBQUERY_CALLBACK ) )
 			return true;
 		
 //		if ( null == credentialsStringBlock ) {
@@ -249,6 +274,9 @@ public class GenericPolicyPluginForWPML extends SQLResultFilterX {
 		queryContext.setAffiliation(affiliation);
 		queryContext.setSecurityClearance(clearance);
 		
+		// always allow queries from nodes of the same affiliation
+		if ( queryContext.getAffiliation().equals( queryContext.getLocalAffiliation() ) ) return true;
+		
 		if ( null == pep ) return true;
 		
 		try {
@@ -261,6 +289,10 @@ public class GenericPolicyPluginForWPML extends SQLResultFilterX {
 			 */
 			final boolean decision = evaluatePEP(oa); // 1 == 1 ? true : evaluatePEP(oa);
 //			System.out.println("Evaluated policy for setAuthenticatedUserCredentials: " + Arrays.asList(oa) + ", decision: " + decision);
+			
+			String aff = affiliation.toLowerCase(); if ( "us".equals(aff) ) aff = "usa"; // convert affiliation string to match UI spec
+			webDemoEvent("policy-update", "{'affiliation':'"+aff+"','allowed':"+decision+"}", "", "");
+			
 			return decision;
 		} catch (PMLException e) {
 			System.err.println("PFG: setLogicalTable: policy evaluation error");
@@ -325,6 +357,14 @@ public class GenericPolicyPluginForWPML extends SQLResultFilterX {
 	 */
 	public int nextQueriedDataSource(String dataSource, int[] columnMappings) {
 		
+		// TODO: Make 'Allow' policy be evaluated here: This will require us to keep a cache of the known affiliations of connected nodes
+		// established at discovery time - we can maintain this in GaianDBConfig.java - then we can look up an affiliation for a given nodeid.
+		
+		// TODO: ? Issue with policy on data source being applied in precedence to predicate for targeting a node.
+		
+		// We don't evaluate data source policies in this demo
+		if ( 1 == 1) return -1;
+		
 		if ( !isLogicalTableRestricted ) return -1;
 		
 //		System.out.println("authenticated user: " + user + ", datasource: " + dataSource);
@@ -363,13 +403,10 @@ public class GenericPolicyPluginForWPML extends SQLResultFilterX {
 		}
 		
 		return 0; // don't allow any rows to be extracted
-	}	
-
-	public static final String DIR_POLICY_SCRIPTS = "/home/fhe/capstone-fhe-demo/capstone-demo-client/scripts";
-//	public static final String DIR_POLICY_SCRIPTS = "/code/capstone-fhe-demo/capstone-demo-client/scripts";
+	}
 	
-	private static boolean policyDecisionForUK = true; // initial state of UI = plain text
-	private static boolean policyDecisionForKish = false; // initial state of UI = cypher text
+	private static final String IDENTIFYING_PREFIX_FOR_FHE_SEARCH_SUBQUERY = "select FHE_SEARCH('"+GaianDBConfig.getGaianNodeID();
+	private static final String IDENTIFYING_PREFIX_FOR_FILE_RETRIEVING_SUBQUERY_CALLBACK = "select 0 isEncrypted, getFileBZ("; // "from new com.ibm.db2j.GaianQuery('select 0 isEncrypted, getFileBZ(";
 	
 	public static final String WEB_UI_UPDATE_LOCK = "WEB_UI_UPDATE_LOCK";
 	
@@ -403,11 +440,41 @@ public class GenericPolicyPluginForWPML extends SQLResultFilterX {
 		if ( null == pep ) return true;
 		
 		final String ltExpression = queryContext.getLogicalTable();
-//		System.out.println("ltExpression " + ltExpression);
-		int idx = ltExpression.toLowerCase().indexOf("getfilebz");
+
+		final String fNode = queryContext.getForwardingNode();
+		System.out.println("forwardingNode: " + fNode + ", ltExpression: " + ltExpression);
 		
-		if ( null != ltExpression && -1 < idx )			
-			System.out.println("==================================================================> BEGIN INVOKING POLICY FOR A GETFILEBZ() QUERY");
+		if ( null == ltExpression ) return true;
+		
+		if ( ltExpression.startsWith( IDENTIFYING_PREFIX_FOR_FHE_SEARCH_SUBQUERY ) && (null == fNode || 1 > fNode.length()) ) {
+
+			try {
+				final String fromNode = row[1].getString();
+				
+				// TODO: remove this condition if/when aborting queries earlier in nextQueriedDataSource()
+				if ( row[0].isNull() ) {
+					System.out.println("Result blob from node '" + fromNode + "' is Null - rejecting row");
+					return false; // discard this empty result - the endpoint node was maybe not allowed to receive the query
+				}
+				
+				// returningAnalyticResult - end
+				webDemoEventReceivingData( fromNode, "", "result", "end", "" );
+			}
+			catch (StandardException e) {
+				System.out.println("Unable to get provenance nodeID (=row[1]) from outer FHE query result - cannot notify UI");
+				e.printStackTrace();
+			}
+		}
+
+//		int idx = ltExpression.indexOf( IDENTIFYING_FRAGMENT_FOR_FILE_RETRIEVING_QUERY );
+//		if ( -1 < idx )	System.out.println("==================================================================> BEGIN INVOKING POLICY FOR A GETFILEBZ() QUERY");
+		
+		// Only apply record modifying policies to queries requesting files (e.g. call-back queries for the outer FHE one)
+		if ( false == ltExpression.startsWith( IDENTIFYING_PREFIX_FOR_FILE_RETRIEVING_SUBQUERY_CALLBACK ) ) return true;
+		
+		// Also only apply policy on records that were generated at our node
+		try { if ( false == GaianDBConfig.getGaianNodeID().equals( row[2].getString() ) ) return true; }
+		catch (StandardException e1) { System.out.println("PFG Unable to check provenance node of data record, cause: " + e1); e1.printStackTrace(); }
 		
 		/*
 		 * Perform a policy-based filtering on the record.
@@ -438,104 +505,206 @@ public class GenericPolicyPluginForWPML extends SQLResultFilterX {
 		// None of the code below should be required for a Generic Plugin for WPML.
 		// The encryption action should be re-factored into WPML resource model.
 		
-		// Detect queries that were trying to access data files on this system
-		if ( null != ltExpression && -1 < idx ) {
-			
-			List<String> affiliationsAtOriginNode = Arrays.asList( Util.splitByCommas( queryContext.getAffiliation() ) ); // queryContext.getAccessClustersAtOriginNode()
-			
-			// TODO: Remove this when WPML is actually making the decisions based on the queryContext and record that came through.
-			// Encrypt file if the requesting node's cluster IDs is NOT one of the TRUSTED_COALLITION_CLUSTER_IDS (i.e. disjunction is empty).
-//			final List<String> TRUSTED_COALLITION_CLUSTER_IDS = Arrays.asList( "Kish", "US" );
-//			decision = false == Collections.disjoint( affiliationsAtOriginNode, TRUSTED_COALLITION_CLUSTER_IDS );
-			
-			System.out.println("==================================================================> END INVOKING POLICY FOR A GETFILEBZ() QUERY");
-			
-			System.out.println("AffiliationsAtOriginNode: " + affiliationsAtOriginNode
-					+ ", previousPolicyDecisionUK: " + policyDecisionForUK + ", previousPolicyDecisionKish: " + policyDecisionForKish
-					+ ", new policy evaluation decision: " + decision);
-			
-			// Also return decision in first column - this indicates whether isEncrypted is true
-			System.out.println("-> Policy does " + (decision?"not ":"") + "require filter/encryption on return value from getFileBZ() function. "
-					+ "Setting row[0] to value: " + (decision ? 0 : 1) ); // decision == false means it's encrypted
-			try { row[0].setValue( decision ? 0 : 1 ); }
-			catch (StandardException e) { System.err.println("Policy.filterRow(): Unable to set 'isEncrypted' column value (exception trace below)."); e.printStackTrace(); }
-			
-			if ( 		affiliationsAtOriginNode.contains("Kish") // && policyDecisionForKish != decision
-					||	affiliationsAtOriginNode.contains("UK") ) { // && policyDecisionForUK != decision )
-				
-				if ( affiliationsAtOriginNode.contains("Kish") ) policyDecisionForKish = decision;
-				if ( affiliationsAtOriginNode.contains("UK") ) policyDecisionForUK = decision;
-				
-				try {
-					Util.runSystemCommand( new String[] { DIR_POLICY_SCRIPTS + "/updatePolicy.sh",
-							policyDecisionForUK ? "plain" : "cypher", policyDecisionForKish ? "plain" : "cypher" }, WEB_UI_UPDATE_LOCK );
-				} catch (IOException e) { System.out.println("Unable to update policy, cause: " + e ); }
-				try { Thread.sleep(1000); } catch (InterruptedException e) { e.printStackTrace(); } // Give time to other exec thread to request their data
-			}
-			
-			try {
-				if ( affiliationsAtOriginNode.contains("Kish") ) {
-					// This is the Kish node - update policy visualisation based on whether the Kish node is trusted or not..
-					// web demo event - tell the UI to show data being sent to this node - NOTE THIS WILL BE PLAIN TXT VISUALISATION IF POLICY WAS CHANGED.
-					Util.runSystemCommand( new String[] { DIR_POLICY_SCRIPTS + "/webDemoEvent.sh",  "91", "'Send Cypher Text'", "start" }, WEB_UI_UPDATE_LOCK  );
-				
-				} else if ( affiliationsAtOriginNode.contains("UK") ) { // This is the UK node
-					// web demo event - tell the UI to show data being sent to this node
-					Util.runSystemCommand( new String[] { DIR_POLICY_SCRIPTS + "/webDemoEvent.sh",  "92", "'Send Plain Text'", "start" }, WEB_UI_UPDATE_LOCK );
-				}
-			} catch (Exception e) {}
-			
-			// TODO: In future re-factor this to WPML, when it can do the policy action itself (i.e. execute the required system call when its decision is false)
-			if ( false == decision ) {
-				
-				// FHE encrypt - encrypt row[1]
-				
-				idx = ltExpression.indexOf("'", idx);
-				final String fPathRequested = ltExpression.substring( idx+1, ltExpression.indexOf("'", idx+1) );
-				final String fPathEncrypted = fPathRequested.substring(0, fPathRequested.length()-3) + "ctxt";
-				System.out.println("File path arg of getfilebz is: " + fPathRequested );
-				System.out.println("File path of pre-encrypted file is: " + fPathEncrypted );
+		final String affiliationAtOriginNode = queryContext.getAffiliation(); // queryContext.getAccessClustersAtOriginNode()
+		
+		// TODO: Remove this when WPML is actually making the decisions based on the queryContext and record that came through.
+		// Encrypt file if the requesting node's cluster IDs is NOT one of the TRUSTED_COALLITION_CLUSTER_IDS (i.e. disjunction is empty).
+//		final List<String> TRUSTED_COALLITION_CLUSTER_IDS = Arrays.asList( "Kish", "US" );
+//		decision = false == Collections.disjoint( affiliationsAtOriginNode, TRUSTED_COALLITION_CLUSTER_IDS );
+		
+//		System.out.println("==================================================================> END INVOKING POLICY FOR A GETFILEBZ() QUERY");
+		
+		System.out.println("AffiliationAtOriginNode: " + affiliationAtOriginNode + ", isTrusted policy decision: " + decision);
 
-				byte[] preEncryptedBytesToSend;
-//				int numbytes0 = 0, numbytes1 = 0;
-				
-//				final String fPath = "suspect.tmp." + System.currentTimeMillis() + "." + System.nanoTime();
-//				final String fPathEncrypted = fPath + ".ctxt";
+		String aff = affiliationAtOriginNode.toLowerCase(); if ( "us".equals(aff) ) aff = "usa"; // convert affiliation string to match UI spec
+		webDemoEvent("policy-update", "{'affiliation':'"+aff+"','trusted':"+decision+"}", "", "");
+
+		int idx = ltExpression.indexOf("'", ltExpression.indexOf("getFileBZ"));
+		String fPath = ltExpression.substring( idx+1, ltExpression.indexOf("'", idx+1) );
+		
+		// TODO: In future re-factor this to WPML, when it can do the policy action itself (i.e. execute the required system call when its decision is false)
+		if ( false == decision ) {
+			
+			// FHE encrypt - Replace file with its encrypted counter-part.
+			
+			final String fPathEncrypted = fPath.substring(0, fPath.length()-3) + "ctxt";
+			System.out.println("Path arg of requested file is: " + fPath );
+			System.out.println("Path of pre-encrypted file is: " + fPathEncrypted );
+
+			try { row[1].setValue( GaianDBProcedureUtils.readAndZipFileBytes( new File(fPathEncrypted) ) ); }
+			catch (Exception e) { logger.logAlways("Policy plugin issue: Cannot load new byte[] from encrypted bytes in file: '" + fPathEncrypted + "': " + e); }
+
+			fPath = fPathEncrypted;
+			
+//			try {
 //				
-//				try {
-//					fileBytes = row[1].getBytes();
-//					numbytes0 = fileBytes.length;
-//					ByteArrayInputStream bis = new ByteArrayInputStream( fileBytes );
-//					FileOutputStream fos = new FileOutputStream( fPath );
-//					
-//					Util.copyBinaryData( bis, fos );
-//					bis.close(); fos.close();
-//				}
-//				catch (Exception e) { logger.logAlways("Policy plugin issue: Cannot write byte[] to local file for encryption: " + fPath + ": " + e); numbytes1 = -1; }
-//
-//				if ( -1 < numbytes1 )
-//				try { Util.runSystemCommand( new String[] { "/home/fhe/FHEservices/capes/demo/alice1.sh", "-e", fPath, fPathEncrypted } ); }
-//				catch (IOException e) { logger.logAlways("Policy plugin issue: FHE encryption primitive failed on file: " + fPath + ": " + e); numbytes1 = -1; }
-				
-//				if ( -1 < numbytes1 )
-				try {
-					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					FileInputStream fis = new FileInputStream(fPathEncrypted);
-					
-					Util.copyBinaryData(fis, new GZIPOutputStream(baos)); // must be zipped (as we unzip on the other side)
-					preEncryptedBytesToSend = baos.toByteArray();
-					
-//					numbytes1 = fileBytes.length;
-					row[1].setValue( preEncryptedBytesToSend );
-					baos.close(); fis.close();
-					
-//					System.out.println("Encrypted row[1] bytes. Initial bytes[] length: " + numbytes0 + ", encrypted bytes[] length: " + numbytes1);
-				}
-				catch (Exception e) { logger.logAlways("Policy plugin issue: Cannot load new byte[] from encrypted bytes in file: '" + fPathEncrypted + "': " + e); }
-			}
+//				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//				FileInputStream fis = new FileInputStream(fPathEncrypted);
+//				
+//				Util.copyBinaryData(fis, new GZIPOutputStream(baos)); // must be zipped (as we unzip on the other side)
+//				byte[] preEncryptedBytesToSend = baos.toByteArray();
+//				
+////				numbytes1 = fileBytes.length;
+//				row[1].setValue( preEncryptedBytesToSend );
+//				baos.close(); fis.close();
+//				
+////				System.out.println("Encrypted row[1] bytes. Initial bytes[] length: " + numbytes0 + ", encrypted bytes[] length: " + numbytes1);
+//			}
+//			catch (Exception e) { logger.logAlways("Policy plugin issue: Cannot load new byte[] from encrypted bytes in file: '" + fPathEncrypted + "': " + e); }
+		
 		}
 		
+		// sendingDataObjectForAnalysis - start
+		webDemoEventSendingData( queryContext.getForwardingPath().get(0), fPath, "query", "start", "" ); // .substring(fPath.lastIndexOf('/')+1)
+		
+		// Also return decision in first column - this indicates whether isEncrypted is true
+		System.out.println("-> Policy does " + (decision?"not ":"") + "require filter/encryption on return value from getFileBZ() function. "
+				+ "Setting row[0] to value: " + (decision ? 0 : 1) ); // decision == false means not trusted, so it's encrypted (isEncrypted (row[0]) status 1)
+		try { row[0].setValue( decision ? 0 : 1 ); }
+		catch (StandardException e) { System.err.println("Policy.filterRow(): Unable to set 'isEncrypted' column value (exception trace below)."); e.printStackTrace(); }
+		
 		return true;
+	}
+	
+	private static final String[] KNOWN_AFFILIATIONS = { "US", "UK", "Kish" };
+
+	private static boolean[] policyAllowedDecisions = { false, false, false }; // respective initial decisions for US/UK/Kish
+	private static boolean[] policyTrustedDecisions = { false, false, false }; // respective initial decisions for US/UK/Kish
+	
+	private static boolean isInitialPoliciesStatusCheck = true;
+	
+	private static final void notifyWebDemoWithStatusOnAffiliationAndPolicyChoices( ArrayList<Object> oa, QueryContext qc, AccessLogger al, IRow ir ) {
+		
+		final int dashIdx = GaianDBConfig.getAccessClusters().trim().indexOf('-');
+		String myAffiliation = -1 < dashIdx ? GaianDBConfig.getAccessClusters().trim().substring(0, dashIdx) : "None";
+		myAffiliation = myAffiliation.toLowerCase(); if ( "us".equals(myAffiliation) ) myAffiliation = "usa"; // convert affiliation string to match UI spec
+		
+		// state our current affiliation 
+		webDemoEvent("declare-existence", "{'affiliation':'"+myAffiliation+"'}", "", "");
+		
+		int i = -1;
+////	for each affiliation: { for policy in (allow, trust): setup structures required; evaluate; } notify of all decisions for each affiliation to the UI
+		for ( String affiliation : KNOWN_AFFILIATIONS ) {
+			i++; // index in affiliation decisions arrays
+			
+			String aff = affiliation.toLowerCase(); if ( "us".equals(aff) ) aff = "usa"; // convert affiliation string to match UI spec
+			if ( myAffiliation.equals(aff) ) continue; // ignore policies about our own affiliation
+			
+			qc.setAffiliation(affiliation);
+			qc.setLocalAffiliation(getLocalAffiliation()); // local affiliation may change any time based on node setup
+			
+			boolean isAllowed = false, isTrusted = false;
+			try {
+//				System.out.println("queryContext.getLocalAffiliation(): " + queryContext.getLocalAffiliation() 
+//						+ ", queryContext.getAffiliation(): " + queryContext.getAffiliation() );
+				oa.add(al);
+				isAllowed = evaluatePEP(oa); // 1 == 1 ? true : evaluatePEP(oa);
+				oa.remove(al);
+//				System.out.println("Evaluated policy for setAuthenticatedUserCredentials: " + Arrays.asList(oa) + ", decision: " + decision);
+			} catch (Exception e) {
+				System.err.println("Exception in notifyWebDemoWithPolicyStatus(), evaluating isAllowed() for affiliation: " + affiliation + ", cause: " + e);
+				e.printStackTrace();
+			}
+			try {
+				oa.add(ir);
+				isTrusted = evaluatePEP(oa); // 1 == 1 ? decision : evaluatePEP(oa);
+				oa.remove(ir);
+//				System.out.println("Evaluation for row filter " + Arrays.asList(oa) + ", decision: " + decision);
+			} catch (Exception e) {
+				System.err.println("Exception in notifyWebDemoWithPolicyStatus(), evaluating isTrusted() for affiliation: " + affiliation + ", cause: " + e);
+				e.printStackTrace();
+			}
+
+			if ( isInitialPoliciesStatusCheck || isAllowed != policyAllowedDecisions[i] || isTrusted != policyTrustedDecisions[i] ) {
+				webDemoEvent("policy-update", "{'affiliation':'"+aff+"','allowed':"+isAllowed+",'trusted':"+isTrusted+"}", "", "");
+				policyAllowedDecisions[i] = isAllowed;
+				policyTrustedDecisions[i] = isTrusted;
+			}
+		}
+
+		isInitialPoliciesStatusCheck = false;
+	}
+	
+	/**
+	 * Emit demo event info to a Web UI to display what is going on.
+	 * 
+	 * @param nodeID - the node for who the event is emitted. A node may emit an event on behalf of another node.
+	 * @param eventID - identifies the event that just occurred in the demo scenario.
+	 * @param eventDataJSON - holds data elements relating to the event and needed to describe it.
+	 * @param status - start or end. May also be an empty string if the event is immediate.
+	 * @param msg - optional message to describe the event in the UI console.
+	 */
+	private static final void webDemoEvent( final String nodeID, final String eventID, final String eventDataJSON, final String status, final String msg ) {
+
+		String sysCmd = System.getenv("WEB_DEMO_EVENT_CMD");
+		
+//		final String webDemoEventURL = System.getenv("WEB_DEMO_EVENT_URL");
+		
+		if ( null == sysCmd ) {
+			if ( false == eventID.equals("declare-existence") )
+				System.out.println("Unable to notify Web UI (eventID: " + eventID + ", from node: "
+					+ nodeID + "): Environment variable 'WEB_DEMO_EVENT_CMD' is not set");
+			return;
+		}
+		
+//		final String[] sysCmd = new String[] {
+//				"curl", "-H", "\"Content-Type: application/json\"", "-X", "POST", "-d",
+//				"\"{'nodeid':'"+nodeID+"', 'eventid':'"+eventID+"', 'eventdata':"+eventDataJSON+", 'status':'"+status+"', 'timestamp':"+System.currentTimeMillis()+", 'message':'"+msg+"'}\"",
+//				webDemoEventURL
+//		};
+		
+		String json = ("{'nodeid':'"+nodeID+"', 'eventid':'"+eventID+"', 'eventdata':"+eventDataJSON
+						+", 'status':'"+status+"', 'timestamp':"+System.currentTimeMillis()+", 'message':'"+msg+"'}").replace('\'', '"');
+		
+		sysCmd = sysCmd.replaceFirst("<JSON>", "'"+json+"'");
+		
+//		System.out.println("sysCmd: " + sysCmd);
+		
+		final String[] cmdElmts = Util.splitByTrimmedDelimiterNonNestedInCurvedBracketsOrQuotes( sysCmd, ' ');
+		
+		// Remove wrapping quotes that may exist around tokens
+		for ( int i=0; i<cmdElmts.length; i++ ) {
+			String e = cmdElmts[i];
+			char c = e.charAt(0);
+			if ( '\'' == c || '"' == c )
+				cmdElmts[i] = e.substring(1,e.length()-1);
+		}
+		
+		if ( false == eventID.equals("declare-existence") ) {
+			StringBuilder sb = new StringBuilder();
+			for ( String s : cmdElmts ) sb.append(s + " ");
+			System.out.println( sb );
+		}
+		
+		try { Util.runSystemCommand( cmdElmts, WEB_UI_UPDATE_LOCK, Logger.logLevel > Logger.LOG_LESS ); }
+		catch (IOException e) {
+			System.out.print("Exception in webDemoEvent. nodeID: " + nodeID + ", eventID: " + eventID + ", cause: " + e);
+			e.printStackTrace();
+		}
+	}
+	
+	public static final void webDemoEvent( final String eventID, final String eventDataJSON, final String status, final String msg ) {
+		webDemoEvent( GaianDBConfig.getGaianNodeID(), eventID, eventDataJSON, status, msg );
+	}
+	
+	public static final void webDemoEventSendingData( final String toNodeID, final String fileName, final String protocolStep,
+			final String status, final String msg ) {
+		final String localNodeID = GaianDBConfig.getGaianNodeID();
+		webDemoEvent("sending-data", "{'src':'"+localNodeID+"','dest':'"+toNodeID+"','imageurl':'"+fileName
+				+"','protocol-step':'"+protocolStep+"'}", status, msg);
+		// emit reciprocal event on behalf of the receiving node
+		webDemoEvent(toNodeID, "receiving-data", "{'src':'"+localNodeID+"','dest':'"+toNodeID+"','imageurl':'"+fileName
+				+"','protocol-step':'"+protocolStep+"'}", status, msg);
+	}
+	
+	public static final void webDemoEventReceivingData( final String fromNodeID, final String fileName, final String protocolStep,
+			final String status, final String msg ) {
+		final String localNodeID = GaianDBConfig.getGaianNodeID();
+		webDemoEvent("receiving-data", "{'src':'"+fromNodeID+"','dest':'"+localNodeID+"','imageurl':'"+fileName
+				+"','protocol-step':'"+protocolStep+"'}", status, msg);
+		// emit reciprocal event on behalf of the sending node
+		webDemoEvent(fromNodeID, "sending-data", "{'src':'"+fromNodeID+"','dest':'"+localNodeID+"','imageurl':'"+fileName
+				+"','protocol-step':'"+protocolStep+"'}", status, msg);
 	}
 	
 	/* (non-Javadoc)
@@ -555,8 +724,26 @@ public class GenericPolicyPluginForWPML extends SQLResultFilterX {
 
 	@Override
 	public DataValueDescriptor[][] filterRowsBatch(String dataSourceID, DataValueDescriptor[][] rows) {
-		for ( DataValueDescriptor[] row : rows ) filterRow(row);
-		return rows;
+		List<DataValueDescriptor[]> newRows = null;
+		int rowIdx=0;
+		
+		// filter through rows[][] - if none are rejected then we'll just return the same array.
+		for ( ; rowIdx < rows.length; rowIdx++ )
+			if ( filterRow(rows[rowIdx]) ) continue;
+			else {
+				newRows = new ArrayList<DataValueDescriptor[]>();
+				for ( int i=0; i<rowIdx; i++ ) newRows.add( rows[i] );
+				rowIdx++;
+				break;
+			}
+		
+		// complete filtering rows[][] - this only applies if one of the rows was rejected
+		for ( ; rowIdx < rows.length; rowIdx++ ) {
+			DataValueDescriptor[] row = rows[rowIdx];
+			if ( filterRow(row) ) newRows.add( row );
+		}
+		
+		return null == newRows ? rows : (DataValueDescriptor[][]) newRows.toArray( new DataValueDescriptor[0][] );
 	}
 
 	@Override
@@ -570,6 +757,7 @@ public class GenericPolicyPluginForWPML extends SQLResultFilterX {
 		return -1;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected Object executeOperationImpl(String opID, Object... args) {
 		// TODO: Obtain authenticated derby user + forwarding path + access cluster ids of query's entry-point node.
@@ -581,8 +769,10 @@ public class GenericPolicyPluginForWPML extends SQLResultFilterX {
 			queryContext.setRequestor( (String) args[0] );
 		else if ( opID.equals(SQLResultFilterX.OP_ID_SET_ACCESS_CLUSTERS_RETURN_IS_QUERY_ALLOWED) )
 			queryContext.setAccessClustersAtOriginNode( (List<String>) args[0] );
-		else if ( opID.equals(SQLResultFilterX.OP_ID_SET_FORWARDING_PATH_RETURN_IS_QUERY_ALLOWED) )
+		else if ( opID.equals(SQLResultFilterX.OP_ID_SET_FORWARDING_PATH_RETURN_IS_QUERY_ALLOWED) ) {
 			queryContext.setForwardingPath( (List<String>)  args[0] );
+			System.out.println("Set forwarding path: " + Arrays.asList( queryContext.getForwardingPath() ) );
+		}
 		else return null; // Not recognized - not a piece of info we can use - just ignore
 		
 		// Don't evaluate PEP here - we build queryContext to evaluate it once for the whole query state. (then once per data source and once per row returned)

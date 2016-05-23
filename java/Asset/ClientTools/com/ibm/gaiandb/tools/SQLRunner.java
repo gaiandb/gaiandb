@@ -8,7 +8,10 @@
 package com.ibm.gaiandb.tools;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -106,17 +109,18 @@ public class SQLRunner {
 	protected String USAGE;
 	
 	protected static final String BASE_ARGS = "[-h <host>] [-d <database>] [-p <port>] [-usr <usr>] [-pwd <pwd>] "
-		+ "[-td[<delimiter>]] [-t] [-tab] [-csv] [-raw] [-quiet] [-showtimes] [-repeat <count>] [-batchprefix <sql fragment>]";
+		+ "[-td[<delimiter>]] [-t] [-tab] [-csv] [-raw] [-quiet] [-showtimes] [-repeat <count>] [-batchprefix <sql fragment>] [-exportlobs <destination folder path>]";
 	protected static final String COMMON_USAGE =
-			"\n-td[delimiter]: Toggle SQL statement delimiter char. If '-td' has no appended character, the delimiter becomes '\\n'" +
-			"\n-t:  This sets the SQL delimiter to ';'. This shortcut for '-td;' avoids interfeering with shell interpretation of semi-colon" +
-    		"\n-tab: Output results in default table format which is with table headings and vertical line separators" +
-    		"\n-csv: Output results in csv format" +
-    		"\n-raw: Output results as raw data, space-separated format (no info or headers)" +
-    		"\n-quiet: No output to stdout (except if the -repeat option is also used, in which case just the cumulated results are displayed)" +
-    		"\n-repeat <count>: Specify a number of times the query should be re-issued, cumulated results are displayed." +
-    		"\n-showtimes: Show a cummulative summary of performance metrics (only useful with -repeat)." +
-			"\n-batchprefix <sql fragment>: Specify a SQL fragment to insert as prefix to every SQL statement"
+			"\n-td[delimiter]: Toggle SQL statement delimiter char. If '-td' has no appended character, the delimiter becomes '\\n'"
+		+	"\n-t:  This sets the SQL delimiter to ';'. This shortcut for '-td;' avoids interfeering with shell interpretation of semi-colon"
+    	+	"\n-tab: Output results in default table format which is with table headings and vertical line separators"
+    	+	"\n-csv: Output results in csv format"
+    	+	"\n-raw: Output results as raw data, space-separated format (no info or headers)"
+    	+	"\n-quiet: No output to stdout (except if the -repeat option is also used, in which case just the cumulated results are displayed)"
+    	+	"\n-repeat <count>: Specify a number of times the query should be re-issued, cumulated results are displayed."
+    	+	"\n-showtimes: Show a cummulative summary of performance metrics (only useful with -repeat)"
+		+	"\n-batchprefix <sql fragment>: Specify a SQL fragment to insert as prefix to every SQL statement"
+		+	"\n-exportlobs <destination folder path>: Export first LOB from each row to a separate file 'lob<n>' at destination path. If column 1 is a String, it is used as the destination file name"
     		;
 	
 	protected boolean csv=false, raw=false, quiet=false;
@@ -125,6 +129,8 @@ public class SQLRunner {
 	private boolean isDelimiterSet = false;
 	private boolean isDefaultBackwardCompatibilityMode = true; // false removes special meaning for '\', '#' and empty lines in statements 
     
+	private String exportPath = null;
+	
 	public SQLRunner( Connection c ) { this(null, null, null, -1, null); instanceConn = c; url = "nonNullDummyString"; }
 	
 	protected SQLRunner( String defUsr, String defPwd, String defHost, int defPort, String defDb ) {
@@ -181,7 +187,7 @@ public class SQLRunner {
     public int processResultSet(ResultSet rs) throws Exception
     {
         int nbrows=0;
-    	if ( quiet ) {
+    	if ( quiet && null == exportPath ) {
     		while ( rs.next() ) nbrows++;
     		return nbrows;
     	}
@@ -223,6 +229,7 @@ public class SQLRunner {
 //        if ( true ) return 1;
         
         while (rs.next()) {
+        	nbrows++;
         	
 //    		if ( dev ) {
 //    			printStream.println("[fetched 1 row [press return to continue]> ");
@@ -231,12 +238,16 @@ public class SQLRunner {
         	
         	StringBuilder Datarow=new StringBuilder("");
             int numCols = rsmd.getColumnCount();
+            String previousColValue = null;
             
-            if ( 1 == numCols && raw ) Datarow.append( rs.getString(1) ); // no formatting required if just 1 column in raw mode...
+            if ( 1 == numCols && raw ) Datarow.append( getRsColumnAsStringOrExport( rs, 1, formatting[1], "lob"+nbrows ) ); // no formatting required if just 1 column in raw mode...
             else
 	            for ( int i=1; i <= numCols; i++ ) {
+	            
+	            	String colvalue = getRsColumnAsStringOrExport( rs, i, formatting[i], previousColValue );
+	            	previousColValue = colvalue;
+	            	if ( quiet ) continue;
 	            	
-	            	String colvalue = rs.getString(i);
 //	            	String colvalue = null;
 //	            	Object o = rs.getObject(i);
 //	            	printStream.println("Object retrieved is of type: " + o.getClass().getName());
@@ -254,10 +265,10 @@ public class SQLRunner {
 	                switch (formatting[i])
 	                {
 	                //right formatting
-	                case -5:
-	                case 5:
-	                case 4:
-	                case 3: Datarow.append(pad(lg[i]- colvalue.length()+1,' ')+colvalue+ColDel);                       
+	                case Types.BIGINT:
+	                case Types.SMALLINT:
+	                case Types.INTEGER:
+	                case Types.DECIMAL: Datarow.append(pad(lg[i]- colvalue.length()+1,' ')+colvalue+ColDel);                       
 	                        break;
 	                
 	                //left formatting
@@ -268,7 +279,6 @@ public class SQLRunner {
 	            }
             
             if (!quiet) printStream.println(Datarow);
-            nbrows++;
         }//endwhile         
         
         printInfo( csv ? "" : delimiter);
@@ -285,6 +295,20 @@ public class SQLRunner {
 		if ( 0 < warnings.size() ) printInfo("ResultSet Warnings: " + warnings);
 		
         return nbrows;
+    }
+    
+    private String getRsColumnAsStringOrExport( final ResultSet rs, int i, int colType, final String previousColValue ) throws Exception {
+    	
+    	if ( null == exportPath || ( Types.BLOB != colType && Types.CLOB != colType ) ) return rs.getString(i);
+    	
+    	// Extract the blob into a file - replace column value with <exported>
+    	byte[] bytes = rs.getBytes(i);
+    	if ( null == bytes ) return null; // no result for this node
+    	
+    	File exportFile = new File(exportPath+"/"+previousColValue.replaceAll(":", "")); // Colons from nodeIDs are not valid in filenames
+		try { Util.copyBinaryData(new ByteArrayInputStream( bytes ), new FileOutputStream( exportFile )); }
+		catch (Exception e) { throw new Exception("Unable to export LOB bytes[] to file " + exportFile.getPath() + ": " + e); }
+		return "<exported as "+exportFile.getCanonicalPath()+">";
     }
         
     /**
@@ -329,7 +353,7 @@ public class SQLRunner {
 					// There must be a value for this argument
 					if ( i == args.length-1 ) syntaxError("Unexpected argument or missing value for argument: " + arg);
 					
-					String val = args[++i];
+					final String val = args[++i];
 					
 					if ( "-p".equals( arg ) ) {
 //						if ( /*mPort != -1 ||*/ standalone ) syntaxError("Option '-p' is incompatible with '-standalone'"); //can only be specifed once and 
@@ -355,6 +379,9 @@ public class SQLRunner {
 					else if ( "-d".equals( arg ) ) { mDatabase = val; url = null; }
 					else if ( "-batchprefix".equals( arg ) ) { batchPrefix = val; } 
 					else if ( "-repeat".equals( arg ) ) { repeat = Integer.parseInt( val ); }
+					// "-exportlobs /x/y/z"		=> export each LOB to file path: /x/y/z/lob<n> OR /x/y/z/<previous col value>
+					else if ( "-exportlobs".equals( arg ) )
+						if ( !new File(val).isDirectory() ) syntaxError("Path given to -exportlobs option must be an existing directory: " + val); else exportPath = val;
 					else { syntaxError("Unexpected argument: " + arg); }
 				}
 			} catch ( Exception e ) {}
