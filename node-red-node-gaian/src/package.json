@@ -1,0 +1,30 @@
+{
+  "name": "node-red-node-gaian",
+  "version": "0.0.4",
+  "description": "A Node-RED node to read and write to a gaian database using JDBC",
+  "dependencies": {
+    "jdbc": ">= 0.1.0",
+    "mustache": "latest"
+  },
+  "license": "Apache",
+  "keywords": [
+    "node-red",
+    "jdbc",
+    "gaian"
+  ],
+  "node-red": {
+    "nodes": {
+      "gaian": "gaian.js"
+    }
+  },
+  "author": {
+    "name": "Paul Stone",
+    "url": "http://nodered.org"
+  },
+  "readme": "node-red-node-gaian\r\n========================\r\nA <a href=\"http://nodered.org\" target=\"_new\">Node-RED</a> node to read and write to a Gaian database.\r\n\r\nInstall\r\n-------\r\n\r\nRun the following command in the root directory of your Node-RED install\r\n\r\n    npm install node-red-node-gaian\r\n\r\nThe derbyclient.jar file containing the JDBC driver should be copied into <b>{node-red-node-gaian-install-directory}/jars</b>.\r\n\r\nUsage\r\n-----\r\n\r\nAllows basic access to a Gaian database using the JDBC protocol\r\n\r\nThis node uses can query or update the configured database. By it's very nature it allows SQL injection... so <i>be careful out there...</i>\r\n\r\nThe result rows can be sent together as an array or as individual messages.. \r\n\r\nA Server configuration specifies the server, database and credentials to access.",
+  "readmeFilename": "README.md",
+  "_id": "node-red-node-gaian@0.0.4",
+  "_shasum": "9d2789117538727b92b11299e3e43778e7b92e10",
+  "_resolved": "file:..\\NodeRedDBNodes\\gaian\\node-red-node-gaian-0.0.4.tgz",
+  "_from": "..\\NodeRedDBNodes\\gaian\\node-red-node-gaian-0.0.4.tgz"
+}
