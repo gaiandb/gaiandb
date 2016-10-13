@@ -15,7 +15,7 @@
 -->
 
 <!-- The data template for the gaian server configuration node. -->
-<script type="text/x-red" data-template-name="gaian">
+<script type="text/x-red" data-template-name="gaiandb">
     <div class="form-row">
         <label for="node-config-input-hostname"><i class="fa fa-bookmark"></i> Host</label>
         <input class="input-append-left" type="text" id="node-config-input-hostname" placeholder="localhost" style="width: 40%;" >
@@ -42,13 +42,13 @@
 
 <!-- code to display and handle the gaian server configuration node. -->
 <script type="text/javascript">
-    RED.nodes.registerType('gaian', {
+    RED.nodes.registerType('gaiandb', {
         category: 'config',
-        color: "rgb(218, 196, 180)",
+        color: "#d4e8bf",
         defaults: {
             hostname: {value: "127.0.0.1", required: true},
             port: {value: 6414, required: true},
-            db: {value: "gaian", required: true},
+            db: {value: "gaiandb", required: true},
             name: {value: ""}
         },
         credentials: {
@@ -62,10 +62,10 @@
 </script>
 
 <!-- The data template for the gaian out node. -->
-<script type="text/x-red" data-template-name="gaian out">
+<script type="text/x-red" data-template-name="gaiandb out">
     <div class="form-row">
-        <label for="node-input-gaian"><i class="fa fa-bookmark"></i> Server</label>
-        <input type="text" id="node-input-gaian">
+        <label for="node-input-gaiandb"><i class="fa fa-bookmark"></i> Server</label>
+        <input type="text" id="node-input-gaiandb">
     </div>
     <div class="form-row">
         <label for="node-input-logicaltable"><i class="fa fa-briefcase"></i> Logical Table</label>
@@ -88,8 +88,8 @@
 </script>
 
 <!-- help text for the gaian out node. -->
-<script type="text/x-red" data-help-name="gaian out">
-    <p>A simple gaian output node. Can insert, update and remove objects from a chosen logical table.</p>
+<script type="text/x-red" data-help-name="gaiandb out">
+    <p>A simple gaiandb output node. Can insert, update and remove objects from a chosen logical table.</p>
     <p><b>Insert</b> will insert a new object. Storing <code>msg.payload</code>.</p>
     <p><b>Update</b> will modify an existing object or objects. The query to select objects to update uses <code>msg.filter</code> and the update to the element uses <code>msg.payload</code>.</p>
     <p>Update can update multiple objects.</p>
@@ -111,11 +111,11 @@
         });
     }
 
-    RED.nodes.registerType('gaian out', {
+    RED.nodes.registerType('gaiandb out', {
         category: 'storage-output',
-        color: "rgb(218, 196, 180)",
+        color: "#d4e8bf",
         defaults: {
-            gaian: {type: "gaian", required: true},
+            gaiandb: {type: "gaiandb", required: true},
             name: {value: ""},
             logicaltable: {value: ""},
             operation: {value: "insert"}
@@ -125,8 +125,8 @@
         icon: "db.png",
         align: "right",
         label: function() {
-            var gaianNode = RED.nodes.node(this.gaian);
-            return this.name || (gaianNode ? gaianNode.label() + " " + this.logicaltable: "gaian");
+            var gaianNode = RED.nodes.node(this.gaiandb);
+            return this.name || (gaianNode ? gaianNode.label() + " " + this.logicaltable: "gaiandb");
         },
         labelStyle: function() {
             return this.name ? "node_label_italic" : "";
@@ -136,10 +136,10 @@
 </script>
 
 <!-- The data template for the gaian in node. -->
-<script type="text/x-red" data-template-name="gaian in">
+<script type="text/x-red" data-template-name="gaiandb in">
     <div class="form-row">
-        <label for="node-input-gaian"><i class="fa fa-bookmark"></i> Server</label>
-        <input type="text" id="node-input-gaian">
+        <label for="node-input-gaiandb"><i class="fa fa-bookmark"></i> Server</label>
+        <input type="text" id="node-input-gaiandb">
     </div>
     <div class="form-row">
         <label for="node-input-logicaltable"><i class="fa fa-briefcase"></i> Logical Table</label>
@@ -167,8 +167,8 @@
     </div>
 </script>
 
-<!-- help text for the gaian in node. -->
-<script type="text/x-red" data-help-name="gaian in">
+<!-- help text for the gaiandb in node. -->
+<script type="text/x-red" data-help-name="gaiandb in">
     <p>Queries a gaian database based on the chosen operator ("Select or "Count" ).</p>
     <p><b>Select</b> queries a logical table using the <code>msg.filter</code> as the conditions from the sql where clause (a blank filter returns all data). Optionally, you may also set a <code>msg.fields</code> object to specify which fields (database columns) to include in the output.</p>
     <p><b>Count</b> returns a count of the number of rows in a logical table or matching a query using the <code>msg.filter</code> as the query statement.</p>
@@ -177,14 +177,14 @@
     <p>The <code>Server</code> configuration specifies the server, database and credentials to access.</p>
 </script>
 
-<!-- code to display and handle the gaian in node. -->
+<!-- code to display and handle the gaiandb in node. -->
 <script type="text/javascript">
 
-    RED.nodes.registerType('gaian in', {
+    RED.nodes.registerType('gaiandb in', {
         category: 'storage-input',
-        color: "rgb(218, 196, 180)",
+        color: "#d4e8bf",
         defaults: {
-            gaian: {type: "gaian", required: true},
+            gaiandb: {type: "gaiandb", required: true},
             name: {value: ""},
             logicaltable: {value: ""},
             operation: {value: "select"},
@@ -194,8 +194,8 @@
         outputs: 1,
         icon: "db.png",
         label: function() {
-            var gaianNode = RED.nodes.node(this.gaian);
-            return this.name || (gaianNode ? gaianNode.label() + " " + this.logicaltable: "gaian");
+            var gaianNode = RED.nodes.node(this.gaiandb);
+            return this.name || (gaianNode ? gaianNode.label() + " " + this.logicaltable: "gaiandb");
         },
         labelStyle: function() {
             return this.name ? "node_label_italic" : "";
@@ -204,11 +204,11 @@
     });
 </script>
 
-<!-- The data template for the gaian sql node. -->
-<script type="text/x-red" data-template-name="gaian sql">
+<!-- The data template for the gaiandb sql node. -->
+<script type="text/x-red" data-template-name="gaiandb sql">
     <div class="form-row">
-        <label for="node-input-gaian"><i class="fa fa-bookmark"></i> Server</label>
-        <input type="text" id="node-input-gaian">
+        <label for="node-input-gaiandb"><i class="fa fa-bookmark"></i> Server</label>
+        <input type="text" id="node-input-gaiandb">
     </div>
     <div class="form-row">
         <label for="node-input-query"><i class="fa fa-briefcase"></i> Query</label>
@@ -233,8 +233,8 @@
     </div>
 </script>
 
-<!-- help text for the gaian sql node. -->
-<script type="text/x-red" data-help-name="gaian sql">
+<!-- help text for the gaiandb sql node. -->
+<script type="text/x-red" data-help-name="gaiandb sql">
     <p>Queries a gaian database based on a SQL query string.</p>
     <p>The <code>Query</code> property is used as a template for the SQL query string. <i><a href="http://mustache.github.io/mustache.5.html" target="_new">mustache</a></i> format tags can be included to substitute values from the input message into the query. </br>
     e.g. <code>SELECT * FROM {{{payload.logicaltable}}} WHERE ID = '{{{payload.id}}}'</code></br>
@@ -243,13 +243,13 @@
     <p>The <code>Server</code> configuration specifies the server, database and credentials to access.</p>
 </script>
 
-<!-- code to display and handle the gaian sql node. -->
+<!-- code to display and handle the gaiandb sql node. -->
 <script type="text/javascript">
-    RED.nodes.registerType('gaian sql', {
+    RED.nodes.registerType('gaiandb sql', {
         category: 'storage',
-        color: "rgb(218, 196, 180)",
+        color: "#d4e8bf",
         defaults: {
-            gaian: {type: "gaian", required: true},
+            gaiandb: {type: "gaiandb", required: true},
             name: {value: ""},
             query: {value: ""},
             multi: {value: "individual",required: true},
@@ -258,8 +258,8 @@
         outputs: 1,
         icon: "db.png",
         label: function() {
-            var gaianNode = RED.nodes.node(this.gaian);
-            return this.name || (gaianNode ? gaianNode.label() + " " + this.query: "gaian query");
+            var gaianNode = RED.nodes.node(this.gaiandb);
+            return this.name || (gaianNode ? gaianNode.label() + " " + this.query: "gaiandb sql");
         },
         labelStyle: function() {
             return this.name ? "node_label_italic" : "";

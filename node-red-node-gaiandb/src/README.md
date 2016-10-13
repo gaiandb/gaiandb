@@ -1,11 +1,11 @@
-node-red-node-gaian
-========================
+node-red-node-gaiandb
+=====================
 <a href="http://nodered.org" target="_new">Node-RED</a> nodes to read and write to a <a href="https://github.com/gaiandb" target="_new">Gaian database</a>.
 
 Pre-requisites
 --------------
 
-These modules are installed as part of a <a href="http://nodered.org" target="_new">Node-RED</a> environment. Node-RED is a tool for wiring together hardware devices, APIs and online services in new and interesting ways, these Gaian nodes allow Node-Red to use Gaian as a datasource. 
+These modules are installed as part of a <a href="http://nodered.org" target="_new">Node-RED</a> environment. Node-RED is a tool for wiring together hardware devices, APIs and online services in new and interesting ways, these Gaiandb nodes allow Node-Red to use Gaian as a datasource. 
 
 Installation of the Node-Red environment is described here : <a href="http://nodered.org/docs/getting-started/" target="_new">Node-Red Getting Started</a>.
 
@@ -18,13 +18,13 @@ Install
 
 To install from the npm website, run the following command in the Node-RED install home directory of your user, typically ~/.nodered
 
-    npm install node-red-node-gaian
+    npm install node-red-node-gaiandb
     
 To install from a local zip file, run the following command in theNode-RED install home directory of your user:
 
-    npm install {path to file}/node-red-node-gaian-0.1.0.tgz
+    npm install {path to file}/node-red-node-gaiandb-0.1.0.tgz
 
-The derbyclient.jar file containing the JDBC driver is part of the gaian database installation (usually found in {gaian-install-directory}/libs). This should be copied into <b>{node-red-user-directory}/node_modules/node-red-node-gaian/jars</b>.
+The derbyclient.jar file containing the JDBC driver is part of the gaian database installation (usually found in {gaiandb-install-directory}/libs). This should be copied into <b>{node-red-user-directory}/node_modules/node-red-node-gaiandb/jars</b>.
 
 Usage
 -----
@@ -42,11 +42,11 @@ Node Red Nodes
 
 There are three node red nodes:
 
-  * Gaian in - queries a gaiandb table, returning the data, or a count of the matching rows.
-  * Gaian out - can insert, update and remove objects from a chosen local gaian table.
-  * Gaian sql - executes any sql query within the gaian environment, allows complex queries.
+  * Gaiandb in - queries a gaiandb table, returning the data, or a count of the matching rows.
+  * Gaiandb out - can insert, update and remove objects from a chosen local gaian table.
+  * Gaiandb sql - executes any sql query within the gaian environment, allows complex queries.
   
-Gaian in
+Gaiandb in
 --------
 
 You can choose "Select" or "Count" as the operator, 
@@ -63,7 +63,7 @@ In line with standard Gaian Query functionality, specifying table aliases allow 
 * Table: LT0_0 - returns data from the single database to which Node Red is connected (this is a local query)
 * Table: LT0_P - returns data from all databases in with the LT0 table and includes "provenance columns" identifying from which data source the data originated.
 
-Gaian out
+Gaiandb out
 ---------
 
 You can choose "Insert", "Update" or "Delete as the operator, 
@@ -76,7 +76,7 @@ Delete will remove objects that match the conditions passed in the incoming mess
 
 You can either set the table (the modification target of the query) in the node configuration or on the incoming message. A table specified in the configuration will be used in preference to a table in the message .
 
-Gaian sql
+Gaiandb sql
 ---------
 
 Queries a Gaian database based on a configured SQL query string.

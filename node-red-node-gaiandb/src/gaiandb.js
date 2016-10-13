@@ -218,7 +218,7 @@ module.exports = function(RED) {
         testConfigConnection(this);
     }
 
-    RED.nodes.registerType("gaian",GaianNode,{
+    RED.nodes.registerType("gaiandb",GaianNode,{
         credentials: {
             user: {type:"text"},
             password: {type: "password"}
@@ -229,10 +229,10 @@ module.exports = function(RED) {
     function GaianInNode(config) {
         RED.nodes.createNode(this,config);
         this.logicaltable = config.logicaltable;
-        this.gaian = config.gaian;
+        this.gaiandb = config.gaiandb;
         this.operation = config.operation || "select";
         this.multi = config.multi || "individual";
-        this.gaianConfig = RED.nodes.getNode(this.gaian);
+        this.gaianConfig = RED.nodes.getNode(this.gaiandb);
 
         // define a function to handle successful query results.
         var resultAction = function (node, resultset, connObj) {
@@ -287,22 +287,22 @@ module.exports = function(RED) {
             });
 
         } else {
-            this.warn("missing gaian configuration");
+            this.warn("missing gaiandb configuration");
         }
     }
-    RED.nodes.registerType("gaian in",GaianInNode);
+    RED.nodes.registerType("gaiandb in",GaianInNode);
     
 
     // Define the Gaian output node, handling insert, update and delete statements to a Gaian database. 
     function GaianOutNode(config) {
         RED.nodes.createNode(this,config);
         this.logicaltable = config.logicaltable;
-        this.gaian = config.gaian;
+        this.gaiandb = config.gaiandb;
         this.payonly = config.payonly || false;
         this.upsert = config.upsert || false;
         this.multi = config.multi || false;
         this.operation = config.operation;
-        this.gaianConfig = RED.nodes.getNode(this.gaian);
+        this.gaianConfig = RED.nodes.getNode(this.gaiandb);
 
         if (this.gaianConfig) {
             var node = this;
@@ -341,18 +341,18 @@ module.exports = function(RED) {
 
         } else {
         	// This can happen if the gaian configuration node cannot be created for some reason. 
-        	this.warn("missing gaian configuration");
+        	this.warn("missing gaiandb configuration");
         }
     }
-    RED.nodes.registerType("gaian out",GaianOutNode);
+    RED.nodes.registerType("gaiandb out",GaianOutNode);
 
     // Define the Gaian SQL node, handling general SQL query statements to a Gaian database. 
    function GaianSQLNode(config) {
         RED.nodes.createNode(this,config);
         this.query = config.query;
         this.multi = config.multi || "individual";
-        this.gaian = config.gaian;
-        this.gaianConfig = RED.nodes.getNode(this.gaian);
+        this.gaiandb = config.gaiandb;
+        this.gaianConfig = RED.nodes.getNode(this.gaiandb);
 
         if (this.gaianConfig) {
             var node = this;
@@ -381,9 +381,9 @@ module.exports = function(RED) {
 
         } else {
         	// This can happen if the gaian configuration node cannot be created for some reason. 
-            this.warn("missing gaian configuration");
+            this.warn("missing gaiandb configuration");
         }
 
     }
-    RED.nodes.registerType("gaian sql",GaianSQLNode);
+    RED.nodes.registerType("gaiandb sql",GaianSQLNode);
 }

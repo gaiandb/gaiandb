@@ -1,0 +1,29 @@
+{
+  "name": "node-red-node-gaiandb",
+  "version": "0.1.0",
+  "description": "A Node-RED node to read and write to a gaian database using JDBC",
+  "dependencies": {
+    "jdbc": ">= 0.1.0",
+    "mustache": "^2"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "node-red",
+    "jdbc",
+    "gaiandb",
+    "sql",
+    "database"
+  ],
+  "node-red": {
+    "nodes": {
+      "gaiandb": "gaiandb.js"
+    }
+  },
+  "author": {
+    "name": "Paul Stone"
+  },
+  "repository" : {
+        "type":"git",
+        "url":"https://github.com/gaiandb/gaiandb"
+    }
+}
