@@ -22,7 +22,7 @@ To install from the npm website, run the following command in the Node-RED insta
     
 To install from a local zip file, run the following command in theNode-RED install home directory of your user:
 
-    npm install {path to file}/node-red-node-gaian-0.0.4.tgz
+    npm install {path to file}/node-red-node-gaian-0.1.0.tgz
 
 The derbyclient.jar file containing the JDBC driver is part of the gaian database installation (usually found in {gaian-install-directory}/libs). This should be copied into <b>{node-red-user-directory}/node_modules/node-red-node-gaian/jars</b>.
 
