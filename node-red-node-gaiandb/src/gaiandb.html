@@ -24,7 +24,13 @@
     </div>
     <div class="form-row">
         <label for="node-config-input-db"><i class="fa fa-database"></i> Database</label>
-        <input type="text" id="node-config-input-db">
+        <input type="text" id="node-config-input-db" style="width: 40%;">
+        <label for="node-config-input-ssl" style="margin-left: 10px; width: 35px; "> SSL</label>
+        <select type="text" id="node-config-input-ssl" style="display: inline-block; vertical-align: top; width:75px">
+            <option value="none">None</option>
+            <option value="basic">Basic</option>
+            <option value="peer">Peer</option>
+        </select>    
     </div>
     <div class="form-row">
         <label for="node-config-input-user"><i class="fa fa-user"></i> Username</label>
@@ -48,12 +54,13 @@
         defaults: {
             hostname: {value: "127.0.0.1", required: true},
             port: {value: 6414, required: true},
+            ssl: {value: "none", required: true},
             db: {value: "gaiandb", required: true},
             name: {value: ""}
         },
         credentials: {
-            user: {value: "gaian", type: "text"},
-            password: {value: "passw0rd", type: "password"}
+            user: {value: "gaian", type: "text", required: true},
+            password: {value: "passw0rd", type: "password", required: true}
         },
         label: function() {
             return this.name || this.hostname + ":" + this.port + "/" + this.db;
@@ -61,15 +68,20 @@
     });
 </script>
 
+<!-- help text for the gaian out node. -->
+<script type="text/x-red" data-help-name="gaiandb">
+    <p>Connection configuration for a gaian database.</p>
+</script>
+
 <!-- The data template for the gaian out node. -->
 <script type="text/x-red" data-template-name="gaiandb out">
     <div class="form-row">
-        <label for="node-input-gaiandb"><i class="fa fa-bookmark"></i> Server</label>
+        <label for="node-input-gaiandb"><i class="fa fa-database"></i> Server</label>
         <input type="text" id="node-input-gaiandb">
     </div>
     <div class="form-row">
-        <label for="node-input-logicaltable"><i class="fa fa-briefcase"></i> Logical Table</label>
-        <input type="text" id="node-input-logicaltable">
+        <label for="node-input-table"><i class="fa fa-table"></i> Table</label>
+        <input type="text" id="node-input-table">
     </div>
     <div class="form-row">
         <label for="node-input-operation"><i class="fa fa-wrench"></i> Operation</label>
@@ -83,18 +95,17 @@
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
-    <div class="form-tips" id="node-warning" style="display: none"><b> Tip:</b> If no logical table is set, ensure <code>msg.logicaltable</code> will contain the logical table name
-    </div>
 </script>
 
 <!-- help text for the gaian out node. -->
 <script type="text/x-red" data-help-name="gaiandb out">
-    <p>A simple gaiandb output node. Can insert, update and remove objects from a chosen logical table.</p>
+    <p>A simple gaiandb output node. Can insert, update and remove objects from a chosen  table.</p>
     <p><b>Insert</b> will insert a new object. Storing <code>msg.payload</code>.</p>
-    <p><b>Update</b> will modify an existing object or objects. The query to select objects to update uses <code>msg.filter</code> and the update to the element uses <code>msg.payload</code>.</p>
+    <p><b>Update</b> will modify an existing object or objects. The objects matching the <code>msg.filter</code> conditions are updated to the values specified in <code>msg.payload</code>.</p>
     <p>Update can update multiple objects.</p>
-    <p><b>Delete</b> will remove objects that match the conditions passed in on <code>msg.filter</code>. A blank <code>msg.filter</code> will delete <i>all of the objects</i> in the table.</p>
-    <p>You can either set the logical table value in the node config or on <code>msg.logicaltable</code>. Setting it in the node will override <code>msg.logicaltable</code>.</p>
+    <p><b>Delete</b> will remove objects that match the conditions in <code>msg.filter</code>. BEWARE, A blank <code>msg.filter</code> will delete <i>all of the objects</i> in the table.</p>
+    <p>The Table property can be specified with <i><a href="http://mustache.github.io/mustache.5.html" target="_new">mustache</a></i> format tags to substitute values from the input message. </br>
+    e.g. <code>{{{table}}}</code> will take the msg.table property.</p>
     <p>The <code>Server</code> configuration specifies the server, database and credentials to access.</p>
 </script>
 
@@ -102,13 +113,32 @@
 <script type="text/javascript">
 
     function oneditprepare() {
-        $("#node-input-logicaltable").change(function () {
-            if($("#node-input-logicaltable").val() === "") {
-                $("#node-warning").show();
-            } else {
-                $("#node-warning").hide();
-            }
+        $("#node-input-table").focus(function () {
+            $("#node-input-table").autocomplete("search");
         });
+        <!-- the last_confignode is to avoid multiple calls to the server is the node is the same -->
+        this.last_confignode = null;
+        $("#node-input-gaiandb").change(function(){
+            debugger;
+            var configNode = $("#node-input-gaiandb").val();
+            if (configNode == "_ADD_") {
+                 <!-- no config node has been selected so blank the list-->
+                 $("#node-input-table").autocomplete({
+                            source:[],
+                            minLength:0
+                        });
+           } else if (this.last_confignode != configNode) {
+                <!-- populate the auto complete list for logical table -->
+                $.getJSON("/gaiandb/tables?confignodeid="+configNode)
+                    .done(function (list) {
+                        $("#node-input-table").autocomplete({
+                            source:list,
+                            minLength:0
+                        });
+                    });
+           }
+           this.last_confignode = configNode;
+        })
     }
 
     RED.nodes.registerType('gaiandb out', {
@@ -117,7 +147,7 @@
         defaults: {
             gaiandb: {type: "gaiandb", required: true},
             name: {value: ""},
-            logicaltable: {value: ""},
+            table: {value: "", required: true},
             operation: {value: "insert"}
         },
         inputs: 1,
@@ -126,10 +156,15 @@
         align: "right",
         label: function() {
             var gaianNode = RED.nodes.node(this.gaiandb);
-            return this.name || (gaianNode ? gaianNode.label() + " " + this.logicaltable: "gaiandb");
+            return this.name || (gaianNode ? gaianNode.label() + " " + this.table: "gaiandb");
         },
         labelStyle: function() {
             return this.name ? "node_label_italic" : "";
+        },
+        oncreate: function (){
+            if (this.table="" &&this.logicaltable){
+                $("#node-input-table").val(this.logicaltable);
+            }
         },
         oneditprepare: oneditprepare
     });
@@ -138,12 +173,12 @@
 <!-- The data template for the gaian in node. -->
 <script type="text/x-red" data-template-name="gaiandb in">
     <div class="form-row">
-        <label for="node-input-gaiandb"><i class="fa fa-bookmark"></i> Server</label>
+        <label for="node-input-gaiandb"><i class="fa fa-database"></i> Server</label>
         <input type="text" id="node-input-gaiandb">
     </div>
     <div class="form-row">
-        <label for="node-input-logicaltable"><i class="fa fa-briefcase"></i> Logical Table</label>
-        <input type="text" id="node-input-logicaltable">
+        <label for="node-input-table"><i class="fa fa-table"></i> Table</label>
+        <input type="text" id="node-input-table">
     </div>
     <div class="form-row">
         <label for="node-input-operation"><i class="fa fa-wrench"></i> Operation</label>
@@ -163,22 +198,49 @@
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
-    <div class="form-tips" id="node-warning" style="display: none"><b> Tip:</b> If no logical-table is set, ensure <b>msg.logical-table</b> will contain the logical-table name
-    </div>
 </script>
 
 <!-- help text for the gaiandb in node. -->
 <script type="text/x-red" data-help-name="gaiandb in">
     <p>Queries a gaian database based on the chosen operator ("Select or "Count" ).</p>
-    <p><b>Select</b> queries a logical table using the <code>msg.filter</code> as the conditions from the sql where clause (a blank filter returns all data). Optionally, you may also set a <code>msg.fields</code> object to specify which fields (database columns) to include in the output.</p>
-    <p><b>Count</b> returns a count of the number of rows in a logical table or matching a query using the <code>msg.filter</code> as the query statement.</p>
-     <p>You can either set the Logical Table value in the node config or on <code>msg.logicaltable</code>. Setting it in the node will override <code>msg.logicaltable</code>.</p>
-    <p>The result is returned in <code>msg.payload</code>. The <code>Output</code> parameter determines whether the results are returned as individual messages or a single array in one message.</p>
+    <p><b>Select</b> queries a table using the <code>msg.filter</code> as the conditions from the sql where clause (a blank filter returns all data). Optionally, you may also set a <code>msg.fields</code> object to specify which fields (database columns) to include in the output.</p>
+    <p><b>Count</b> returns a count of the number of rows in a table or matching a query using the <code>msg.filter</code> as the query statement.</p>
+    <p>The Table property can be specified with <i><a href="http://mustache.github.io/mustache.5.html" target="_new">mustache</a></i> format tags to substitute values from the input message. </br>
+    e.g. <code>{{{table}}}</code> will take the msg.table property.</p>    <p>The result is returned in <code>msg.payload</code>. The <code>Output</code> parameter determines whether the results are returned as individual messages or a single array in one message.</p>
     <p>The <code>Server</code> configuration specifies the server, database and credentials to access.</p>
 </script>
 
 <!-- code to display and handle the gaiandb in node. -->
 <script type="text/javascript">
+
+    function oneditprepare() {
+        $("#node-input-table").focus(function () {
+            $("#node-input-table").autocomplete("search");
+        });
+        <!-- the last_confignode is to avoid multiple calls to the server is the node is the same -->
+        this.last_confignode = null;
+        $("#node-input-gaiandb").change(function(){
+            debugger;
+            var configNode = $("#node-input-gaiandb").val();
+            if (configNode == "_ADD_") {
+                 <!-- no config node has been selected so blank the list-->
+                 $("#node-input-table").autocomplete({
+                            source:[],
+                            minLength:0
+                        });
+           } else if (this.last_confignode != configNode) {
+                <!-- populate the auto complete list for logical table -->
+                $.getJSON("/gaiandb/lts?confignodeid="+configNode)
+                    .done(function (list) {
+                        $("#node-input-table").autocomplete({
+                            source:list,
+                            minLength:0
+                        });
+                    });
+           }
+           this.last_confignode = configNode;
+        })
+    }
 
     RED.nodes.registerType('gaiandb in', {
         category: 'storage-input',
@@ -186,7 +248,7 @@
         defaults: {
             gaiandb: {type: "gaiandb", required: true},
             name: {value: ""},
-            logicaltable: {value: ""},
+            table: {value: "",required: true},
             operation: {value: "select"},
             multi: {value: "individual",required: true}
             },
@@ -195,10 +257,15 @@
         icon: "db.png",
         label: function() {
             var gaianNode = RED.nodes.node(this.gaiandb);
-            return this.name || (gaianNode ? gaianNode.label() + " " + this.logicaltable: "gaiandb");
+            return this.name || (gaianNode ? gaianNode.label() + " " + this.table: "gaiandb");
         },
         labelStyle: function() {
             return this.name ? "node_label_italic" : "";
+        },
+        oncreate: function (){
+           if (this.table="" &&this.logicaltable){
+                $("#node-input-table").val(this.logicaltable);
+            }
         },
         oneditprepare: oneditprepare
     });
@@ -207,17 +274,16 @@
 <!-- The data template for the gaiandb sql node. -->
 <script type="text/x-red" data-template-name="gaiandb sql">
     <div class="form-row">
-        <label for="node-input-gaiandb"><i class="fa fa-bookmark"></i> Server</label>
+        <label for="node-input-gaiandb"><i class="fa fa-database"></i> Server</label>
         <input type="text" id="node-input-gaiandb">
     </div>
     <div class="form-row">
-        <label for="node-input-query"><i class="fa fa-briefcase"></i> Query</label>
+        <label for="node-input-query"><i class="fa fa-question-circle-o"></i> Query</label>
         <input type="hidden" id="node-input-query" autofocus="autofocus">
     </div>
     <div class="form-row node-text-editor-row">
         <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-input-query-editor" ></div>
     </div>
-        <div class="form-tips">Tip: The query can use <i><a href="http://mustache.github.io/mustache.5.html" target="_new">mustache</a></i> format to get values from the input message.</div>
     <div class="form-row">
         <label for="node-input-multi"><i class="fa fa-sign-out"></i> Output</label>
         <select type="text" id="node-input-multi" style="width: 250px;">
@@ -229,16 +295,15 @@
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
-    <div class="form-tips" id="node-warning" style="display: none"><b> Tip:</b> If no query is set, ensure <b>msg.payload</b> will contain the query string.
-    </div>
+    <div class="form-tips">Tip: The query can use <i><a href="http://mustache.github.io/mustache.5.html" target="_new">mustache</a></i> format to get values from the input message.</div>
 </script>
 
 <!-- help text for the gaiandb sql node. -->
 <script type="text/x-red" data-help-name="gaiandb sql">
     <p>Queries a gaian database based on a SQL query string.</p>
     <p>The <code>Query</code> property is used as a template for the SQL query string. <i><a href="http://mustache.github.io/mustache.5.html" target="_new">mustache</a></i> format tags can be included to substitute values from the input message into the query. </br>
-    e.g. <code>SELECT * FROM {{{payload.logicaltable}}} WHERE ID = '{{{payload.id}}}'</code></br>
-    substitutes <code>msg.payload.logicaltable</code> and <code>msg.payload.id</code> into the query.</p>
+    e.g. <code>SELECT * FROM {{{payload.table}}} WHERE ID = '{{{payload.id}}}'</code></br>
+    substitutes <code>msg.payload.table</code> and <code>msg.payload.id</code> into the query.</p>
     <p>The result is returned in <code>msg.payload</code>. The <code>Output</code> parameter determines whether the results are returned as individual messages or a single messages containing an array of results.</p>
     <p>The <code>Server</code> configuration specifies the server, database and credentials to access.</p>
 </script>
