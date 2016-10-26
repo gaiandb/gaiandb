@@ -22,7 +22,7 @@ To install from the npm website, run the following command in the Node-RED insta
     
 To install from a local zip file, run the following command in theNode-RED install home directory of your user:
 
-    npm install {path to file}/node-red-node-gaiandb-0.1.0.tgz
+    npm install {path to file}/node-red-node-gaiandb-0.1.1.tgz
 
 The derbyclient.jar file containing the JDBC driver is part of the gaian database installation (usually found in {gaiandb-install-directory}/libs). This should be copied into <b>{node-red-user-directory}/node_modules/node-red-node-gaiandb/jars</b>.
 
@@ -51,9 +51,9 @@ Gaiandb in
 
 You can choose "Select" or "Count" as the operator, 
 
-Select queries a logical table, allows you to set the SQL where clause and/or the fields to include in the output.
+Select queries a table, allows you to set the SQL where clause and/or the fields to include in the output.
 
-Count returns a count of the number of rows in a logical table or matching a filter condition.
+Count returns a count of the number of rows in a table or matching a filter condition.
 
 The result is returned in msg.payload. The Output parameter determines whether the results are returned as individual messages or a single array in one message.
 
@@ -83,8 +83,8 @@ Queries a Gaian database based on a configured SQL query string.
 
 The Query can be specified as a template including "mustache" format tags, which are then substituted for values from the input message.
 
-e.g. SELECT * FROM {{{payload.logicaltable}}} WHERE ID = '{{{payload.id}}}'
-substitutes msg.payload.logicaltable and msg.payload.id into the query.
+e.g. SELECT * FROM {{{payload.table}}} WHERE ID = '{{{payload.id}}}'
+substitutes msg.payload.table and msg.payload.id into the query.
 
 e.g. {{{msg.sql}}}
 will execute the SQL specified in the sql property of the incoming message, allowing the node red flow to formulate the query.

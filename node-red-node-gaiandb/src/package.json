@@ -1,6 +1,6 @@
 {
   "name": "node-red-node-gaiandb",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A Node-RED node to read and write to a gaian database using JDBC",
   "dependencies": {
     "jdbc": ">= 0.1.0",

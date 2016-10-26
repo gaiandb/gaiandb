@@ -243,7 +243,6 @@ module.exports = function(RED) {
         }
 
         if (dbconfignode){
-           //var sql = "call listlts()"; // TBD old version that only returns Logical tables, not the local derby tables as well.
             var sql = "select LTNAME from new com.ibm.db2j.GaianQuery('call listlts()','maxdepth=0') gq union select distinct tabname as LTNAME from derby_tables_0 where tabtype='T'"
             processConfigSQLStatement("Query", dbconfignode, sql, function (node, resultset, connObj) {
                 resultset.toObjArray(function(err,results) {
@@ -252,7 +251,7 @@ module.exports = function(RED) {
                     for (var index = 0; index < results.length; index++) {
                         var result = results[index];
  						if (result.hasOwnProperty("LTNAME")){
-							//TBD check for tables that we don't want to return
+							// check for tables that we don't want to return
                             if (LTsNotToDisplay.indexOf(result.LTNAME) == -1) {        
                                 tablelist.push(result.LTNAME);  
                             }
@@ -288,8 +287,8 @@ module.exports = function(RED) {
                     for (var index = 0; index < results.length; index++) {
                         var result = results[index];
  						if (result.hasOwnProperty("TABNAME")){
-							//TBD check for tables that we don't want to return
-                            if (TablesNotToDisplay.indexOf(result.TABNAME) == -1) {        
+							// check for tables that we don't want to return
+                            if (TablesNotToDisplay.indexOf(result.TABNAME) == -1) {      
                                 tablelist.push(result.TABNAME);  
                             }
 						}
