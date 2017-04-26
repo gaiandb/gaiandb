@@ -118,7 +118,8 @@ from gaiandb/build/</h4>
 <center>
 <TABLE class='image'>
    <TR class='image'>
-     <TD class='image'><a Href="./images/gaiandb3.gif"><img src="./images/gaiandb3.gif" width=500></TD>
+   
+     <TD class='image'><a Href="https://github.com/gaiandb/gaiandb/blob/master/doc/UserDocs/images/gaiandb3.gif"><img src="https://github.com/gaiandb/gaiandb/blob/master/doc/UserDocs/images/gaiandb3.gif" width=500></TD>
      <TD class='image'><a Href="./images/gaiandb1.gif"><img src="./images/gaiandb1.gif"></a></TD>
    <TR class='image'>
      <TD  class='image' align='center'>Fig. 1 - GaianDB high level architecture</TD>
