@@ -324,13 +324,14 @@ Gaian federation technology provides a "data virtualisation" layer - with many b
 <hr><h3><a name="contents165">Installation Prerequisites</a></h3>
 <ul>
 	<li>Java JRE version: IBM JRE 1.7.0 or above. (Oracle JRE 1.7.0 should work; GNU versions of Java have caused problems). Make sure that the 'java' executable is in your PATH.</li>
-	<br />
+	<br/>
 	<li>Any RDBMS JDBC drivers required to connect to and federate your Relational Database tables. These will often
 	be included in the installation package for the RDBMS.
-	<br>To make a new JDBC driver available to GaianDB, add the JAR file that contains the driver class to the Java CLASSPATH
-	variable before starting GaianDB (for convenience, the Java CLASSPATH is defined in 'launchGaianServer' batch and script files).<br>
+	<br/>
+	To make a new JDBC driver available to GaianDB, add the JAR file that contains the driver class to the Java CLASSPATH
+	variable before starting GaianDB (for convenience, the Java CLASSPATH is defined in 'launchGaianServer.bat(/.sh)' batch and script files).
+	<br/>
 	<p>GaianDB only supports the official JDBC drivers provided by the Relational Database providers listed below:</p>
-
 	<table class='data'>
 			<thead>
 			<tr>
@@ -574,9 +575,8 @@ sql>
 <a name="contents58">List the active RDBMS connections and data sources to verify updates.</a><br />
 To do this we use two GaianDB stored procedures: <br /><br />
 <ul>
-    <li><code>listrdbc()</code> - this shows the active RDBMS connections of every connected GaianDB node (the only node in the example below is L3R3844).
-
-<pre>
+    <li>
+    <code>listrdbc()</code> - this shows the active RDBMS connections of every connected GaianDB node (the only node in the example below is L3R3844).<pre>
 sql>
 sql> call listrdbc()
 call listrdbc()
@@ -591,8 +591,8 @@ Fetched 3 rows. Total Time: 47ms (Execution Time: 16ms)
 
 sql>
 </pre></li>
-
-    <li><code>listds()</code> -  this shows all the active data sources of every connected GaianDB node.
+    <li>
+    <code>listds()</code> -  this shows all the active data sources of every connected GaianDB node.
 <pre>
 sql>
 sql> call listds()
