@@ -6,8 +6,6 @@ A light-weight data-federation technology built on Apache Derby. Gaian accesses 
 <BODY>
 
 <h1 class="title">Readme.html taken from build/GAIANDB_V2.1.8_20160523.zip</h1>
-<h4 class="nocount">Images are not available here - To view them please download and unzip the most recent zip file 
-from gaiandb/build/</h4>
 
 <br/>
 
