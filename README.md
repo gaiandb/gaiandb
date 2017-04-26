@@ -143,7 +143,7 @@ from gaiandb/build/</h4>
 <center>
 <TABLE class='image'>
    <TR class='image'>
-     <TD class='image'><a Href="https://github.com/gaiandb/gaiandb/blob/master/doc/UserDocs/images/gaiandb5.gif"><img src="./images/gaiandb5.gif" ></a></TD>
+     <TD class='image'><a Href="https://github.com/gaiandb/gaiandb/blob/master/doc/UserDocs/images/gaiandb5.gif"><img src="https://github.com/gaiandb/gaiandb/blob/master/doc/UserDocs/images/gaiandb5.gif" ></a></TD>
      </TR>
    <TR class='image'>
      <TD class='image' align='center'>Fig. 3 - GaianDB positioning</TD>
@@ -295,7 +295,7 @@ Gaian federation technology provides a "data virtualisation" layer - with many b
     <li>Policy framework improvements: Now receives full-sub-query for pass-through queries, and ResultSetMetaData is supplemented with table names of queried columns.</li>
     <li>New capability to enable Derby's SSL encryption for client-server and inter-node connections.</li>
     <li>New procedure RUNSQL() to run SQL directly against any specified connection ID or JDBC properties specified directly.</li>
-    <li>New capability to specify &ltGAIAN_WORKSPACE&gt tag in _ARGS property of a Text file DS.</li>
+    <li>New capability to specify &lt;GAIAN_WORKSPACE&gt; tag in _ARGS property of a Text file DS.</li>
     <li>New procedures LISTTHREADS() to list Gaian's JVM threads; and LISTENV() to list Gaian's system environment properties.</li>
 	</ul>
 	<li>Bug fixes</li>
@@ -433,8 +433,8 @@ Have a look at the configuration file 'gaiandb_config.properties'. This defines 
 </ul>
 
 <hr><h3><a name="contents169">Verify the installation</a></h3>
-<p>To quickly test that GaianDB is up and running:</P>
-<ul><li>Run 'testGaianDB.bat' on Windows or './testGaianDB.sh' on Unix. This launches a sample query against the sample LT0 logical table, which should retrieve & display the records from the CSV flat file found at: '&lt;GaianDB Install Directory&gt;/csvtestfiles/datafile.dat'.</li></ul>
+<p>To quickly test that GaianDB is up and running:</p>
+<ul><li>Run 'testGaianDB.bat' on Windows or './testGaianDB.sh' on Unix. This launches a sample query against the sample LT0 logical table, which should retrieve &amp; display the records from the CSV flat file found at: '&lt;GaianDB Install Directory&gt;/csvtestfiles/datafile.dat'.</li></ul>
 
 <p>You can also run other queries against GaianDB using the <a href="#contents140">Command Line Processor</a> or <a href="#contents344">Dashboard Graphical User Interface</a> client utilities.
 For example, you can use to the Command Line Processor to run 'select' commands or run some of the stored procedures the GaianDB provides to verify the installation is correct, as follows:</p>
@@ -811,8 +811,7 @@ sql>
 	<br/>
 	<li>
 		<a name="contents204">
-		List data sources to verify that the update was applied.</a><br /> To do this, we call the stored GaianDB procedure <code>listds()</code>. Refer to the <a href="#contents58"> previous explanation	on the columns returned by listrdbc() and listds()</a> for details on the columns used here.
-		</a>
+		List data sources to verify that the update was applied.</a><br /> To do this, we call the stored GaianDB procedure <code>listds()</code>. Refer to the <a href="#contents58"> previous explanation on the columns returned by listrdbc() and listds()</a> for details on the columns used here.
 	</li>
 	<pre>
 sql>
@@ -1584,15 +1583,15 @@ sql&gt;
 You can find the dashboard in the installation directory and it can be launched by running 'dashboard.bat' on Windows and 'dashboard.sh' on Unix.</p>
 <p>As with the CLP, the dashboard can be used to run queries on GaianDB and also to issue GaianDB stored procedures; 
 however it allows you to do this and view the results in a more consumable manner. It also has a number of additional features that allow you to
-view the current network topology and current & historical metrics for nodes in the network.</p>
+view the current network topology and current &amp; historical metrics for nodes in the network.</p>
 
 <p>After starting the dashboard, this is what you should see:<br/><br/>
 <center>
 <TABLE class='image'>
    <TR class='image'>
-     <TD class='image'><img src="./images/s_dashboard-connect.png"></img></TD>
+   <TD class='image'><img src="https://github.com/gaiandb/gaiandb/blob/master/doc/UserDocs/images/s_dashboard-connect.png"></TD></TR>
    <TR class='image'>
-     <TD class='image' align='center'>Fig. 5 - Dashboard connection page</TD>
+     <TD class='image' align='center'>Fig. 5 - Dashboard connection page</TD></TR>
 </TABLE>
 </center>
 
@@ -1606,10 +1605,8 @@ view the current network topology and current & historical metrics for nodes in 
 <p>You can view the Gaian nodes topology in the Network Topology tab, this what you should see:<br/><br/>
 <center>
 <TABLE class='image'>
-   <TR class='image'>
-     <TD class='image'><img src="./images/s_dashboard-topo.png"></img></TD>
-   <TR class='image'>
-     <TD class='image' align='center'>Fig. 6 - Dashboard Network Topology page</TD>
+   <TR class='image'> <TD class='image'><img src="https://github.com/gaiandb/gaiandb/blob/master/doc/UserDocs/images/s_dashboard-topo.png"></TD></TR>
+   <TR class='image'> <TD class='image' align='center'>Fig. 6 - Dashboard Network Topology page</TD></TR>
 </TABLE>
 </center>
 
@@ -1617,9 +1614,9 @@ view the current network topology and current & historical metrics for nodes in 
 <center>
 <TABLE class='image'>
    <TR class='image'>
-     <TD class='image'><img src="./images/s_dashboard-query.png"></img></TD>
+     <TD class='image'><img src="https://github.com/gaiandb/gaiandb/blob/master/doc/UserDocs/images/s_dashboard-query.png"></TD></TR>
    <TR class='image'>
-     <TD class='image' align='center'>Fig. 7 - Dashboard Network Topology page</TD>
+   <TD class='image' align='center'>Fig. 7 - Dashboard Network Topology page</TD></TR>
 </TABLE>
 </center>
 
