@@ -118,12 +118,16 @@ from gaiandb/build/</h4>
 <center>
 <TABLE class='image'>
    <TR class='image'>
-   
-     <TD class='image'><a Href="https://github.com/gaiandb/gaiandb/blob/master/doc/UserDocs/images/gaiandb3.gif"><img src="https://github.com/gaiandb/gaiandb/blob/master/doc/UserDocs/images/gaiandb3.gif" width=500></TD>
-     <TD class='image'><a Href="./images/gaiandb1.gif"><img src="./images/gaiandb1.gif"></a></TD>
+     <TD class='image'><a Href="https://github.com/gaiandb/gaiandb/blob/master/doc/UserDocs/images/gaiandb3.gif">
+          <img src="https://github.com/gaiandb/gaiandb/blob/master/doc/UserDocs/images/gaiandb3.gif" width=500>
+	  </a></TD>
+     <TD class='image'><a Href="https://github.com/gaiandb/gaiandb/blob/master/doc/UserDocs/images/gaiandb1.gif">
+          <img src="https://github.com/gaiandb/gaiandb/blob/master/doc/UserDocs/images/gaiandb1.gif"></a></TD>
+	  </TR>
    <TR class='image'>
      <TD  class='image' align='center'>Fig. 1 - GaianDB high level architecture</TD>
      <TD  class='image' align='center'>Fig. 2 - GaianDB connectivity model</TD>
+    </TR>
 </TABLE>
 </center>
 
@@ -139,9 +143,11 @@ from gaiandb/build/</h4>
 <center>
 <TABLE class='image'>
    <TR class='image'>
-     <TD class='image'><a Href="./images/gaiandb5.gif"><img src="./images/gaiandb5.gif"  ></TD>
+     <TD class='image'><a Href="https://github.com/gaiandb/gaiandb/blob/master/doc/UserDocs/images/gaiandb5.gif"><img src="./images/gaiandb5.gif" ></a></TD>
+     </TR>
    <TR class='image'>
      <TD class='image' align='center'>Fig. 3 - GaianDB positioning</TD>
+     </TR>
 </TABLE>
 </center>
 
