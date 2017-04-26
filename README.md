@@ -1701,11 +1701,11 @@ LT0_DS0_C1=COLUMN1</pre>
 The table schema of a VTI extending AbstractVTI (such as FileImport) is based on the following rules:
 <ol>
 <li> If the VTI implements a getMetaData() method, the GaianResultSetMetaData object resulting from this takes precedence.
-Note this can be based on properties passed to the VTI constructor, which will hold the string specified against property &ltLTNAME&gt_DS&ltDSNAME&gt_ARGS
+Note this can be based on properties passed to the VTI constructor, which will hold the string specified against property &lt;LTNAME&gt;_DS&lt;DSNAME&gt;_ARGS
 in the gaiandb_config.properties file.</li>
-<li> Next, AbstractVTI will choose a schema resolved from a static property for the VTI having the "schema" suffix, i.e. "&ltVTI_class_name&gt.schema".</li>
+<li> Next, AbstractVTI will choose a schema resolved from a static property for the VTI having the "schema" suffix, i.e. "&lt;VTI_class_name&gt;.schema".</li>
 <li> Next, and if the VTI is invoked as a data source of a logical table (rather than directly by Derby), AbstractVTI will resolve the schema based
-on property &ltLTNAME&gt_DS&ltDSNAME&gt_SCHEMA.</li>
+on property &lt;LTNAME&gt;_DS&lt;DSNAME&gt;_SCHEMA.</li>
 <li> Next, and if the VTI is invoked as a data source of a logical table (rather than directly by Derby), AbstractVTI will resolve the schema based
 on the logical table definition.</li>
 Note that in all cases where the VTI is invoked as a logical table data source, columns will be mapped by name to the logical table ones 
@@ -1780,7 +1780,7 @@ therefore they may be changed while the associated GaianDB node is running and t
 		<td><b>LOGLEVEL</b></td>
 		<td>NONE</td>
 		<td>The level of logging to use. This can only be one of: [NONE, LESS, MORE, ALL].<br />
-		If NONE, then no logging is performed. Otherwise logging is performed to a file in the current working directory. This file will be named 'gaiandb.log' or  'gaiandb<port>.log' if the GaianDB node is not running on the default port (6414).<br /><br />
+		If NONE, then no logging is performed. Otherwise logging is performed to a file in the current working directory. This file will be named 'gaiandb.log' or  'gaiandb&lt;port&gt;.log' if the GaianDB node is not running on the default port (6414).<br /><br />
 		This can be set as an argument when launching a GaianDB node with 'launchGaianServer.bat' in which case
 		it will be fixed to this value until the node is restarted. Otherwise the value defined in the properties file will be used, or it will default to NONE.<br /><br />
 		Try to avoid using 'ALL' when processing a heavy query load.</td>
@@ -2133,6 +2133,7 @@ advantages as well:</p>
       <td width="180">dsname</td>
       <td width="844">Data Source Name. A name chosen by the user to identify the data source</td>
     </tr>
+    <tr>
       <td width="180">dsid</td>
       <td width="844">Data Source ID. A composite value variable: '&lt;ltname&gt;_DS&lt;dsname&gt;'</td>
     </tr>
@@ -2140,6 +2141,7 @@ advantages as well:</p>
       <td width="180">cid</td>
       <td width="844">JDBC Connection ID: Any name, limited to 20 chars</td>
     </tr>
+    <tr>
       <td width="180">nodeid</td>
       <td width="844">GaianDB node identifier: When running on default port 6414, this is just &lt;hostname&gt;, otherwise it is: &lt;hostname&gt;:&lt;portnumber&gt;</td>
     </tr>
@@ -2147,6 +2149,7 @@ advantages as well:</p>
       <td width="180">options</td>
       <td width="844">Possible options are: 'INMEMORY [INDEX ON &lt;column name&gt;]'</td>
     </tr>
+    <tr>
       <td width="180">columns</td>
       <td width="844">Ordered list of physical table's column names which the logical table's columns map to (only needed if these are not all the same)</td>
     </tr>
@@ -2396,9 +2399,9 @@ This feature is currently implemented for flat file data sources (e.g. CSV) and 
 <UL>
 <LI>For flat files (e.g. CSV):</LI>
 <pre>
-&ltData Source ID&gt_VTI=com.ibm.db2j.FileImport
-&ltData Source ID&gt_OPTIONS=PLURALIZED [USING WILDCARD | USING REGEX]
-&ltData Source ID&gt_ARGS=&ltAbsolute or relative path expression containing any number of '*' wildcard characters or a REGEX pattern&gt
+&lt;Data Source ID&gt;_VTI=com.ibm.db2j.FileImport
+&lt;Data Source ID&gt;_OPTIONS=PLURALIZED [USING WILDCARD | USING REGEX]
+&lt;Data Source ID&gt;_ARGS=&lt;Absolute or relative path expression containing any number of '*' wildcard characters or a REGEX pattern&gt;
 
 # Note: When no pattern scheme is specified, the default is "USING WILDCARD"
 
@@ -2416,7 +2419,7 @@ LT0_DS0_ARGS=/home/user[0-9]+/workspace[1-3]/.*testfiles/datafile[2]?.dat
 </pre>
 <LI>For custom VTIs</LI>
 <pre>
-&ltData Source ID&gt_OPTIONS=PLURALIZED [WITH ENDPOINT CONSTANTS &ltlist of logical table column ids separated by spaces&gt]
+&lt;Data Source ID&gt;_OPTIONS=PLURALIZED [WITH ENDPOINT CONSTANTS &lt;list of logical table column ids separated by spaces&gt;]
 
 # Note: Optional end-point constants are column values returned by the custom VTI if it implements the PluralizedVTI interface.
 # Each column ID is specified using the letter 'C' as prefix followed by the index of the logical table column for which it is a constant value for each pluralized instance. 
@@ -2647,9 +2650,9 @@ several gateway pairs between such networks to avoid bottlenecks. In Fig. 8 the 
 <center>
 <TABLE class='image'>
    <TR class='image'>
-     <TD class='image'><img src="./images/gaiandb2.gif"></TD>
+   <TD class='image'><img src="./images/gaiandb2.gif"></TD></TR>
    <TR class='image'>
-     <TD class='image' align='center'>Fig. 8 - Joining multiple network domains with GaianDB gateways</TD>
+     <TD class='image' align='center'>Fig. 8 - Joining multiple network domains with GaianDB gateways</TD></TR>
 </TABLE>
 </center>
 
@@ -2680,7 +2683,7 @@ as described <a href="#contents209">above</a>.
 
 <p>
 Properties that govern how a flat file is federated by GaianDB can be altered using a 'control file'.
-As an example, the GaianDB installation comes with a data file '&ltGaianDB-install-folder&gt/csvtestfiles/datafile.dat' which has a control file named 'datafile.dat.properties'
+As an example, the GaianDB installation comes with a data file '&lt;GaianDB-install-folder&gt;/csvtestfiles/datafile.dat' which has a control file named 'datafile.dat.properties'
 in the same folder. Control file names should always have the '.properties' extension. The contents of the 'datafile.dat.properties' file is shown below. 
 Notice that it contains mostly hashed out properties. These are given for convenience and show some of the labels or default values that may be used.
 Most character sequences should work as record or field separators.
@@ -2716,16 +2719,16 @@ Resolution of a control file's location, for a data file whose path is: '/a/b/da
 
 The first of the following files that exists will be chosen:
 (Note that 'FileImportDefaults' and 'FileImportControls' are hard-coded location strings)
-(Note also that the &ltGaianDB-node-workspace-folder&gt will be the working directory of the process unless you have set the java system property: 'derby.system.home')
+(Note also that the &lt;GaianDB-node-workspace-folder&gt; will be the working directory of the process unless you have set the java system property: 'derby.system.home')
 
 1) /a/b/datafile.dat.properties
 2) /a/b/FileImportDefaults.properties
-3) &ltGaianDB-node-workspace-folder&gt/FileImportControls/a/b/datafile.dat.properties
-4) &ltGaianDB-node-workspace-folder&gt/FileImportControls/a/b/FileImportDefaults.properties
-5) &ltGaianDB-node-workspace-folder&gt/FileImportControls/b/datafile.dat.properties
-6) &ltGaianDB-node-workspace-folder&gt/FileImportControls/b/FileImportDefaults.properties
-7) &ltGaianDB-node-workspace-folder&gt/FileImportControls/datafile.dat.properties
-8) &ltGaianDB-node-workspace-folder&gt/FileImportControls/FileImportDefaults.properties
+3) &lt;GaianDB-node-workspace-folder&gt;/FileImportControls/a/b/datafile.dat.properties
+4) &lt;GaianDB-node-workspace-folder&gt;/FileImportControls/a/b/FileImportDefaults.properties
+5) &lt;GaianDB-node-workspace-folder&gt;/FileImportControls/b/datafile.dat.properties
+6) &lt;GaianDB-node-workspace-folder&gt;/FileImportControls/b/FileImportDefaults.properties
+7) &lt;GaianDB-node-workspace-folder&gt;/FileImportControls/datafile.dat.properties
+8) &lt;GaianDB-node-workspace-folder&gt;/FileImportControls/FileImportDefaults.properties
 
 If no control file is resolved using this process, the default CSV format is assumed.
 </pre>
@@ -2746,7 +2749,7 @@ their own privacy/encryption mechanism.<P/>
 <hr><h4><a name="contents3071">Server Configuration for SSL</a></h4>
 
 To enable SSL for a Gaian node, you need to set property 'derby.drda.sslMode' in Derby's property file at location 
-'&ltGAIAN_WORKSPACE&gt/derby.properties' and also ensure you have configured a keyStore file and password as described below.
+'&lt;GAIAN_WORKSPACE&gt;/derby.properties' and also ensure you have configured a keyStore file and password as described below.
 This will cause the node to only accept SSL client connection requests.<P/>
 Property 'derby.drda.sslMode' is initially commented out in derby.properties (default value 'off'). There are 3 valid settings:
 <pre>
