@@ -594,7 +594,6 @@ sql>
     <li>
     <code>listds()</code> -  this shows all the active data sources of every connected GaianDB node.
 <pre>
-sql>
 sql> call listds()
 call listds()
 =====================================================================================================================================================================================
@@ -609,7 +608,6 @@ L3R3844         |MYSQLLT_DSCARS      |R     |InMemoryRows:1      |jdbc:mysql://l
 L3R3844         |DERBY_TABLES_DSLOC  |R     |EmbedStatement:1    |jdbc:derby:gaiandb;create=true::sys.systables,sys.syscolumns where tableid=referenceid |-                         |
 =====================================================================================================================================================================================
 Fetched 7 rows. Total Time: 62ms (Execution Time: 46ms)
-
 sql>
 </pre>
 
@@ -747,24 +745,23 @@ sql>
 			<li> xmlbeans-XX.jar </li>
 		</ul>
 		</p>
-
 		<p>
-		Where XX is the version number.</p>
-		<p>These jars would need to be placed into the GaianDB lib directory and then added to the GaianDB classpath as follows:</p>
+		Where XX is the version number.
+		These jars would need to be placed into the GaianDB lib directory and then added to the GaianDB classpath as follows:</p>
 		<ul>
 			<li> On Windows, edit the 'launchGaianServer.bat' file (right click -> edit). </li>
 			<li> Add the following lines :
-				<pre>
+			 <pre>
 rem Apache - POI jars for spreadsheet federation
 SET CLASSPATH=%CLASSPATH%;%GDBL%\geronimo-stax-api_XX.jar;%GDBL%\poi-ooxml-schemas-XX.jar;%GDBL%\dom4j-XX.jar;%GDBL%\poi-XX.jar;%GDBL%\poi-ooxml-XX.jar;%GDBL%\xmlbeans-XX.jar
-				</pre>
+			 </pre>
 			</li>
 			<li> On Unix, edit the 'launchGaianServer.sh' file. </li>
 			<li> Add the following lines :
-			        <pre>
+			 <pre>
 # Apache - POI jars for spreadsheet federation
 export CLASSPATH="$CLASSPATH:$GDBL/geronimo-stax-api_XX.jar:$GDBL/poi-ooxml-schemas-XX.jar:$GDBL/dom4j-XX.jar:$GDBL/poi-XX.jar:$GDBL/poi-ooxml-XX.jar:$GDBL/xmlbeans-XX.jar"
-                                </pre>
+                          </pre>
                         </li>
 		</ul>
 		<p>If you had already started the GaianDB by using the launchGaianServer script, you will need to stop the node and restart it for the new changes to be taken into account.
@@ -4107,8 +4104,8 @@ logical table definitions of up to 100 columns, and one data source defined per 
 <hr><h2><a name="contents400">Authors/Contacts</a></h2>
 David Vyvyan (Development and Authoring): Senior Software Engineer, IBM Hursley Labs, UK:
 <a href="mailto:drvyvyan@uk.ibm.com">drvyvyan@uk.ibm.com</a><br>
-Patrick Dantressangle (Consultancy): Senior Technical Staff Member, Information Management Architect, IBM Hursley Labs, UK:
-<a href="mailto:dantress@uk.ibm.com">dantress@uk.ibm.com</a><br>
+Patrick Dantressangle (Consultancy): Senior Technical Staff Member,MAster Iventor, IBM France:
+<a href="mailto:patrick.dantressangle1@ibm.com">patrick.dantressangle1@ibm.com</a><br>
 Graham Bent (Consultancy): Senior Technical Staff Member,  IBM Hursley Labs, UK:
 <a href="mailto:GrahamBent@uk.ibm.com">GrahamBent@uk.ibm.com</a><br>
 
