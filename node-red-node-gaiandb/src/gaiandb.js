@@ -506,7 +506,7 @@ module.exports = function(RED) {
             
                 if (sql){
 	                // now process the sql statement, with necessary error handling.
-	                  processSQLStatement("Update", node, sql, updateResultAction, msg);
+	                processSQLStatement("Update", node, sql, updateResultAction, msg);
                 }
             });
 
@@ -548,7 +548,7 @@ module.exports = function(RED) {
                 var sql = mustache.render(query,msg);
 
                 // now process the SQL statement, with necessary error handling.
-              processSQLStatement("Query", node, sql, queryResultAction, msg)
+                processSQLStatement("Query", node, sql, queryResultAction, msg)
             });
 
         } else {
