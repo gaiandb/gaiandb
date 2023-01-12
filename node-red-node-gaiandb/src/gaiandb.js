@@ -31,7 +31,7 @@ module.exports = function(RED) {
     // This function processes a SQL statement, is used by all three gaian nodes, providing
     // common connection handling and error processing. The "type" should be "Query" or "Update" 
     // the resultAction is a function provided to handle a successful query result.
-    function processSQLStatement(type, node, sql, resultAction) {           
+  function processSQLStatement(type, node, sql, resultAction, msg=undefined) {           
         node.gaianConfig.jdbc.reserve(function(err,connObj){
           
             var queryHandler = function(err, resultset) {
@@ -42,7 +42,7 @@ module.exports = function(RED) {
                 } else {
                     //the query succeeded
                     node.status({fill:"green",shape:"dot",text:"connected"});
-                    resultAction(node, resultset, connObj);
+                    resultAction(node, resultset, connObj, msg);
                 }
             };                       
            
@@ -195,21 +195,33 @@ module.exports = function(RED) {
     }
     
     // define a function to handle successful query results.
-    var queryResultAction = function (node, resultset, connObj) {
+    var queryResultAction = function (node, resultset, connObj, msg=undefined) {
         resultset.toObjArray(function(err,results) {
             if(node.multi=="individual"){
                 for    (var index = 0; index < results.length; index++) {
-                    node.send({"payload": results[index]});
+                    if(msg){
+                        msg.payload = results[index];
+                        node.send(msg);
+                    }
+                    else{
+                        node.send({"payload": results[index]});
+                    }
                 }
             } else {
-                 node.send({ "payload": results });
+                if(msg){
+                    msg.payload = results;
+                    node.send(msg);
+                }
+                else{
+                    node.send({ "payload": results });
+                }
             }
             releaseConnection(node, connObj);
-        })
+        });
     };
     
     // define a function to handle successful update results.
-    var updateResultAction = function (node, count, connObj) {
+    var updateResultAction = function (node, count, connObj, msg=undefined) {
         node.send({"payload": {"count" : count}});
         releaseConnection(node, connObj);
     };
@@ -390,21 +402,6 @@ module.exports = function(RED) {
         this.multi = config.multi || "individual";
         this.gaianConfig = RED.nodes.getNode(this.gaiandb);
 
-        // define a function to handle successful query results.
-        var resultAction = function (node, resultset, connObj) {
-            resultset.toObjArray(function(err,results) {
-                if(node.multi=="individual"){
-                    for (var index = 0; index < results.length; index++) {
-                        node.send({"payload": results[index]});
-                    }
-                } else {
-                    msg.payload = results;
-                    node.send(msg);
-                }
-                releaseConnection(node, connObj);
-            })
-        }
-        
         if (this.gaianConfig) {
             var node = this;
 
@@ -509,7 +506,7 @@ module.exports = function(RED) {
             
                 if (sql){
 	                // now process the sql statement, with necessary error handling.
-	                processSQLStatement("Update", node, sql, updateResultAction);
+	                processSQLStatement("Update", node, sql, updateResultAction, msg);
                 }
             });
 
@@ -551,7 +548,7 @@ module.exports = function(RED) {
                 var sql = mustache.render(query,msg);
 
                 // now process the SQL statement, with necessary error handling.
-                processSQLStatement("Query", node, sql, queryResultAction)
+                processSQLStatement("Query", node, sql, queryResultAction, msg)
             });
 
         } else {
